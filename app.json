@@ -7,17 +7,29 @@
     "userInterfaceStyle": "light",
     "splash": {
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#0B1220"
     },
     "assetBundlePatterns": [
       "**/*"
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.alignpal.app"
+      "bundleIdentifier": "com.alignpal.app",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Used for AI posture analysis"
+      }
     },
     "android": {
-      "package": "com.alignpal.app"
-    }
+      "package": "com.alignpal.app",
+      "permissions": []
+    },
+    "plugins": [
+      [
+        "react-native-purchases",
+        {
+          "enableCustomEntitlementComputation": false
+        }
+      ]
+    ]
   }
 }

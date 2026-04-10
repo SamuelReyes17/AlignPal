@@ -8,12 +8,20 @@ import ExerciseCard from '../components/ExerciseCard';
 import PainTrackerCard from '../components/PainTrackerCard';
 import PostureTipCard from '../components/PostureTipCard';
 import RecoveryOverviewCard from '../components/RecoveryOverviewCard';
+import PremiumGate from '../components/PremiumGate';
 import { useOnboarding } from '../context/OnboardingContext';
+import { useSubscription } from '../context/SubscriptionContext';
 
-export default function DashboardScreen() {
+export default function DashboardScreen({ navigation }) {
   const { onboardingData, generatePersonalizedPlan } = useOnboarding();
+  const { isPremium } = useSubscription();
 
   const plan = useMemo(() => generatePersonalizedPlan(), [generatePersonalizedPlan]);
+
+  // Navigate back to upgrade screen if free user taps a locked feature
+  const handleUpgradePress = () => {
+    navigation.navigate('Upgrade');
+  };
 
   const primaryArea =
     onboardingData.painLocations[0]?.replace(/\b\w/g, (l) => l.toUpperCase()) ||
@@ -58,9 +66,17 @@ export default function DashboardScreen() {
         />
 
         <StatsCard />
-        <ExerciseCard />
+
+        {/* Free users get 1 exercise — premium unlocks the full library */}
+        <ExerciseCard previewOnly={!isPremium} onUpgrade={handleUpgradePress} />
+
+        {/* Pain tracking is free so users build the habit and feel the value */}
         <PainTrackerCard />
-        <PostureTipCard />
+
+        {/* Progress stats are premium — shows the value of upgrading */}
+        <PremiumGate label="Progress Tracking" onUpgrade={handleUpgradePress}>
+          <PostureTipCard />
+        </PremiumGate>
 
         <View style={styles.bottomSpacing} />
       </ScrollView>
