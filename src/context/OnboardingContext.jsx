@@ -14,6 +14,7 @@ export const OnboardingProvider = ({ children }) => {
   const [onboardingData, setOnboardingData] = useState({
     painLocations: [],
     painIntensity: 5,
+    painType: '',        // 'sharp' | 'dull' | 'burning' | 'stiff'
     painDuration: '',
     worstTimeTriggers: [],
     sittingHours: '',
@@ -36,6 +37,7 @@ export const OnboardingProvider = ({ children }) => {
     setOnboardingData({
       painLocations: [],
       painIntensity: 5,
+      painType: '',
       painDuration: '',
       worstTimeTriggers: [],
       sittingHours: '',
@@ -46,57 +48,43 @@ export const OnboardingProvider = ({ children }) => {
     setIsOnboardingComplete(false);
   };
 
+  /**
+   * generatePersonalizedPlan — kept for DashboardScreen / RecoveryOverviewCard compatibility.
+   * PainProfileScreen and Day1ProtocolScreen now compute their own logic inline
+   * using the full onboardingData from context.
+   */
   const generatePersonalizedPlan = () => {
-    // Mock AI logic - maps user inputs to personalized plan
-    const { painLocations, painIntensity, painDuration, worstTimeTriggers, sittingHours } = onboardingData;
-    
+    const { painLocations, painIntensity, painDuration, worstTimeTriggers, sittingHours, painType } = onboardingData;
+
     let patterns = [];
-    let exercises = [];
 
-    // Analyze pain locations
-    if (painLocations.includes('lower back')) {
-      patterns.push('Tight hip flexors from prolonged sitting');
-      patterns.push('Weak glutes causing lower back overload');
-      exercises.push({ name: 'Hip Flexor Stretch', duration: '2 min', focus: 'Hip mobility' });
-      exercises.push({ name: 'Glute Bridge', duration: '3 min', focus: 'Glute activation' });
+    if (worstTimeTriggers?.includes('sitting') || sittingHours === '6+') {
+      patterns.push('Prolonged sitting is compressing your joints and shortening your hip flexors');
     }
-    if (painLocations.includes('upper back') || painLocations.includes('shoulders')) {
-      patterns.push('Forward head posture from desk work');
-      patterns.push('Tight chest muscles pulling shoulders forward');
-      exercises.push({ name: 'Chin Tuck', duration: '2 min', focus: 'Neck alignment' });
-      exercises.push({ name: 'Doorway Chest Stretch', duration: '2 min', focus: 'Chest opening' });
+    if (painLocations?.includes('lower back')) {
+      patterns.push('Weak glutes and tight hip flexors are overloading your lumbar spine');
     }
-    if (painLocations.includes('neck')) {
-      patterns.push('Text neck from phone usage');
-      exercises.push({ name: 'Neck Side Stretch', duration: '2 min', focus: 'Neck mobility' });
+    if (painLocations?.includes('upper back') || painLocations?.includes('neck')) {
+      patterns.push('Forward head posture is adding excess load to your cervical and thoracic spine');
     }
-    if (painLocations.includes('hips')) {
-      patterns.push('Hip flexor tightness from sitting');
-      exercises.push({ name: 'Pigeon Pose', duration: '3 min', focus: 'Hip opening' });
+    if (worstTimeTriggers?.includes('training')) {
+      patterns.push('Training load or movement mechanics are stressing the affected area');
+    }
+    if (painType === 'stiff') {
+      patterns.push('Reduced joint mobility is limiting your movement and increasing compression');
+    }
+    if (painDuration === 'months' || painDuration === 'years') {
+      patterns.push('Long-standing pain has created compensatory movement patterns that need resetting');
     }
 
-    // Analyze triggers
-    if (worstTimeTriggers.includes('sitting') && sittingHours === '6+ hours') {
-      patterns.push('Postural fatigue from extended sitting');
-      exercises.push({ name: 'Seated Spinal Twist', duration: '2 min', focus: 'Spine mobility' });
+    if (patterns.length === 0) {
+      patterns.push('General musculoskeletal imbalance detected across your pain profile');
     }
-
-    // Default exercises if none selected
-    if (exercises.length === 0) {
-      exercises = [
-        { name: 'Cat-Cow Stretch', duration: '2 min', focus: 'Spine mobility' },
-        { name: 'Child\'s Pose', duration: '2 min', focus: 'Back release' },
-        { name: 'Pelvic Tilt', duration: '2 min', focus: 'Core stability' },
-      ];
-    }
-
-    // Limit to 3 exercises for 7-minute routine
-    exercises = exercises.slice(0, 3);
 
     return {
-      patterns: patterns.length > 0 ? patterns : ['General postural imbalance detected'],
-      exercises,
-      totalDuration: exercises.reduce((sum, ex) => sum + parseInt(ex.duration), 0),
+      patterns: patterns.slice(0, 3),
+      exercises: [],       // Exercises are now driven by Day1ProtocolScreen
+      totalDuration: 7,
     };
   };
 

@@ -8,9 +8,7 @@ export default function DisclaimerScreen({ navigation }) {
   const { generatePersonalizedPlan } = useOnboarding();
 
   const handleContinue = () => {
-    // Generate personalized plan
-    generatePersonalizedPlan();
-    navigation.navigate('Results');
+    navigation.navigate('PainProfile');
   };
 
   return (
@@ -20,7 +18,7 @@ export default function DisclaimerScreen({ navigation }) {
           <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
         </TouchableOpacity>
         <View style={styles.progressBar}>
-          <View style={[styles.progressFill, { width: '71%' }]} />
+          <View style={[styles.progressFill, { width: '57%' }]} />
         </View>
       </View>
 

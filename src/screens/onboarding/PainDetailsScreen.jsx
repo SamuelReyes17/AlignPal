@@ -12,6 +12,13 @@ const DURATION_OPTIONS = [
   { id: 'years', label: 'Years' },
 ];
 
+const PAIN_TYPE_OPTIONS = [
+  { id: 'sharp',   label: 'Sharp',   icon: 'flash-outline',       desc: 'Stabbing or shooting' },
+  { id: 'dull',    label: 'Dull',    icon: 'radio-button-off-outline', desc: 'Aching or throbbing' },
+  { id: 'burning', label: 'Burning', icon: 'flame-outline',       desc: 'Hot or stinging' },
+  { id: 'stiff',   label: 'Stiff',   icon: 'lock-closed-outline', desc: 'Tight or hard to move' },
+];
+
 const TRIGGER_OPTIONS = [
   { id: 'sitting', label: 'Sitting', icon: 'desktop-outline' },
   { id: 'standing', label: 'Standing', icon: 'walk-outline' },
@@ -25,6 +32,7 @@ export default function PainDetailsScreen({ navigation }) {
   const [intensity, setIntensity] = useState(onboardingData.painIntensity || 5);
   const [duration, setDuration] = useState(onboardingData.painDuration || '');
   const [triggers, setTriggers] = useState(onboardingData.worstTimeTriggers || []);
+  const [painType, setPainType] = useState(onboardingData.painType || '');
 
   const toggleTrigger = (triggerId) => {
     if (triggers.includes(triggerId)) {
@@ -39,6 +47,7 @@ export default function PainDetailsScreen({ navigation }) {
       painIntensity: intensity,
       painDuration: duration,
       worstTimeTriggers: triggers,
+      painType,
     });
     navigation.navigate('Lifestyle');
   };
@@ -79,6 +88,36 @@ export default function PainDetailsScreen({ navigation }) {
           <View style={styles.sliderLabels}>
             <Text style={styles.sliderLabel}>Mild</Text>
             <Text style={styles.sliderLabel}>Severe</Text>
+          </View>
+        </View>
+
+        {/* Pain Type */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>What does it feel like?</Text>
+          <View style={styles.optionsGrid}>
+            {PAIN_TYPE_OPTIONS.map((option) => (
+              <TouchableOpacity
+                key={option.id}
+                style={[
+                  styles.painTypeButton,
+                  painType === option.id && styles.optionButtonSelected,
+                ]}
+                onPress={() => setPainType(option.id)}
+                activeOpacity={0.7}
+              >
+                <Ionicons
+                  name={option.icon}
+                  size={22}
+                  color={painType === option.id ? '#5B8DFF' : '#7F8FA9'}
+                />
+                <Text style={[styles.painTypeLabel, painType === option.id && styles.optionTextSelected]}>
+                  {option.label}
+                </Text>
+                <Text style={[styles.painTypeDesc, painType === option.id && styles.painTypeDescSelected]}>
+                  {option.desc}
+                </Text>
+              </TouchableOpacity>
+            ))}
           </View>
         </View>
 
@@ -150,10 +189,10 @@ export default function PainDetailsScreen({ navigation }) {
         <TouchableOpacity
           style={[
             styles.continueButton,
-            (!duration || triggers.length === 0) && styles.continueButtonDisabled,
+            (!duration || triggers.length === 0 || !painType) && styles.continueButtonDisabled,
           ]}
           onPress={handleContinue}
-          disabled={!duration || triggers.length === 0}
+          disabled={!duration || triggers.length === 0 || !painType}
           activeOpacity={0.8}
         >
           <Text style={styles.continueButtonText}>Continue</Text>
@@ -316,6 +355,38 @@ const styles = StyleSheet.create({
   triggerTextSelected: {
     color: '#FFFFFF',
     fontWeight: '600',
+  },
+  painTypeButton: {
+    width: '48%',
+    paddingVertical: 14,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    backgroundColor: '#1F2A3D',
+    borderWidth: 2,
+    borderColor: '#2A3547',
+    alignItems: 'center',
+    gap: 4,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOpacity: 0.10,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 2,
+  },
+  painTypeLabel: {
+    fontSize: 15,
+    color: '#7F8FA9',
+    fontWeight: '600',
+    marginTop: 4,
+  },
+  painTypeDesc: {
+    fontSize: 11,
+    color: '#4B5B78',
+    textAlign: 'center',
+  },
+  painTypeDescSelected: {
+    color: '#5B8DFF',
+    opacity: 0.8,
   },
   footer: {
     paddingHorizontal: 24,

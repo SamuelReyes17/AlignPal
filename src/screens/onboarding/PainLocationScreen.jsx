@@ -21,7 +21,7 @@ export default function PainLocationScreen({ navigation }) {
           <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
         </TouchableOpacity>
         <View style={styles.progressBar}>
-          <View style={[styles.progressFill, { width: '14%' }]} />
+          <View style={[styles.progressFill, { width: '14%' }/* Step 1 of 7 */]} />
         </View>
       </View>
 
