@@ -53,13 +53,18 @@ export default function PostureTipCard() {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#0F182A',
+    backgroundColor: '#101B31',
     marginHorizontal: 20,
     marginVertical: 10,
-    borderRadius: 18,
+    borderRadius: 22,
     padding: 20,
     borderWidth: 1,
-    borderColor: '#1F2A3D',
+    borderColor: '#263554',
+    shadowColor: '#02060E',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.26,
+    shadowRadius: 15,
+    elevation: 6,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -87,8 +92,8 @@ const styles = StyleSheet.create({
   tipIconContainer: {
     width: 48,
     height: 48,
-    borderRadius: 24,
-    backgroundColor: '#0B1220',
+    borderRadius: 16,
+    backgroundColor: '#11213B',
     borderWidth: 1,
     borderColor: '#1F2A3D',
     justifyContent: 'center',

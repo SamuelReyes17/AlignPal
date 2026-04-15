@@ -68,7 +68,10 @@ export default function HistoryScreen() {
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>History</Text>
+        <View>
+          <Text style={styles.headerEyebrow}>Insights</Text>
+          <Text style={styles.headerTitle}>History</Text>
+        </View>
         <TouchableOpacity style={styles.filterButton}>
           <Ionicons name="filter-outline" size={24} color="#7CC7FF" />
         </TouchableOpacity>
@@ -144,24 +147,44 @@ export default function HistoryScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0B1220',
+    backgroundColor: '#0A1222',
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 20,
-    paddingTop: 10,
-    paddingBottom: 20,
-    backgroundColor: '#0B1220',
+    paddingTop: 14,
+    paddingBottom: 18,
+    backgroundColor: '#0A1222',
+  },
+  headerEyebrow: {
+    fontSize: 12,
+    color: '#8AA3D9',
+    letterSpacing: 0.6,
+    textTransform: 'uppercase',
+    marginBottom: 3,
+    fontWeight: '600',
   },
   headerTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#E6EDFF',
+    fontSize: 30,
+    fontWeight: '800',
+    color: '#F2F6FF',
   },
   filterButton: {
-    padding: 5,
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#111D34',
+    borderWidth: 1,
+    borderColor: '#22324F',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.24,
+    shadowRadius: 8,
+    elevation: 5,
   },
   scrollView: {
     flex: 1,
@@ -187,13 +210,18 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   historyCard: {
-    backgroundColor: '#0F182A',
+    backgroundColor: '#101B31',
     marginHorizontal: 20,
     marginTop: 16,
-    borderRadius: 18,
+    borderRadius: 22,
     padding: 20,
     borderWidth: 1,
-    borderColor: '#1F2A3D',
+    borderColor: '#263554',
+    shadowColor: '#02060E',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.28,
+    shadowRadius: 16,
+    elevation: 7,
   },
   historyHeader: {
     flexDirection: 'row',
@@ -252,10 +280,10 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   exerciseTag: {
-    backgroundColor: '#0B1220',
+    backgroundColor: '#111E37',
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 16,
+    borderRadius: 999,
     marginRight: 8,
     marginBottom: 8,
     borderWidth: 1,
@@ -285,7 +313,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     backgroundColor: '#0B1220',
     padding: 12,
-    borderRadius: 8,
+    borderRadius: 12,
     marginTop: 8,
     borderWidth: 1,
     borderColor: '#1F2A3D',

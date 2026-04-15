@@ -24,12 +24,13 @@
       "permissions": []
     },
     "plugins": [
-      [
-        "react-native-purchases",
-        {
-          "enableCustomEntitlementComputation": false
-        }
-      ]
-    ]
+      "expo-dev-client"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "c1b23612-3a30-4d91-8ec3-48a63a0a2f1a"
+      }
+    },
+    "owner": "samuelreyes17"
   }
 }

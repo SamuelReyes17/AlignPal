@@ -50,7 +50,10 @@ export default function DashboardScreen({ navigation }) {
     <SafeAreaView style={styles.container} edges={['top']}>
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>AlignPal</Text>
+          <View>
+            <Text style={styles.headerEyebrow}>Daily Recovery</Text>
+            <Text style={styles.headerTitle}>AlignPal</Text>
+          </View>
           <TouchableOpacity style={styles.profileButton}>
             <Ionicons name="person-circle-outline" size={28} color="#5B8DFF" />
           </TouchableOpacity>
@@ -87,7 +90,7 @@ export default function DashboardScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0B1220',
+    backgroundColor: '#0A1222',
   },
   scrollView: {
     flex: 1,
@@ -97,17 +100,38 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 20,
-    paddingTop: 10,
-    paddingBottom: 20,
-    backgroundColor: '#0B1220',
+    paddingTop: 14,
+    paddingBottom: 18,
+    backgroundColor: '#0A1222',
+  },
+  headerEyebrow: {
+    fontSize: 12,
+    color: '#8AA3D9',
+    letterSpacing: 0.6,
+    textTransform: 'uppercase',
+    marginBottom: 3,
+    fontWeight: '600',
   },
   headerTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#E6EDFF',
+    fontSize: 30,
+    fontWeight: '800',
+    color: '#F2F6FF',
+    letterSpacing: 0.3,
   },
   profileButton: {
-    padding: 5,
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#111D34',
+    borderWidth: 1,
+    borderColor: '#21314F',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
   },
   bottomSpacing: {
     height: 20,

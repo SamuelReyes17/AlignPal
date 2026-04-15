@@ -42,13 +42,18 @@ export default function PainTrackerCard() {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#0F182A',
+    backgroundColor: '#101B31',
     marginHorizontal: 20,
     marginVertical: 10,
-    borderRadius: 18,
+    borderRadius: 22,
     padding: 20,
     borderWidth: 1,
-    borderColor: '#1F2A3D',
+    borderColor: '#263554',
+    shadowColor: '#02060E',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.26,
+    shadowRadius: 15,
+    elevation: 6,
   },
   cardTitle: {
     fontSize: 18,
@@ -69,7 +74,7 @@ const styles = StyleSheet.create({
   painButton: {
     flex: 1,
     aspectRatio: 1,
-    borderRadius: 8,
+    borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
     marginHorizontal: 2,
@@ -105,13 +110,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 12,
-    borderRadius: 12,
-    backgroundColor: '#5B8DFF',
+    borderRadius: 18,
+    backgroundColor: '#6FE0BF',
+    shadowColor: '#3BB08E',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.28,
+    shadowRadius: 12,
+    elevation: 7,
   },
   logButtonText: {
-    color: '#0B1220',
+    color: '#072319',
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '800',
     marginLeft: 8,
   },
 });

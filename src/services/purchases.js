@@ -1,148 +1,144 @@
-/**
- * AlignPal — RevenueCat Purchase Service
- *
- * This wraps the react-native-purchases SDK so the rest of the app
- * never has to touch RevenueCat directly.
- *
- * PRODUCT IDs — these must exactly match what you create in:
- *   - App Store Connect (under your app → Subscriptions / In-App Purchases)
- *   - Google Play Console (under your app → Monetize → Subscriptions)
- *
- * ENTITLEMENT ID — create one entitlement in RevenueCat called "premium"
- *   and attach all three products to it.
- */
-
-import Purchases, { LOG_LEVEL } from 'react-native-purchases';
 import { Platform } from 'react-native';
+import Purchases, { LOG_LEVEL } from 'react-native-purchases';
+import RevenueCatUI, { PAYWALL_RESULT } from 'react-native-purchases-ui';
 
-// ─── Replace these with your real RevenueCat API keys ────────────────────────
-const RC_API_KEY_IOS     = 'appl_REPLACE_WITH_YOUR_IOS_KEY';
-const RC_API_KEY_ANDROID = 'goog_REPLACE_WITH_YOUR_ANDROID_KEY';
-// ─────────────────────────────────────────────────────────────────────────────
+const RC_API_KEY_IOS = process.env.EXPO_PUBLIC_RC_API_KEY_IOS ?? 'test_eKygddvWnLCVbsmDukSbHsKtILk';
+const RC_API_KEY_ANDROID = process.env.EXPO_PUBLIC_RC_API_KEY_ANDROID ?? 'test_eKygddvWnLCVbsmDukSbHsKtILk';
 
-// The entitlement name you create in the RevenueCat dashboard
-export const ENTITLEMENT_ID = 'premium';
+// Entitlement identifier configured in RevenueCat dashboard.
+export const ENTITLEMENT_ID = 'AlignPal Pro';
 
-// Product identifiers — must match App Store Connect + Play Console exactly
+// Product identifiers requested for AlignPal.
 export const PRODUCT_IDS = {
-  MONTHLY:  'alignpal_monthly',   // $9.99/month, 7-day free trial
-  YEARLY:   'alignpal_yearly',    // $59.99/year (~$5/month)
-  LIFETIME: 'alignpal_lifetime',  // $99.99 one-time
+  LIFETIME: 'lifetime',
+  YEARLY: 'yearly',
+  MONTHLY: 'monthly',
 };
 
-// Human-readable labels for the UI
 export const PLAN_LABELS = {
-  [PRODUCT_IDS.MONTHLY]: {
-    title: 'Monthly',
-    price: '$9.99',
-    period: '/month',
-    savings: null,
-    badge: null,
-    trial: '7-day free trial',
-  },
-  [PRODUCT_IDS.YEARLY]: {
-    title: 'Yearly',
-    price: '$59.99',
-    period: '/year',
-    savings: 'Save 50%',
-    badge: 'BEST VALUE',
-    trial: null,
-  },
-  [PRODUCT_IDS.LIFETIME]: {
-    title: 'Lifetime',
-    price: '$99.99',
-    period: 'one-time',
-    savings: 'Never pay again',
-    badge: null,
-    trial: null,
-  },
+  [PRODUCT_IDS.MONTHLY]: { title: 'Monthly', period: '/month', badge: null },
+  [PRODUCT_IDS.YEARLY]: { title: 'Yearly', period: '/year', badge: 'BEST VALUE' },
+  [PRODUCT_IDS.LIFETIME]: { title: 'Lifetime', period: 'one-time', badge: null },
 };
 
-/**
- * Call once at app startup (inside App.jsx).
- * Configures the SDK and sets up the user.
- */
-export async function initializePurchases(userId = null) {
+function getPlatformApiKey() {
+  return Platform.OS === 'ios' ? RC_API_KEY_IOS : RC_API_KEY_ANDROID;
+}
+
+export function hasAlignPalPro(customerInfo) {
+  return Boolean(customerInfo?.entitlements?.active?.[ENTITLEMENT_ID]);
+}
+
+export async function initializePurchases(appUserID = null) {
   try {
-    if (__DEV__) {
-      Purchases.setLogLevel(LOG_LEVEL.DEBUG);
-    }
+    const isConfigured = await Purchases.isConfigured();
+    if (!isConfigured) {
+      if (__DEV__) {
+        await Purchases.setLogLevel(LOG_LEVEL.DEBUG);
+      }
 
-    const apiKey = Platform.OS === 'ios' ? RC_API_KEY_IOS : RC_API_KEY_ANDROID;
-    await Purchases.configure({ apiKey });
+      const apiKey = getPlatformApiKey();
+      if (!apiKey) {
+        throw new Error('Missing RevenueCat API key for this platform.');
+      }
 
-    // If the user is authenticated, identify them so purchase history syncs
-    if (userId) {
-      await Purchases.logIn(userId);
+      Purchases.configure({
+        apiKey,
+        appUserID: appUserID ?? undefined,
+      });
+    } else if (appUserID) {
+      await Purchases.logIn(appUserID);
     }
   } catch (error) {
     console.error('[Purchases] Initialization failed:', error);
+    throw error;
   }
 }
 
-/**
- * Fetch available packages from RevenueCat.
- * Returns an array of Purchases.Package objects, or [] on failure.
- */
+export function addCustomerInfoListener(listener) {
+  Purchases.addCustomerInfoUpdateListener(listener);
+  return () => {
+    Purchases.removeCustomerInfoUpdateListener(listener);
+  };
+}
+
+export async function getCustomerInfo() {
+  return Purchases.getCustomerInfo();
+}
+
 export async function getOfferings() {
   try {
     const offerings = await Purchases.getOfferings();
-    if (offerings.current?.availablePackages?.length > 0) {
-      return offerings.current.availablePackages;
-    }
-    return [];
+    return offerings.current?.availablePackages ?? [];
   } catch (error) {
     console.error('[Purchases] Failed to fetch offerings:', error);
     return [];
   }
 }
 
-/**
- * Purchase a package.
- * Returns { success: true } or { success: false, error, userCancelled }
- */
-export async function purchasePackage(pkg) {
+export async function purchasePackage(aPackage) {
   try {
-    const { customerInfo } = await Purchases.purchasePackage(pkg);
-    const isPremium = !!customerInfo.entitlements.active[ENTITLEMENT_ID];
-    return { success: isPremium };
+    const { customerInfo, productIdentifier } = await Purchases.purchasePackage(aPackage);
+    return {
+      success: hasAlignPalPro(customerInfo),
+      customerInfo,
+      productIdentifier,
+      userCancelled: false,
+      error: null,
+    };
   } catch (error) {
-    if (!error.userCancelled) {
+    if (!error?.userCancelled) {
       console.error('[Purchases] Purchase failed:', error);
     }
     return {
       success: false,
-      error: error.message,
-      userCancelled: error.userCancelled ?? false,
+      customerInfo: null,
+      productIdentifier: null,
+      userCancelled: error?.userCancelled ?? false,
+      error: error?.message ?? 'Purchase failed',
     };
   }
 }
 
-/**
- * Restore previous purchases (required by App Store guidelines).
- * Returns { success: true, isPremium } or { success: false, error }
- */
 export async function restorePurchases() {
   try {
     const customerInfo = await Purchases.restorePurchases();
-    const isPremium = !!customerInfo.entitlements.active[ENTITLEMENT_ID];
-    return { success: true, isPremium };
+    return { success: true, isPremium: hasAlignPalPro(customerInfo), customerInfo, error: null };
   } catch (error) {
     console.error('[Purchases] Restore failed:', error);
-    return { success: false, error: error.message };
+    return { success: false, isPremium: false, customerInfo: null, error: error?.message ?? 'Restore failed' };
   }
 }
 
-/**
- * Check if the current user has an active premium entitlement.
- * Use this to gate features anywhere in the app.
- */
 export async function checkPremiumStatus() {
   try {
-    const customerInfo = await Purchases.getCustomerInfo();
-    return !!customerInfo.entitlements.active[ENTITLEMENT_ID];
+    const customerInfo = await getCustomerInfo();
+    return hasAlignPalPro(customerInfo);
   } catch (error) {
     console.error('[Purchases] Status check failed:', error);
     return false;
+  }
+}
+
+export async function presentAlignPalPaywallIfNeeded() {
+  try {
+    const result = await RevenueCatUI.presentPaywallIfNeeded({
+      requiredEntitlementIdentifier: ENTITLEMENT_ID,
+      displayCloseButton: true,
+    });
+    return { success: true, result, error: null };
+  } catch (error) {
+    console.error('[Purchases] Paywall presentation failed:', error);
+    return { success: false, result: PAYWALL_RESULT.ERROR, error: error?.message ?? 'Paywall failed' };
+  }
+}
+
+export async function presentCustomerCenter() {
+  try {
+    await RevenueCatUI.presentCustomerCenter();
+    return { success: true, error: null };
+  } catch (error) {
+    console.error('[Purchases] Customer Center failed:', error);
+    return { success: false, error: error?.message ?? 'Customer Center failed' };
   }
 }

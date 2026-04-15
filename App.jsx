@@ -1,5 +1,7 @@
+import 'react-native-gesture-handler';
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer } from '@react-navigation/native';
 import { ConvexProvider, ConvexReactClient } from 'convex/react';
@@ -32,20 +34,25 @@ function RootNavigator() {
 
 export default function App() {
   return (
-    <ConvexProvider client={convex}>
-      <SubscriptionProvider>
-        <OnboardingProvider>
-          <View style={styles.container}>
-            <StatusBar style="light" />
-            <RootNavigator />
-          </View>
-        </OnboardingProvider>
-      </SubscriptionProvider>
-    </ConvexProvider>
+    <GestureHandlerRootView style={styles.root}>
+      <ConvexProvider client={convex}>
+        <SubscriptionProvider>
+          <OnboardingProvider>
+            <View style={styles.container}>
+              <StatusBar style="light" />
+              <RootNavigator />
+            </View>
+          </OnboardingProvider>
+        </SubscriptionProvider>
+      </ConvexProvider>
+    </GestureHandlerRootView>
   );
 }
 
 const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+  },
   container: {
     flex: 1,
     backgroundColor: '#0B1220',

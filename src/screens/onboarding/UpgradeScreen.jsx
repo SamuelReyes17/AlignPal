@@ -36,7 +36,7 @@ const PREMIUM_FEATURES = [
 
 export default function UpgradeScreen({ navigation }) {
   const { completeOnboarding } = useOnboarding();
-  const { packages, purchase, restore, purchasing, restoring, isPremium } = useSubscription();
+  const { packages, purchase, restore, purchasing, restoring, isPremium, showPaywallIfNeeded } = useSubscription();
 
   // Default selected plan — yearly drives the best LTV
   const [selectedProductId, setSelectedProductId] = useState(PRODUCT_IDS.YEARLY);
@@ -96,6 +96,17 @@ export default function UpgradeScreen({ navigation }) {
   // ─── Skip to free plan ────────────────────────────────────────────────────────
   const handleContinueFree = () => {
     completeOnboarding();
+  };
+
+  const handleRevenueCatPaywall = async () => {
+    const result = await showPaywallIfNeeded();
+    if (!result.success) {
+      Alert.alert('Paywall error', result.error ?? 'Unable to open paywall right now.');
+      return;
+    }
+    if (result.isPremium) {
+      completeOnboarding();
+    }
   };
 
   // ─── If already premium (e.g. user came back), skip straight in ──────────────
@@ -249,6 +260,10 @@ export default function UpgradeScreen({ navigation }) {
             <Text style={styles.restoreText}>Restore purchases</Text>
           </TouchableOpacity>
         </View>
+
+        <TouchableOpacity onPress={handleRevenueCatPaywall} disabled={isLoading} style={styles.paywallLinkButton}>
+          <Text style={styles.paywallLinkText}>Open RevenueCat Paywall</Text>
+        </TouchableOpacity>
 
         {/* Apple / Google required legal */}
         <Text style={styles.legalText}>
@@ -496,5 +511,14 @@ const styles = StyleSheet.create({
     color: '#3A4B62',
     textAlign: 'center',
     lineHeight: 15,
+  },
+  paywallLinkButton: {
+    alignSelf: 'center',
+    marginBottom: 10,
+  },
+  paywallLinkText: {
+    fontSize: 12,
+    color: '#7F8FA9',
+    textDecorationLine: 'underline',
   },
 });

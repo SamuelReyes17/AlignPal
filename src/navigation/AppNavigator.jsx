@@ -21,19 +21,28 @@ export default function AppNavigator() {
 
             return <Ionicons name={iconName} size={size} color={color} />;
           },
-          tabBarActiveTintColor: '#5B8DFF',
-          tabBarInactiveTintColor: '#7F8FA9',
+          tabBarActiveTintColor: '#73A3FF',
+          tabBarInactiveTintColor: '#8090AA',
           tabBarStyle: {
-            backgroundColor: '#0E1625',
-            borderTopWidth: 1,
-            borderTopColor: '#1F2A3D',
+            backgroundColor: '#101A2F',
+            borderTopWidth: 0,
             paddingBottom: 8,
             paddingTop: 8,
-            height: 64,
+            height: 70,
+            shadowColor: '#060B16',
+            shadowOffset: { width: 0, height: -8 },
+            shadowOpacity: 0.25,
+            shadowRadius: 14,
+            elevation: 16,
           },
           tabBarLabelStyle: {
-            fontSize: 12,
+            fontSize: 11,
             fontWeight: '600',
+            letterSpacing: 0.25,
+          },
+          tabBarItemStyle: {
+            borderRadius: 14,
+            marginHorizontal: 6,
           },
           headerShown: false,
         })}
