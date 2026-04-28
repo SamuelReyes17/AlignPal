@@ -4,115 +4,128 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useOnboarding } from '../../context/OnboardingContext';
 import BodyMap from '../../components/BodyMap';
+import { StepHeader } from '../../components/StepHeader';
+import { Colors, Shadows } from '../../constants/brand';
 
 export default function PainLocationScreen({ navigation }) {
   const { onboardingData, updateOnboardingData } = useOnboarding();
-
-  const handleContinue = () => {
-    if (onboardingData.painLocations.length > 0) {
-      navigation.navigate('PainDetails');
-    }
-  };
+  const selected = onboardingData.painLocations || [];
+  const canContinue = selected.length > 0;
 
   return (
-    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
-        </TouchableOpacity>
-        <View style={styles.progressBar}>
-          <View style={[styles.progressFill, { width: '14%' }/* Step 1 of 7 */]} />
-        </View>
+    <SafeAreaView style={s.container} edges={['top', 'bottom']}>
+      {/* Header — compact */}
+      <StepHeader step={1} total={8} onBack={() => navigation.goBack()} />
+
+      {/* Question — tight, no wasted space */}
+      <View style={s.questionBlock}>
+        <Text style={s.question}>Where does it hurt?</Text>
+        <Text style={s.hint}>Tap the area — front or back · Select multiple</Text>
       </View>
 
-      <View style={styles.content}>
-        <Text style={styles.title}>Where do you feel pain?</Text>
-        <Text style={styles.subtitle}>Tap all areas that apply</Text>
-
+      {/* Body map — takes exactly the remaining flex space */}
+      <View style={s.mapWrap}>
         <BodyMap
-          selectedParts={onboardingData.painLocations}
-          onSelect={(locations) => updateOnboardingData({ painLocations: locations })}
+          selectedParts={selected}
+          onSelect={(locs) => updateOnboardingData({ painLocations: locs })}
         />
       </View>
 
-      <View style={styles.footer}>
+      {/* Footer — always visible, pinned at bottom */}
+      <View style={s.footer}>
+        {selected.length > 0 && (
+          <View style={s.selectionBadge}>
+            <View style={s.selectionDot} />
+            <Text style={s.selectionText}>
+              {selected.length} area{selected.length !== 1 ? 's' : ''} selected
+            </Text>
+          </View>
+        )}
         <TouchableOpacity
-          style={[
-            styles.continueButton,
-            onboardingData.painLocations.length === 0 && styles.continueButtonDisabled,
-          ]}
-          onPress={handleContinue}
-          disabled={onboardingData.painLocations.length === 0}
-          activeOpacity={0.8}
+          style={[s.btn, !canContinue && s.btnDisabled]}
+          onPress={() => canContinue && navigation.navigate('PainIntensity')}
+          activeOpacity={0.88}
         >
-          <Text style={styles.continueButtonText}>Continue</Text>
+          <Text style={[s.btnText, !canContinue && s.btnTextDisabled]}>
+            {canContinue ? 'Continue →' : 'Tap where it hurts'}
+          </Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#0E1625',
-  },
-  header: {
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 20,
-  },
-  backButton: {
-    marginBottom: 16,
-  },
-  progressBar: {
-    height: 3,
-    backgroundColor: '#1F2A3D',
-    borderRadius: 2,
-    overflow: 'hidden',
-  },
-  progressFill: {
-    height: '100%',
-    backgroundColor: '#5B8DFF',
-    borderRadius: 2,
-  },
-  content: {
-    flex: 1,
+const s = StyleSheet.create({
+  container: { flex: 1, backgroundColor: Colors.bg },
+
+  questionBlock: {
+    alignItems: 'center',
     paddingHorizontal: 24,
-    paddingTop: 16,
-    justifyContent: 'space-between',
+    paddingBottom: 6,
   },
-  title: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: '#FFFFFF',
-    marginBottom: 8,
+  question: {
+    fontSize: 26,
+    fontWeight: '800',
+    color: Colors.textPrimary,
+    textAlign: 'center',
+    letterSpacing: -0.6,
+    marginBottom: 4,
+  },
+  hint: {
+    fontSize: 13,
+    color: Colors.textSecondary,
     textAlign: 'center',
   },
-  subtitle: {
-    fontSize: 16,
-    color: '#7F8FA9',
-    textAlign: 'center',
-    marginBottom: 12,
+
+  // Map takes all remaining space between question and footer
+  mapWrap: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
+
   footer: {
     paddingHorizontal: 24,
-    paddingBottom: 20,
-    paddingTop: 8,
+    paddingBottom: 28,
+    paddingTop: 6,
+    gap: 8,
   },
-  continueButton: {
-    backgroundColor: '#5B8DFF',
-    borderRadius: 16,
+
+  selectionBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 7,
+    alignSelf: 'center',
+    backgroundColor: Colors.purpleGlow,
+    borderRadius: 20,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderWidth: 1,
+    borderColor: Colors.borderSelected,
+  },
+  selectionDot: {
+    width: 7, height: 7, borderRadius: 4,
+    backgroundColor: Colors.purple,
+  },
+  selectionText: {
+    fontSize: 12,
+    color: Colors.purplePale,
+    fontWeight: '700',
+  },
+
+  btn: {
+    backgroundColor: Colors.purple,
+    borderRadius: 20,
     paddingVertical: 18,
     alignItems: 'center',
+    ...Shadows.purple,
   },
-  continueButtonDisabled: {
-    backgroundColor: '#1F2A3D',
-    opacity: 0.5,
+  btnDisabled: {
+    backgroundColor: Colors.bgCard,
+    shadowOpacity: 0,
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
-  continueButtonText: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#0E1625',
-  },
+  btnText:         { fontSize: 17, fontWeight: '700', color: Colors.white },
+  btnTextDisabled: { color: Colors.textMuted, fontSize: 14 },
 });

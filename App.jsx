@@ -4,11 +4,13 @@ import { View, StyleSheet } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
 import { ConvexProvider, ConvexReactClient } from 'convex/react';
 import { OnboardingProvider, useOnboarding } from './src/context/OnboardingContext';
 import { SubscriptionProvider } from './src/context/SubscriptionContext';
 import OnboardingNavigator from './src/navigation/OnboardingNavigator';
 import AppNavigator from './src/navigation/AppNavigator';
+import RecoverySessionScreen from './src/screens/RecoverySessionScreen';
 
 const convexUrl = process.env.EXPO_PUBLIC_CONVEX_URL;
 if (!convexUrl) {
@@ -18,13 +20,34 @@ if (!convexUrl) {
 }
 const convex = new ConvexReactClient(convexUrl);
 
+const AppStack = createStackNavigator();
+
+function AppStackNavigator() {
+  return (
+    <AppStack.Navigator screenOptions={{ headerShown: false }}>
+      <AppStack.Screen name="AppTabs" component={AppNavigator} />
+      <AppStack.Screen
+        name="RecoverySession"
+        component={RecoverySessionScreen}
+        options={{
+          gestureEnabled: false,
+          cardStyle: { backgroundColor: '#07050F' },
+          cardStyleInterpolator: ({ current }) => ({
+            cardStyle: { opacity: current.progress },
+          }),
+        }}
+      />
+    </AppStack.Navigator>
+  );
+}
+
 function RootNavigator() {
   const { isOnboardingComplete } = useOnboarding();
 
   return (
     <NavigationContainer>
       {isOnboardingComplete ? (
-        <AppNavigator key="main-app" />
+        <AppStackNavigator key="main-app" />
       ) : (
         <OnboardingNavigator key="onboarding" />
       )}
@@ -50,11 +73,6 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-  },
-  container: {
-    flex: 1,
-    backgroundColor: '#0B1220',
-  },
+  root:      { flex: 1 },
+  container: { flex: 1, backgroundColor: '#0B1220' },
 });

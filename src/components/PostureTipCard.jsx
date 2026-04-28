@@ -1,6 +1,7 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { Colors, Shadows } from '../constants/brand';
 
 export default function PostureTipCard() {
   const tips = [
@@ -25,21 +26,19 @@ export default function PostureTipCard() {
     <View style={styles.card}>
       <View style={styles.cardHeader}>
         <Text style={styles.cardTitle}>Posture Tips</Text>
-        <TouchableOpacity>
-          <Ionicons name="information-circle-outline" size={24} color="#7CC7FF" />
-        </TouchableOpacity>
+        <Ionicons name="information-circle-outline" size={20} color={Colors.textMuted} />
       </View>
 
       {tips.map((tip, index) => (
-        <View 
-          key={index} 
+        <View
+          key={index}
           style={[
             styles.tipItem,
-            index === tips.length - 1 && styles.tipItemLast
+            index === tips.length - 1 && styles.tipItemLast,
           ]}
         >
           <View style={styles.tipIconContainer}>
-            <Ionicons name={tip.icon} size={22} color="#6EE7B7" />
+            <Ionicons name={tip.icon} size={22} color={Colors.green} />
           </View>
           <View style={styles.tipContent}>
             <Text style={styles.tipTitle}>{tip.title}</Text>
@@ -53,18 +52,14 @@ export default function PostureTipCard() {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#101B31',
+    backgroundColor: Colors.bgCard,
     marginHorizontal: 20,
     marginVertical: 10,
     borderRadius: 22,
     padding: 20,
     borderWidth: 1,
-    borderColor: '#263554',
-    shadowColor: '#02060E',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.26,
-    shadowRadius: 15,
-    elevation: 6,
+    borderColor: Colors.border,
+    ...Shadows.card,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -74,15 +69,15 @@ const styles = StyleSheet.create({
   },
   cardTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#E6EDFF',
+    fontWeight: '700',
+    color: Colors.textPrimary,
   },
   tipItem: {
     flexDirection: 'row',
     marginBottom: 16,
     paddingBottom: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#1F2A3D',
+    borderBottomColor: Colors.borderSubtle,
   },
   tipItemLast: {
     borderBottomWidth: 0,
@@ -93,9 +88,9 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 16,
-    backgroundColor: '#11213B',
+    backgroundColor: Colors.bgElevated,
     borderWidth: 1,
-    borderColor: '#1F2A3D',
+    borderColor: Colors.border,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
@@ -106,12 +101,12 @@ const styles = StyleSheet.create({
   tipTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#E6EDFF',
+    color: Colors.textPrimary,
     marginBottom: 4,
   },
   tipDescription: {
     fontSize: 14,
-    color: '#94A3B8',
+    color: Colors.textSecondary,
     lineHeight: 20,
   },
 });

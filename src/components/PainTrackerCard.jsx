@@ -5,13 +5,12 @@
  *   1. Rates their pain (1–10)
  *   2. Confirms whether they did their exercises
  *   3. Gets a contextual response from the "AI coach"
- *
- * State is kept in component for now. Wire to Convex/AsyncStorage for persistence.
  */
 
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Animated } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { Colors, Shadows } from '../constants/brand';
 
 // ─── Coach responses based on pain + exercise combo ──────────────────────────
 const getCoachResponse = (pain, didExercise) => {
@@ -25,9 +24,9 @@ const getCoachResponse = (pain, didExercise) => {
 
 // ─── Pain color scale ─────────────────────────────────────────────────────────
 const getPainColor = (level) => {
-  if (level <= 3) return '#4CAF50';
-  if (level <= 6) return '#F4A426';
-  return '#EF4444';
+  if (level <= 3) return Colors.green;
+  if (level <= 6) return Colors.amber;
+  return Colors.red;
 };
 
 const getPainLabel = (level) => {
@@ -39,10 +38,14 @@ const getPainLabel = (level) => {
   return 'Severe';
 };
 
+function getTodayLabel() {
+  return new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+}
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function PainTrackerCard() {
   const [selectedPain, setSelectedPain] = useState(null);
-  const [didExercise, setDidExercise] = useState(null); // true | false | null
+  const [didExercise, setDidExercise] = useState(null);
   const [submitted, setSubmitted] = useState(false);
 
   const canSubmit = selectedPain !== null && didExercise !== null;
@@ -67,8 +70,8 @@ export default function PainTrackerCard() {
           <Text style={styles.cardSubtitle}>Track your recovery progress</Text>
         </View>
         <View style={styles.streakBadge}>
-          <Ionicons name="flame" size={14} color="#F4A426" />
-          <Text style={styles.streakText}>3 day streak</Text>
+          <Ionicons name="calendar-outline" size={13} color={Colors.purple} />
+          <Text style={styles.streakText}>{getTodayLabel()}</Text>
         </View>
       </View>
 
@@ -93,7 +96,7 @@ export default function PainTrackerCard() {
                   key={level}
                   style={[
                     styles.painButton,
-                    { borderColor: isSelected ? color : '#1F2A3D' },
+                    { borderColor: isSelected ? color : Colors.border },
                     isSelected && { backgroundColor: color + '22' },
                   ]}
                   onPress={() => setSelectedPain(level)}
@@ -116,17 +119,14 @@ export default function PainTrackerCard() {
           <Text style={styles.sectionLabel}>Did you do your exercises?</Text>
           <View style={styles.exerciseRow}>
             <TouchableOpacity
-              style={[
-                styles.exerciseBtn,
-                didExercise === true && styles.exerciseBtnYes,
-              ]}
+              style={[styles.exerciseBtn, didExercise === true && styles.exerciseBtnYes]}
               onPress={() => setDidExercise(true)}
               activeOpacity={0.8}
             >
               <Ionicons
                 name="checkmark-circle"
                 size={20}
-                color={didExercise === true ? '#0E1625' : '#4CAF50'}
+                color={didExercise === true ? Colors.green : Colors.textMuted}
               />
               <Text style={[styles.exerciseBtnText, didExercise === true && styles.exerciseBtnTextYes]}>
                 Yes, I did
@@ -134,17 +134,14 @@ export default function PainTrackerCard() {
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[
-                styles.exerciseBtn,
-                didExercise === false && styles.exerciseBtnNo,
-              ]}
+              style={[styles.exerciseBtn, didExercise === false && styles.exerciseBtnNo]}
               onPress={() => setDidExercise(false)}
               activeOpacity={0.8}
             >
               <Ionicons
                 name="close-circle"
                 size={20}
-                color={didExercise === false ? '#0E1625' : '#EF4444'}
+                color={didExercise === false ? Colors.red : Colors.textMuted}
               />
               <Text style={[styles.exerciseBtnText, didExercise === false && styles.exerciseBtnTextNo]}>
                 Not today
@@ -176,7 +173,7 @@ export default function PainTrackerCard() {
             </View>
             <View style={styles.loggedDivider} />
             <View style={styles.loggedStat}>
-              <Text style={[styles.loggedValue, { color: didExercise ? '#4CAF50' : '#EF4444' }]}>
+              <Text style={[styles.loggedValue, { color: didExercise ? Colors.green : Colors.red }]}>
                 {didExercise ? 'Done' : 'Skipped'}
               </Text>
               <Text style={styles.loggedStatLabel}>Exercises</Text>
@@ -201,18 +198,14 @@ export default function PainTrackerCard() {
 // ─── Styles ───────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#101B31',
+    backgroundColor: Colors.bgCard,
     marginHorizontal: 20,
     marginVertical: 10,
     borderRadius: 22,
     padding: 20,
     borderWidth: 1,
-    borderColor: '#263554',
-    shadowColor: '#02060E',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.26,
-    shadowRadius: 15,
-    elevation: 6,
+    borderColor: Colors.border,
+    ...Shadows.card,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -220,22 +213,22 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     marginBottom: 20,
   },
-  cardTitle:    { fontSize: 18, fontWeight: '700', color: '#E6EDFF', marginBottom: 2 },
-  cardSubtitle: { fontSize: 13, color: '#4A5A72' },
+  cardTitle:    { fontSize: 18, fontWeight: '700', color: Colors.textPrimary, marginBottom: 2 },
+  cardSubtitle: { fontSize: 13, color: Colors.textMuted },
   streakBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1A2335',
+    backgroundColor: Colors.bgElevated,
     borderRadius: 12,
     paddingHorizontal: 10,
     paddingVertical: 5,
     gap: 4,
     borderWidth: 1,
-    borderColor: '#2A3547',
+    borderColor: Colors.border,
   },
-  streakText: { fontSize: 12, color: '#F4A426', fontWeight: '600' },
+  streakText: { fontSize: 12, color: Colors.purple, fontWeight: '600' },
 
-  sectionLabel: { fontSize: 14, fontWeight: '600', color: '#94A3B8', marginBottom: 12 },
+  sectionLabel:    { fontSize: 14, fontWeight: '600', color: Colors.textSecondary, marginBottom: 12 },
   painLabelInline: { fontSize: 14, fontWeight: '700' },
 
   painScale: {
@@ -251,19 +244,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginHorizontal: 2,
     borderWidth: 1.5,
-    borderColor: '#1F2A3D',
-    backgroundColor: '#0E1625',
+    borderColor: Colors.border,
+    backgroundColor: Colors.bgInput,
   },
-  painButtonText: { fontSize: 13, fontWeight: '600', color: '#4A5A72' },
+  painButtonText: { fontSize: 13, fontWeight: '600', color: Colors.textMuted },
 
   scaleLabels: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: 20,
   },
-  scaleLabel: { fontSize: 11, color: '#3A4B62' },
+  scaleLabel: { fontSize: 11, color: Colors.textMuted },
 
-  exerciseRow:       { flexDirection: 'row', gap: 10, marginBottom: 20 },
+  exerciseRow:    { flexDirection: 'row', gap: 10, marginBottom: 20 },
   exerciseBtn: {
     flex: 1,
     flexDirection: 'row',
@@ -272,43 +265,44 @@ const styles = StyleSheet.create({
     gap: 7,
     paddingVertical: 14,
     borderRadius: 12,
-    backgroundColor: '#0E1625',
+    backgroundColor: Colors.bgInput,
     borderWidth: 1.5,
-    borderColor: '#1F2A3D',
+    borderColor: Colors.border,
   },
-  exerciseBtnYes:     { backgroundColor: '#4CAF5022', borderColor: '#4CAF50' },
-  exerciseBtnNo:      { backgroundColor: '#EF444422', borderColor: '#EF4444' },
-  exerciseBtnText:    { fontSize: 14, fontWeight: '600', color: '#4A5A72' },
-  exerciseBtnTextYes: { color: '#0E1625' },
-  exerciseBtnTextNo:  { color: '#0E1625' },
+  exerciseBtnYes:     { backgroundColor: Colors.green + '18', borderColor: Colors.green },
+  exerciseBtnNo:      { backgroundColor: Colors.red + '18', borderColor: Colors.red },
+  exerciseBtnText:    { fontSize: 14, fontWeight: '600', color: Colors.textMuted },
+  exerciseBtnTextYes: { color: Colors.green },
+  exerciseBtnTextNo:  { color: Colors.red },
 
   submitButton: {
-    backgroundColor: '#5B8DFF',
-    borderRadius: 14,
+    backgroundColor: Colors.purple,
+    borderRadius: 16,
     paddingVertical: 15,
     alignItems: 'center',
+    ...Shadows.purple,
   },
-  submitButtonDisabled:     { backgroundColor: '#1F2A3D' },
-  submitButtonText:         { fontSize: 15, fontWeight: '700', color: '#0E1625' },
-  submitButtonTextDisabled: { color: '#3A4B62' },
+  submitButtonDisabled:     { backgroundColor: Colors.bgElevated, shadowOpacity: 0, borderWidth: 1, borderColor: Colors.border },
+  submitButtonText:         { fontSize: 15, fontWeight: '700', color: Colors.white },
+  submitButtonTextDisabled: { color: Colors.textMuted },
 
   // Logged state
   loggedRow: {
     flexDirection: 'row',
-    backgroundColor: '#0E1625',
+    backgroundColor: Colors.bgInput,
     borderRadius: 14,
     padding: 16,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#1F2A3D',
+    borderColor: Colors.border,
   },
   loggedStat:      { flex: 1, alignItems: 'center' },
   loggedValue:     { fontSize: 22, fontWeight: '700', marginBottom: 4 },
-  loggedStatLabel: { fontSize: 12, color: '#4A5A72' },
-  loggedDivider:   { width: 1, backgroundColor: '#1F2A3D', marginHorizontal: 8 },
+  loggedStatLabel: { fontSize: 12, color: Colors.textMuted },
+  loggedDivider:   { width: 1, backgroundColor: Colors.border, marginHorizontal: 8 },
 
   coachBox: {
-    backgroundColor: '#111E33',
+    backgroundColor: Colors.bgElevated,
     borderRadius: 14,
     padding: 16,
     flexDirection: 'row',
@@ -316,11 +310,11 @@ const styles = StyleSheet.create({
     gap: 12,
     marginBottom: 14,
     borderWidth: 1,
-    borderColor: '#1F3A5F',
+    borderColor: Colors.purpleDim,
   },
   coachEmoji: { fontSize: 24 },
-  coachMsg:   { fontSize: 14, color: '#94A3B8', lineHeight: 22, flex: 1 },
+  coachMsg:   { fontSize: 14, color: Colors.textSecondary, lineHeight: 22, flex: 1 },
 
   editButton:     { alignItems: 'center' },
-  editButtonText: { fontSize: 13, color: '#3A4B62', textDecorationLine: 'underline' },
+  editButtonText: { fontSize: 13, color: Colors.textMuted, textDecorationLine: 'underline' },
 });

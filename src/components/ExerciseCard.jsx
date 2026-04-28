@@ -1,58 +1,80 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
+import { Colors, Shadows } from '../constants/brand';
+import { useOnboarding } from '../context/OnboardingContext';
+import { selectExercises } from '../constants/exerciseLibrary';
 
-export default function ExerciseCard() {
-  const exercises = [
-    { name: 'Cat-Cow Stretch', duration: '5 min', icon: 'body-outline' },
-    { name: 'Child\'s Pose', duration: '3 min', icon: 'fitness-outline' },
-    { name: 'Pelvic Tilt', duration: '4 min', icon: 'barbell-outline' },
-  ];
+const PHASE_COLORS = {
+  Mobility:   Colors.purple,
+  Activation: Colors.green,
+  Stability:  Colors.amber,
+  Strength:   Colors.red,
+  Release:    Colors.purpleLight,
+};
+
+export default function ExerciseCard({ previewOnly, onUpgrade }) {
+  const navigation = useNavigation();
+  const { onboardingData } = useOnboarding();
+  const exercises = selectExercises(onboardingData).slice(0, 3);
 
   return (
     <View style={styles.card}>
       <View style={styles.cardHeader}>
         <Text style={styles.cardTitle}>Today's Exercises</Text>
-        <TouchableOpacity>
-          <Text style={styles.seeAllText}>See All</Text>
-        </TouchableOpacity>
+        <View style={styles.countBadge}>
+          <Text style={styles.countText}>{exercises.length} exercises</Text>
+        </View>
       </View>
-      
-      {exercises.map((exercise, index) => (
-        <TouchableOpacity key={index} style={styles.exerciseItem}>
-          <View style={styles.exerciseIconContainer}>
-            <Ionicons name={exercise.icon} size={22} color="#7CC7FF" />
-          </View>
-          <View style={styles.exerciseInfo}>
-            <Text style={styles.exerciseName}>{exercise.name}</Text>
-            <Text style={styles.exerciseDuration}>{exercise.duration}</Text>
-          </View>
-          <Ionicons name="chevron-forward-outline" size={20} color="#bdc3c7" />
-        </TouchableOpacity>
-      ))}
 
-      <TouchableOpacity style={styles.startButton}>
-        <Text style={styles.startButtonText}>Start Exercise Session</Text>
-        <Ionicons name="play-circle-outline" size={20} color="#ffffff" style={styles.startButtonIcon} />
-      </TouchableOpacity>
+      {exercises.map((exercise) => {
+        const phaseColor = PHASE_COLORS[exercise.phase] || Colors.purple;
+        return (
+          <View key={exercise.name} style={styles.exerciseItem}>
+            <View style={[styles.iconContainer, { backgroundColor: phaseColor + '22', borderColor: phaseColor + '40' }]}>
+              <Ionicons name={exercise.icon || 'body-outline'} size={20} color={phaseColor} />
+            </View>
+            <View style={styles.exerciseInfo}>
+              <Text style={styles.exerciseName}>{exercise.name}</Text>
+              <Text style={styles.exerciseMeta}>{exercise.reps || exercise.duration}</Text>
+            </View>
+            <View style={[styles.phaseBadge, { backgroundColor: phaseColor + '22', borderColor: phaseColor + '50' }]}>
+              <Text style={[styles.phaseText, { color: phaseColor }]}>{exercise.phase}</Text>
+            </View>
+          </View>
+        );
+      })}
+
+      {previewOnly ? (
+        <TouchableOpacity style={styles.upgradeButton} onPress={onUpgrade} activeOpacity={0.85}>
+          <Ionicons name="lock-closed" size={16} color={Colors.white} />
+          <Text style={styles.upgradeButtonText}>Unlock Full Plan</Text>
+        </TouchableOpacity>
+      ) : (
+        <TouchableOpacity
+          style={styles.startButton}
+          onPress={() => navigation.navigate('RecoverySession')}
+          activeOpacity={0.85}
+        >
+          <Ionicons name="play-circle-outline" size={20} color={Colors.white} />
+          <Text style={styles.startButtonText}>Start Recovery Session</Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#101B31',
+    backgroundColor: Colors.bgCard,
     marginHorizontal: 20,
     marginVertical: 10,
     borderRadius: 22,
     padding: 20,
     borderWidth: 1,
-    borderColor: '#263554',
-    shadowColor: '#02060E',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.26,
-    shadowRadius: 15,
-    elevation: 6,
+    borderColor: Colors.border,
+    ...Shadows.card,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -62,69 +84,94 @@ const styles = StyleSheet.create({
   },
   cardTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#E6EDFF',
+    fontWeight: '700',
+    color: Colors.textPrimary,
   },
-  seeAllText: {
-    fontSize: 14,
-    color: '#7CC7FF',
-    fontWeight: '600',
+  countBadge: {
+    backgroundColor: Colors.purpleDim,
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  countText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: Colors.purpleLight,
   },
   exerciseItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 10,
-    borderRadius: 14,
+    paddingVertical: 11,
     borderBottomWidth: 1,
-    borderBottomColor: '#1F2A3D',
+    borderBottomColor: Colors.borderSubtle,
+    gap: 12,
   },
-  exerciseIconContainer: {
+  iconContainer: {
     width: 40,
     height: 40,
-    borderRadius: 20,
-    backgroundColor: '#0B1220',
+    borderRadius: 14,
     borderWidth: 1,
-    borderColor: '#1F2A3D',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    flexShrink: 0,
   },
   exerciseInfo: {
     flex: 1,
+    gap: 3,
   },
   exerciseName: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600',
-    color: '#E6EDFF',
-    marginBottom: 2,
+    color: Colors.textPrimary,
   },
-  exerciseDuration: {
+  exerciseMeta: {
     fontSize: 12,
-    color: '#94A3B8',
+    color: Colors.textSecondary,
+  },
+  phaseBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 7,
+    borderWidth: 1,
+  },
+  phaseText: {
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 0.3,
   },
   startButton: {
     flexDirection: 'row',
-    backgroundColor: '#73A3FF',
+    backgroundColor: Colors.purple,
     borderRadius: 18,
     paddingVertical: 16,
     paddingHorizontal: 20,
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 16,
-    shadowColor: '#2C62CA',
-    shadowOffset: { width: 0, height: 9 },
-    shadowOpacity: 0.34,
-    shadowRadius: 14,
-    elevation: 8,
+    gap: 8,
+    ...Shadows.purple,
   },
   startButtonText: {
-    color: '#08152B',
+    color: Colors.white,
     fontSize: 16,
-    fontWeight: '800',
-    marginRight: 8,
+    fontWeight: '700',
   },
-  startButtonIcon: {
-    marginLeft: 4,
+  upgradeButton: {
+    flexDirection: 'row',
+    backgroundColor: Colors.purpleDim,
+    borderRadius: 18,
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 16,
+    gap: 8,
+    borderWidth: 1,
+    borderColor: Colors.purple + '60',
+  },
+  upgradeButtonText: {
+    color: Colors.purpleLight,
+    fontSize: 16,
+    fontWeight: '700',
   },
 });

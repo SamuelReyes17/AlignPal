@@ -14,7 +14,7 @@ export const OnboardingProvider = ({ children }) => {
   const [onboardingData, setOnboardingData] = useState({
     painLocations: [],
     painIntensity: 5,
-    painType: '',        // 'sharp' | 'dull' | 'burning' | 'stiff'
+    painTypes: [],       // multi-select: 'sharp' | 'dull' | 'burning' | 'stiff' | 'radiating' | 'numb' | 'cramping' | 'throbbing'
     painDuration: '',
     worstTimeTriggers: [],
     sittingHours: '',
@@ -37,7 +37,7 @@ export const OnboardingProvider = ({ children }) => {
     setOnboardingData({
       painLocations: [],
       painIntensity: 5,
-      painType: '',
+      painTypes: [],
       painDuration: '',
       worstTimeTriggers: [],
       sittingHours: '',
@@ -54,7 +54,7 @@ export const OnboardingProvider = ({ children }) => {
    * using the full onboardingData from context.
    */
   const generatePersonalizedPlan = () => {
-    const { painLocations, painIntensity, painDuration, worstTimeTriggers, sittingHours, painType } = onboardingData;
+    const { painLocations, painIntensity, painDuration, worstTimeTriggers, sittingHours, painTypes = [] } = onboardingData;
 
     let patterns = [];
 
@@ -70,7 +70,7 @@ export const OnboardingProvider = ({ children }) => {
     if (worstTimeTriggers?.includes('training')) {
       patterns.push('Training load or movement mechanics are stressing the affected area');
     }
-    if (painType === 'stiff') {
+    if (painTypes.includes('stiff') || painTypes.includes('cramping')) {
       patterns.push('Reduced joint mobility is limiting your movement and increasing compression');
     }
     if (painDuration === 'months' || painDuration === 'years') {

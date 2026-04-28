@@ -23,6 +23,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useOnboarding } from '../../context/OnboardingContext';
 import { useSubscription } from '../../context/SubscriptionContext';
 import { PRODUCT_IDS, PLAN_LABELS } from '../../services/purchases';
+import { Colors, Shadows } from '../../constants/brand';
 
 // Features shown in the paywall feature list
 const PREMIUM_FEATURES = [
@@ -144,7 +145,7 @@ export default function UpgradeScreen({ navigation }) {
         {/* Hero */}
         <View style={styles.hero}>
           <View style={styles.iconBadge}>
-            <Ionicons name="flash" size={32} color="#5B8DFF" />
+            <Ionicons name="flash" size={32} color={Colors.purple} />
           </View>
           <Text style={styles.heroTitle}>Unlock Full Recovery</Text>
           <Text style={styles.heroSubtitle}>
@@ -157,7 +158,7 @@ export default function UpgradeScreen({ navigation }) {
           {PREMIUM_FEATURES.map((f, i) => (
             <View key={i} style={styles.featureRow}>
               <View style={styles.featureIconWrap}>
-                <Ionicons name={f.icon} size={18} color="#5B8DFF" />
+                <Ionicons name={f.icon} size={18} color={Colors.purple} />
               </View>
               <Text style={styles.featureText}>{f.text}</Text>
             </View>
@@ -236,7 +237,7 @@ export default function UpgradeScreen({ navigation }) {
           disabled={isLoading}
         >
           {isLoading ? (
-            <ActivityIndicator color="#0E1625" />
+            <ActivityIndicator color={Colors.white} />
           ) : (
             <Text style={styles.ctaText}>
               {selectedProductId === PRODUCT_IDS.MONTHLY
@@ -279,7 +280,7 @@ export default function UpgradeScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0E1625',
+    backgroundColor: Colors.bg,
   },
   progressHeader: {
     paddingHorizontal: 20,
@@ -288,13 +289,13 @@ const styles = StyleSheet.create({
   },
   progressBar: {
     height: 3,
-    backgroundColor: '#1F2A3D',
+    backgroundColor: Colors.border,
     borderRadius: 2,
     overflow: 'hidden',
   },
   progressFill: {
     height: '100%',
-    backgroundColor: '#5B8DFF',
+    backgroundColor: Colors.purple,
     borderRadius: 2,
   },
   scrollView: {
@@ -315,21 +316,24 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 20,
-    backgroundColor: '#1F3A5F',
+    backgroundColor: Colors.bgElevated,
+    borderWidth: 1,
+    borderColor: Colors.border,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 16,
+    ...Shadows.purpleSoft,
   },
   heroTitle: {
     fontSize: 26,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: Colors.textPrimary,
     textAlign: 'center',
     marginBottom: 8,
   },
   heroSubtitle: {
     fontSize: 15,
-    color: '#7F8FA9',
+    color: Colors.textSecondary,
     textAlign: 'center',
     lineHeight: 22,
     paddingHorizontal: 8,
@@ -337,11 +341,13 @@ const styles = StyleSheet.create({
 
   // Feature list
   featureList: {
-    backgroundColor: '#1A2335',
+    backgroundColor: Colors.bgCard,
     borderRadius: 16,
     padding: 16,
     gap: 10,
     marginBottom: 24,
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
   featureRow: {
     flexDirection: 'row',
@@ -352,13 +358,13 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 10,
-    backgroundColor: '#1F3A5F',
+    backgroundColor: Colors.bgElevated,
     justifyContent: 'center',
     alignItems: 'center',
   },
   featureText: {
     fontSize: 14,
-    color: '#B8C5D6',
+    color: Colors.textSecondary,
     flex: 1,
   },
 
@@ -368,19 +374,19 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   planCard: {
-    backgroundColor: '#1A2335',
-    borderRadius: 14,
+    backgroundColor: Colors.bgCard,
+    borderRadius: 16,
     padding: 16,
     borderWidth: 1.5,
-    borderColor: '#2A3547',
+    borderColor: Colors.border,
   },
   planCardSelected: {
-    borderColor: '#5B8DFF',
-    backgroundColor: '#1C2B45',
+    borderColor: Colors.purple,
+    backgroundColor: Colors.bgElevated,
   },
   planBadge: {
     alignSelf: 'flex-start',
-    backgroundColor: '#5B8DFF',
+    backgroundColor: Colors.purple,
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 6,
@@ -389,7 +395,7 @@ const styles = StyleSheet.create({
   planBadgeText: {
     fontSize: 10,
     fontWeight: '700',
-    color: '#0E1625',
+    color: Colors.white,
     letterSpacing: 0.5,
   },
   planRow: {
@@ -402,18 +408,18 @@ const styles = StyleSheet.create({
     height: 20,
     borderRadius: 10,
     borderWidth: 2,
-    borderColor: '#3A4B62',
+    borderColor: Colors.border,
     justifyContent: 'center',
     alignItems: 'center',
   },
   radioSelected: {
-    borderColor: '#5B8DFF',
+    borderColor: Colors.purple,
   },
   radioDot: {
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: '#5B8DFF',
+    backgroundColor: Colors.purple,
   },
   planMeta: {
     flex: 1,
@@ -421,20 +427,20 @@ const styles = StyleSheet.create({
   planTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#7F8FA9',
+    color: Colors.textSecondary,
     marginBottom: 2,
   },
   planTitleSelected: {
-    color: '#FFFFFF',
+    color: Colors.textPrimary,
   },
   planTrial: {
     fontSize: 12,
-    color: '#5B8DFF',
+    color: Colors.purpleLight,
     fontWeight: '500',
   },
   planSavings: {
     fontSize: 12,
-    color: '#4CAF50',
+    color: Colors.green,
     fontWeight: '500',
   },
   planPriceWrap: {
@@ -443,20 +449,20 @@ const styles = StyleSheet.create({
   planPrice: {
     fontSize: 17,
     fontWeight: '700',
-    color: '#7F8FA9',
+    color: Colors.textSecondary,
   },
   planPriceSelected: {
-    color: '#FFFFFF',
+    color: Colors.textPrimary,
   },
   planPeriod: {
     fontSize: 11,
-    color: '#4A5A72',
+    color: Colors.textMuted,
     marginTop: 1,
   },
 
   guarantee: {
     fontSize: 12,
-    color: '#4A5A72',
+    color: Colors.textMuted,
     textAlign: 'center',
     lineHeight: 18,
     marginTop: 4,
@@ -469,14 +475,15 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
     paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: '#1A2335',
+    borderTopColor: Colors.borderSubtle,
   },
   ctaButton: {
-    backgroundColor: '#5B8DFF',
-    borderRadius: 14,
-    paddingVertical: 17,
+    backgroundColor: Colors.purple,
+    borderRadius: 20,
+    paddingVertical: 18,
     alignItems: 'center',
     marginBottom: 14,
+    ...Shadows.purple,
   },
   ctaButtonDisabled: {
     opacity: 0.6,
@@ -484,7 +491,7 @@ const styles = StyleSheet.create({
   ctaText: {
     fontSize: 17,
     fontWeight: '700',
-    color: '#0E1625',
+    color: Colors.white,
     letterSpacing: 0.2,
   },
   secondaryRow: {
@@ -496,19 +503,19 @@ const styles = StyleSheet.create({
   },
   skipText: {
     fontSize: 13,
-    color: '#5B8DFF',
+    color: Colors.purpleLight,
   },
   dot: {
     fontSize: 13,
-    color: '#3A4B62',
+    color: Colors.textMuted,
   },
   restoreText: {
     fontSize: 13,
-    color: '#5B8DFF',
+    color: Colors.purpleLight,
   },
   legalText: {
     fontSize: 10,
-    color: '#3A4B62',
+    color: Colors.textMuted,
     textAlign: 'center',
     lineHeight: 15,
   },
@@ -518,7 +525,7 @@ const styles = StyleSheet.create({
   },
   paywallLinkText: {
     fontSize: 12,
-    color: '#7F8FA9',
+    color: Colors.textSecondary,
     textDecorationLine: 'underline',
   },
 });
