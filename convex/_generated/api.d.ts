@@ -8,13 +8,29 @@
  * @module
  */
 
+import type * as checkIns from "../checkIns.js";
+import type * as email from "../email.js";
+import type * as http from "../http.js";
+import type * as leads from "../leads.js";
+import type * as sessions from "../sessions.js";
+import type * as stats from "../stats.js";
+import type * as users from "../users.js";
+
 import type {
   ApiFromModules,
   FilterApi,
   FunctionReference,
 } from "convex/server";
 
-declare const fullApi: ApiFromModules<{}>;
+declare const fullApi: ApiFromModules<{
+  checkIns: typeof checkIns;
+  email: typeof email;
+  http: typeof http;
+  leads: typeof leads;
+  sessions: typeof sessions;
+  stats: typeof stats;
+  users: typeof users;
+}>;
 
 /**
  * A utility for referencing Convex functions in your app's public API.

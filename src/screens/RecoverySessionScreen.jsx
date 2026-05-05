@@ -1,26 +1,19 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity,
-  ScrollView, Dimensions, Modal, PanResponder, Animated,
+  ScrollView, Modal, PanResponder, Animated,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useMutation } from 'convex/react';
+import { api } from '../../convex/_generated/api';
 import { useOnboarding } from '../context/OnboardingContext';
 import { selectExercises } from '../constants/exerciseLibrary';
-import { Colors, Shadows } from '../constants/brand';
+import { Colors, Shadows, Accents, Gradients, Radius, Spacing, Surfaces, PhasePalette, getPhaseMeta } from '../constants/brand';
 import ExerciseAnimation from '../components/ExerciseAnimation';
-
-const { width: SCREEN_W } = Dimensions.get('window');
+import { useResponsive, fs, sp } from '../utils/responsive';
 
 // ─── Phase theme ──────────────────────────────────────────────────────────────
-const PHASE = {
-  Mobility:   { color: '#7C5CF0', bg: '#7C5CF018', label: 'Mobility',   icon: 'sync-outline' },
-  Activation: { color: '#34D399', bg: '#34D39918', label: 'Activation', icon: 'flash-outline' },
-  Stability:  { color: '#FBBF24', bg: '#FBBF2418', label: 'Stability',  icon: 'shield-outline' },
-  Strength:   { color: '#FF6B9D', bg: '#FF6B9D18', label: 'Strength',   icon: 'barbell-outline' },
-  Release:    { color: '#C4B8FF', bg: '#C4B8FF18', label: 'Release',    icon: 'leaf-outline' },
-};
-const getPhase = (name) => PHASE[name] || PHASE.Mobility;
 
 function formatTime(sec) {
   const m = Math.floor(sec / 60);
@@ -60,17 +53,20 @@ function parseExercise(ex) {
 }
 
 // ─── Done screen ──────────────────────────────────────────────────────────────
-function DoneScreen({ exercises, onContinue }) {
+function DoneScreen({ exercises, onContinue, isOnboarding }) {
+  const { isSmall, isTablet, horizPad, fontScale, gapScale, width } = useResponsive();
+  const frameWidth = Math.min(width - horizPad * 2, 560);
   const totalMin  = exercises.reduce((sum, e) => sum + (parseInt(e.duration) || 2), 0);
   const totalSets = exercises.reduce((sum, e) => sum + (parseExercise(e).sets || 1), 0);
   return (
     <SafeAreaView style={done.container} edges={['top', 'bottom']}>
-      <View style={done.content}>
+      <View style={[done.content, { paddingHorizontal: horizPad }]}>
+        <View style={[done.frame, { maxWidth: frameWidth }]}>
         <View style={done.ring}>
           <Text style={done.emoji}>🎉</Text>
         </View>
-        <Text style={done.title}>Session Complete!</Text>
-        <Text style={done.subtitle}>Outstanding. Consistency is the only variable that heals.</Text>
+        <Text style={[done.title, { fontSize: fs(30, fontScale) }]}>Session Complete!</Text>
+        <Text style={[done.subtitle, { fontSize: fs(15, fontScale) }]}>Outstanding. Consistency is the only variable that heals.</Text>
         <View style={done.grid}>
           {[
             { icon: 'barbell-outline', color: Colors.purple,  value: String(exercises.length), label: 'Exercises' },
@@ -88,9 +84,10 @@ function DoneScreen({ exercises, onContinue }) {
           ))}
         </View>
         <TouchableOpacity style={done.btn} onPress={onContinue} activeOpacity={0.85}>
-          <Text style={done.btnText}>Continue</Text>
-          <Ionicons name="arrow-forward" size={18} color="#fff" />
+          <Ionicons name={isOnboarding ? 'home-outline' : 'arrow-forward'} size={18} color={Colors.white} />
+          <Text style={[done.btnText, { fontSize: fs(17, fontScale) }]}>{isOnboarding ? 'Enter Dashboard' : 'Continue'}</Text>
         </TouchableOpacity>
+        </View>
       </View>
     </SafeAreaView>
   );
@@ -98,7 +95,8 @@ function DoneScreen({ exercises, onContinue }) {
 
 const done = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.bg },
-  content:   { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 28 },
+  content:   { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  frame:     { width: '100%', alignItems: 'center' },
   ring:      { width: 96, height: 96, borderRadius: 48, backgroundColor: Colors.purpleDim, alignItems: 'center', justifyContent: 'center', marginBottom: 20, borderWidth: 2, borderColor: Colors.purple + '40' },
   emoji:     { fontSize: 48 },
   title:     { fontSize: 30, fontWeight: '800', color: Colors.textPrimary, marginBottom: 10, letterSpacing: -0.5 },
@@ -108,13 +106,11 @@ const done = StyleSheet.create({
   icon:      { width: 40, height: 40, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
   val:       { fontSize: 24, fontWeight: '800', letterSpacing: -0.5 },
   lbl:       { fontSize: 11, color: Colors.textMuted, fontWeight: '600' },
-  btn:       { width: '100%', backgroundColor: Colors.purple, borderRadius: 20, paddingVertical: 18, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, ...Shadows.purple },
-  btnText:   { fontSize: 17, fontWeight: '700', color: '#fff' },
+  btn:       { width: '100%', backgroundColor: Colors.purple, borderRadius: Radius.lg, paddingVertical: 18, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, ...Shadows.purple },
+  btnText:   { fontSize: 17, fontWeight: '700', color: Colors.white },
 });
 
 // ─── Draggable exercise list (panel) ─────────────────────────────────────────
-const ROW_H = 80; // estimated row height for drag slot calculation
-
 function computeDisplayOrder(exercises, from, to) {
   if (from === null || to === null || from === to) {
     return exercises.map((e, i) => ({ exercise: e, idx: i }));
@@ -128,9 +124,12 @@ function computeDisplayOrder(exercises, from, to) {
 function DraggableList({ exercises, exerciseIdx, editMode, onReorder, onJump }) {
   const [draggingFrom, setDraggingFrom] = useState(null);
   const [draggingTo,   setDraggingTo]   = useState(null);
-  const fromRef   = useRef(null);
-  const toRef     = useRef(null);
-  const dragAnimY = useRef(new Animated.Value(0)).current;
+  const fromRef     = useRef(null);
+  const toRef       = useRef(null);
+  const dragAnimY   = useRef(new Animated.Value(0)).current;
+  // Measured row height — falls back to 80 until first row reports its layout.
+  // All rows share the same template so a single measurement is enough.
+  const rowHeightRef = useRef(80);
   // Keep refs in sync for PanResponder closures
   const exRef     = useRef(exercises);
   const eIdxRef   = useRef(exerciseIdx);
@@ -169,7 +168,7 @@ function DraggableList({ exercises, exerciseIdx, editMode, onReorder, onJump }) 
         const minIdx = eIdxRef.current + 1;
         const maxIdx = exRef.current.length - 1;
         const newTo  = Math.max(minIdx, Math.min(maxIdx,
-          itemIdx + Math.round(g.dy / ROW_H)));
+          itemIdx + Math.round(g.dy / rowHeightRef.current)));
         if (newTo !== toRef.current) {
           toRef.current = newTo;
           setDraggingTo(newTo);
@@ -190,7 +189,7 @@ function DraggableList({ exercises, exerciseIdx, editMode, onReorder, onJump }) 
       scrollEnabled={!isDragging}
     >
       {displayOrder.map(({ exercise, idx: currentIdx }) => {
-        const exPhase      = getPhase(exercise.phase);
+        const exPhase      = getPhaseMeta(exercise.phase);
         const isDone       = currentIdx < exerciseIdx;
         const isActive     = currentIdx === exerciseIdx;
         const isDraggingThis = currentIdx === draggingFrom && isDragging;
@@ -200,6 +199,9 @@ function DraggableList({ exercises, exerciseIdx, editMode, onReorder, onJump }) 
         return (
           <Animated.View
             key={`${exercise.name}-${currentIdx}`}
+            onLayout={currentIdx === 0
+              ? (e) => { rowHeightRef.current = e.nativeEvent.layout.height; }
+              : undefined}
             style={[
               isDraggingThis && {
                 transform: [{ translateY: dragAnimY }],
@@ -225,8 +227,8 @@ function DraggableList({ exercises, exerciseIdx, editMode, onReorder, onJump }) 
                 isActive && { backgroundColor: exPhase.color, borderColor: exPhase.color },
               ]}>
                 {isDone
-                  ? <Ionicons name="checkmark" size={12} color="#fff" />
-                  : <Text style={[p.numText, isActive && { color: '#fff' }]}>{currentIdx + 1}</Text>
+                  ? <Ionicons name="checkmark" size={12} color={Colors.white} />
+                  : <Text style={[p.numText, isActive && { color: Colors.white }]}>{currentIdx + 1}</Text>
                 }
               </View>
 
@@ -291,8 +293,31 @@ const p = StyleSheet.create({
 
 // ─── Main session screen ──────────────────────────────────────────────────────
 export default function RecoverySessionScreen({ navigation }) {
-  const { onboardingData } = useOnboarding();
+  const { onboardingData, isOnboardingComplete, completeOnboarding, installId } = useOnboarding();
+  const recordSession = useMutation(api.sessions.recordSession);
+  const sessionStartRef = useRef(Date.now());
   const [exercises,     setExercises]     = useState(() => selectExercises(onboardingData));
+  const { isSmall, isTablet, horizPad, fontScale, gapScale, width } = useResponsive();
+  const frameWidth = Math.min(width - horizPad * 2, 640);
+  const animSize = isSmall ? 130 : isTablet ? 200 : 160;
+  const sidePad = Math.max(12, horizPad - 4);
+
+  const dyn = {
+    frame:        { maxWidth: frameWidth, alignSelf: 'center', width: '100%' },
+    header:       { paddingHorizontal: sidePad },
+    progressTrack:{ marginHorizontal: sidePad },
+    visualCard:   { marginHorizontal: sidePad },
+    nameSection:  { paddingHorizontal: horizPad },
+    exerciseName: { fontSize: fs(26, fontScale) },
+    setsSection:  { paddingHorizontal: sidePad },
+    howToSection: { paddingHorizontal: sidePad },
+    whyCard:      { marginHorizontal: sidePad },
+    footer:       { paddingHorizontal: sidePad },
+    restOverlay:  { paddingHorizontal: sidePad },
+    panel:        { maxWidth: isTablet ? 640 : '100%', alignSelf: 'center', width: '100%' },
+    nextBtnText:  { fontSize: fs(17, fontScale) },
+    headerTitle:  { fontSize: fs(15, fontScale) },
+  };
 
   const [exerciseIdx,   setExerciseIdx]   = useState(0);
   const [setsCompleted, setSetsCompleted] = useState(0);
@@ -317,7 +342,7 @@ export default function RecoverySessionScreen({ navigation }) {
 
   const ex    = exercises[exerciseIdx];
   const p2    = ex ? parseExercise(ex) : null;
-  const phase = ex ? getPhase(ex.phase) : PHASE.Mobility;
+  const phase = ex ? getPhaseMeta(ex.phase) : PhasePalette.Mobility;
 
   const currentSetIdx  = setsCompleted;
   const allSetsDone    = p2 ? setsCompleted >= p2.sets : false;
@@ -384,7 +409,7 @@ export default function RecoverySessionScreen({ navigation }) {
     const newCompleted = setsCompleted + 1;
     setSetsCompleted(newCompleted);
     if (newCompleted >= p2.sets) {
-      if (isLastExercise) { setSessionDone(true); }
+      if (isLastExercise) { finishSession(); }
       else { startRest(60, 'exercise'); }
     } else {
       startRest(30, 'set');
@@ -405,6 +430,20 @@ export default function RecoverySessionScreen({ navigation }) {
     });
   }
 
+  function finishSession() {
+    setSessionDone(true);
+    if (installId) {
+      const durationMinutes = Math.max(1, Math.round((Date.now() - sessionStartRef.current) / 60000));
+      recordSession({
+        installId,
+        date: new Date().toISOString().slice(0, 10),
+        exerciseNames: exercises.map((e) => e.name),
+        durationMinutes,
+        completed: true,
+      }).catch((e) => console.error('[RecoverySessionScreen] Failed to record session:', e));
+    }
+  }
+
   function jumpToExercise(i) {
     clearInterval(restRef.current);
     clearInterval(timerRef.current);
@@ -418,7 +457,19 @@ export default function RecoverySessionScreen({ navigation }) {
   }
 
   if (sessionDone) {
-    return <DoneScreen exercises={exercises} onContinue={() => navigation.goBack()} />;
+    return (
+      <DoneScreen
+        exercises={exercises}
+        isOnboarding={!isOnboardingComplete}
+        onContinue={() => {
+          if (!isOnboardingComplete) {
+            completeOnboarding();
+          } else {
+            navigation.goBack();
+          }
+        }}
+      />
+    );
   }
 
   if (!ex || !p2) return null;
@@ -430,12 +481,12 @@ export default function RecoverySessionScreen({ navigation }) {
     <SafeAreaView style={s.container} edges={['top', 'bottom']}>
 
       {/* Header */}
-      <View style={s.header}>
+      <View style={[s.header, dyn.header]}>
         <TouchableOpacity style={s.iconBtn} onPress={() => navigation.goBack()}>
           <Ionicons name="close" size={20} color={Colors.textSecondary} />
         </TouchableOpacity>
         <View style={s.headerCenter}>
-          <Text style={s.headerTitle} numberOfLines={1}>{ex.name}</Text>
+          <Text style={[s.headerTitle, dyn.headerTitle]} numberOfLines={1}>{ex.name}</Text>
           <Text style={s.headerSub}>Exercise {exerciseIdx + 1} of {exercises.length}</Text>
         </View>
         <TouchableOpacity style={s.iconBtn} onPress={() => setUpcomingOpen(true)} activeOpacity={0.75}>
@@ -444,16 +495,17 @@ export default function RecoverySessionScreen({ navigation }) {
       </View>
 
       {/* Progress bar */}
-      <View style={s.progressTrack}>
+      <View style={[s.progressTrack, dyn.progressTrack]}>
         <View style={[s.progressFill, { width: `${rawProgress * 100}%`, backgroundColor: phase.color }]} />
       </View>
 
       {/* Scrollable body */}
       <ScrollView style={s.scroll} contentContainerStyle={s.scrollContent} showsVerticalScrollIndicator={false}>
+        <View style={[s.frame, dyn.frame]}>
 
         {/* Exercise visual — animated humanoid */}
-        <View style={[s.visualCard, { backgroundColor: phase.bg }]}>
-          <ExerciseAnimation exercise={ex} color={phase.color} size={160} />
+        <View style={[s.visualCard, dyn.visualCard, { backgroundColor: phase.bg }]}>
+          <ExerciseAnimation exercise={ex} color={phase.color} size={animSize} />
           <View style={[s.phasePill, { backgroundColor: phase.color + '22', borderColor: phase.color + '60' }]}>
             <Ionicons name={phase.icon} size={11} color={phase.color} />
             <Text style={[s.phasePillText, { color: phase.color }]}>{phase.label}</Text>
@@ -462,8 +514,8 @@ export default function RecoverySessionScreen({ navigation }) {
         </View>
 
         {/* Name + meta */}
-        <View style={s.nameSection}>
-          <Text style={s.exerciseName}>{ex.name}</Text>
+        <View style={[s.nameSection, dyn.nameSection]}>
+          <Text style={[s.exerciseName, dyn.exerciseName]}>{ex.name}</Text>
           <View style={s.metaRow}>
             <View style={s.metaChip}>
               <Ionicons name="time-outline" size={13} color={Colors.textMuted} />
@@ -483,7 +535,7 @@ export default function RecoverySessionScreen({ navigation }) {
         </View>
 
         {/* Sets */}
-        <View style={s.setsSection}>
+        <View style={[s.setsSection, dyn.setsSection]}>
           <Text style={s.setsSectionLabel}>SETS</Text>
           {Array.from({ length: p2.sets }).map((_, i) => {
             const isDone    = i < setsCompleted;
@@ -505,8 +557,8 @@ export default function RecoverySessionScreen({ navigation }) {
                   isTodo    && { backgroundColor: Colors.bgElevated, borderColor: Colors.border },
                 ]}>
                   {isDone
-                    ? <Ionicons name="checkmark" size={14} color="#fff" />
-                    : <Text style={[s.setNumText, isCurrent && { color: '#fff' }, isTodo && { color: Colors.textDisabled }]}>
+                    ? <Ionicons name="checkmark" size={14} color={Colors.white} />
+                    : <Text style={[s.setNumText, isCurrent && { color: Colors.white }, isTodo && { color: Colors.textDisabled }]}>
                         {i + 1}
                       </Text>
                   }
@@ -548,7 +600,7 @@ export default function RecoverySessionScreen({ navigation }) {
                                 : () => setSetTimer(t => ({ ...t, running: true }))
                           }
                         >
-                          <Ionicons name={setTimer.sec === 0 ? 'checkmark' : setTimer.running ? 'pause' : 'play'} size={14} color="#fff" />
+                          <Ionicons name={setTimer.sec === 0 ? 'checkmark' : setTimer.running ? 'pause' : 'play'} size={14} color={Colors.white} />
                         </TouchableOpacity>
                       </View>
                     )}
@@ -561,7 +613,7 @@ export default function RecoverySessionScreen({ navigation }) {
         </View>
 
         {/* How to */}
-        <View style={s.howToSection}>
+        <View style={[s.howToSection, dyn.howToSection]}>
           <TouchableOpacity style={s.howToHeader} onPress={() => setHowToOpen(v => !v)} activeOpacity={0.75}>
             <View style={s.howToLeft}>
               <Ionicons name="information-circle-outline" size={16} color={Colors.purple} />
@@ -578,60 +630,63 @@ export default function RecoverySessionScreen({ navigation }) {
 
         {/* Why */}
         {ex.why && (
-          <View style={s.whyCard}>
+          <View style={[s.whyCard, dyn.whyCard]}>
             <Ionicons name="bulb-outline" size={15} color={Colors.amber} style={{ marginTop: 1 }} />
             <Text style={s.whyText}>{ex.why}</Text>
           </View>
         )}
 
         <View style={{ height: 140 }} />
+        </View>
       </ScrollView>
 
       {/* Persistent action footer — always visible */}
       {!resting && (
-        <View style={s.footer}>
+        <View style={[s.footer, dyn.footer]}>
+          <View style={dyn.frame}>
           {!allSetsDone ? (
             p2.isTimed ? (
               !setTimer ? (
                 <TouchableOpacity style={[s.nextBtn, { backgroundColor: phase.color }]} onPress={startSetTimer} activeOpacity={0.85}>
-                  <Ionicons name="timer-outline" size={20} color="#fff" />
-                  <Text style={s.nextBtnText}>Start Timer · Set {currentSetIdx + 1} of {p2.sets}</Text>
+                  <Ionicons name="timer-outline" size={20} color={Colors.white} />
+                  <Text style={[s.nextBtnText, dyn.nextBtnText]}>Start Timer · Set {currentSetIdx + 1} of {p2.sets}</Text>
                 </TouchableOpacity>
               ) : setTimer.sec === 0 ? (
                 <TouchableOpacity style={[s.nextBtn, { backgroundColor: Colors.green }]} onPress={() => completeSet(currentSetIdx)} activeOpacity={0.85}>
-                  <Ionicons name="checkmark-circle" size={20} color="#fff" />
-                  <Text style={s.nextBtnText}>Done · Set {currentSetIdx + 1} of {p2.sets}</Text>
+                  <Ionicons name="checkmark-circle" size={20} color={Colors.white} />
+                  <Text style={[s.nextBtnText, dyn.nextBtnText]}>Done · Set {currentSetIdx + 1} of {p2.sets}</Text>
                 </TouchableOpacity>
               ) : (
                 <View style={[s.nextBtn, { backgroundColor: phase.color + '28', borderWidth: 1.5, borderColor: phase.color + '60' }]}>
                   <Ionicons name="timer-outline" size={18} color={phase.color} />
-                  <Text style={[s.nextBtnText, { color: phase.color }]}>{formatTime(setTimer.sec)} · Set {currentSetIdx + 1}</Text>
+                  <Text style={[s.nextBtnText, dyn.nextBtnText, { color: phase.color }]}>{formatTime(setTimer.sec)} · Set {currentSetIdx + 1}</Text>
                 </View>
               )
             ) : (
               <TouchableOpacity style={[s.nextBtn, { backgroundColor: phase.color }]} onPress={() => completeSet(currentSetIdx)} activeOpacity={0.85}>
-                <Ionicons name="checkmark" size={20} color="#fff" />
-                <Text style={s.nextBtnText}>Done · Set {currentSetIdx + 1} of {p2.sets}</Text>
+                <Ionicons name="checkmark" size={20} color={Colors.white} />
+                <Text style={[s.nextBtnText, dyn.nextBtnText]}>Done · Set {currentSetIdx + 1} of {p2.sets}</Text>
               </TouchableOpacity>
             )
           ) : isLastExercise ? (
-            <TouchableOpacity style={[s.nextBtn, { backgroundColor: Colors.green }]} onPress={() => setSessionDone(true)} activeOpacity={0.85}>
-              <Ionicons name="star" size={20} color="#fff" />
-              <Text style={s.nextBtnText}>Complete Session</Text>
+            <TouchableOpacity style={[s.nextBtn, { backgroundColor: Colors.green }]} onPress={finishSession} activeOpacity={0.85}>
+              <Ionicons name="star" size={20} color={Colors.white} />
+              <Text style={[s.nextBtnText, dyn.nextBtnText]}>Complete Session</Text>
             </TouchableOpacity>
           ) : (
             <TouchableOpacity style={[s.nextBtn, { backgroundColor: phase.color }]} onPress={() => startRest(60, 'exercise')} activeOpacity={0.85}>
-              <Text style={s.nextBtnText}>Next Exercise</Text>
-              <Ionicons name="arrow-forward" size={18} color="#fff" />
+              <Text style={[s.nextBtnText, dyn.nextBtnText]}>Next Exercise</Text>
+              <Ionicons name="arrow-forward" size={18} color={Colors.white} />
             </TouchableOpacity>
           )}
+          </View>
         </View>
       )}
 
       {/* Rest overlay */}
       {resting && (
-        <View style={s.restOverlay}>
-          <View style={s.restCard}>
+        <View style={[s.restOverlay, dyn.restOverlay]}>
+          <View style={[s.restCard, dyn.frame]}>
             <View style={s.restTopRow}>
               <View style={s.restBadge}>
                 <Ionicons name="leaf-outline" size={12} color={Colors.green} />
@@ -673,7 +728,7 @@ export default function RecoverySessionScreen({ navigation }) {
           activeOpacity={1}
           onPress={() => { if (!editMode) { setUpcomingOpen(false); setEditMode(false); } }}
         >
-          <View style={s.panel} onStartShouldSetResponder={() => true}>
+          <View style={[s.panel, dyn.panel]} onStartShouldSetResponder={() => true}>
             <View style={s.panelHandle} />
 
             <View style={s.panelHeader}>
@@ -727,10 +782,11 @@ const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.bg },
   scroll:    { flex: 1 },
   scrollContent: { paddingBottom: 0 },
+  frame:     { width: '100%', alignSelf: 'center' },
 
   // Header
   header:       { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 16, paddingTop: 8, paddingBottom: 10 },
-  iconBtn:      { width: 38, height: 38, borderRadius: 19, backgroundColor: Colors.bgCard, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: Colors.border },
+  iconBtn:      { width: 44, height: 44, borderRadius: 22, backgroundColor: Colors.bgCard, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: Colors.border },
   headerCenter: { flex: 1, alignItems: 'center' },
   headerTitle:  { fontSize: 15, fontWeight: '700', color: Colors.textPrimary, letterSpacing: -0.2 },
   headerSub:    { fontSize: 11, color: Colors.textMuted, fontWeight: '600', marginTop: 1 },
@@ -786,8 +842,8 @@ const s = StyleSheet.create({
 
   // Footer
   footer:      { paddingHorizontal: 16, paddingBottom: 20, paddingTop: 8 },
-  nextBtn:     { borderRadius: 20, paddingVertical: 18, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 },
-  nextBtnText: { fontSize: 17, fontWeight: '700', color: '#fff' },
+  nextBtn:     { borderRadius: Radius.lg, paddingVertical: 18, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 },
+  nextBtnText: { fontSize: 17, fontWeight: '700', color: Colors.white },
 
   // Rest overlay
   restOverlay: { position: 'absolute', bottom: 0, left: 0, right: 0, paddingHorizontal: 16, paddingBottom: 20, paddingTop: 8 },

@@ -1,10 +1,13 @@
 import React from 'react';
 import { ScrollView, View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { Colors, Shadows } from '../constants/brand';
+import { Colors, Shadows, Accents, Gradients, Radius, Spacing, Surfaces, PainTypePalette } from '../constants/brand';
 import { useOnboarding } from '../context/OnboardingContext';
 import { useSubscription } from '../context/SubscriptionContext';
+import GradientCard from '../components/GradientCard';
+import ScreenFrame from '../components/ScreenFrame';
+import { useResponsive, fs, sp } from '../utils/responsive';
 
 const LOCATION_LABELS = {
   lower_back: 'Lower Back', upper_back: 'Upper Back', neck: 'Neck',
@@ -16,16 +19,6 @@ const LOCATION_LABELS = {
   left_knee: 'Left Knee', right_knee: 'Right Knee',
 };
 
-const PAIN_TYPE_META = {
-  sharp:     { label: 'Sharp',     color: '#FF6B9D', icon: 'flash' },
-  dull:      { label: 'Dull',      color: '#FBBF24', icon: 'remove-circle' },
-  burning:   { label: 'Burning',   color: '#FB923C', icon: 'flame' },
-  stiff:     { label: 'Stiff',     color: '#818CF8', icon: 'lock-closed' },
-  radiating: { label: 'Radiating', color: '#7C5CF0', icon: 'git-merge' },
-  numb:      { label: 'Numbness',  color: '#34D399', icon: 'hand-left' },
-  cramping:  { label: 'Cramping',  color: '#60A5FA', icon: 'contract' },
-  throbbing: { label: 'Throbbing', color: '#F472B6', icon: 'pulse' },
-};
 
 const getPainColor = (level) => {
   if (level <= 3) return Colors.green;
@@ -58,6 +51,9 @@ function SettingRow({ icon, label, sub, onPress, danger, rightEl }) {
 export default function ProfileScreen() {
   const { onboardingData, resetOnboarding } = useOnboarding();
   const { isPremium, presentCustomerCenter } = useSubscription();
+  const insets = useSafeAreaInsets();
+  const { isSmall, isTablet, horizPad, fontScale, gapScale, width } = useResponsive();
+  const frameWidth = Math.min(width - horizPad * 2, 640);
 
   const {
     painLocations = [], painIntensity = 5, painTypes = [],
@@ -65,6 +61,19 @@ export default function ProfileScreen() {
   } = onboardingData;
 
   const painColor = getPainColor(painIntensity);
+
+  const dyn = {
+    frame:        { width: '100%', alignSelf: 'center', maxWidth: 640, paddingHorizontal: horizPad, paddingTop: sp(12, gapScale) },
+    heroWrap:     { paddingBottom: sp(12, gapScale) }, // full-bleed: no horizontal padding
+    heroTitle:    { fontSize: fs(30, fontScale) },
+    heroEyebrow:  { fontSize: fs(12, fontScale) },
+    cardWrap:     { marginHorizontal: horizPad },
+    sectionWrap:  { paddingHorizontal: horizPad },
+    sectionTitle: { fontSize: fs(15, fontScale) },
+    subTitle:     { fontSize: fs(15, fontScale) },
+    settingLabel: { fontSize: fs(14, fontScale) },
+    settingSub:   { fontSize: fs(12, fontScale) },
+  };
 
   function handleReset() {
     Alert.alert(
@@ -78,24 +87,44 @@ export default function ProfileScreen() {
   }
 
   return (
-    <SafeAreaView style={st.container} edges={['top']}>
+    <SafeAreaView style={st.container} edges={[]}>
+     <ScreenFrame>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={st.content}>
-        {/* Header */}
-        <View style={st.header}>
-          <View>
-            <Text style={st.eyebrow}>Your</Text>
-            <Text style={st.title}>Profile</Text>
-          </View>
-          <View style={[st.planBadge, isPremium && { backgroundColor: Colors.amber + '22', borderColor: Colors.amber + '60' }]}>
-            <Ionicons name={isPremium ? 'star' : 'person'} size={13} color={isPremium ? Colors.amber : Colors.textMuted} />
-            <Text style={[st.planText, isPremium && { color: Colors.amber }]}>
-              {isPremium ? 'Pro' : 'Free'}
-            </Text>
-          </View>
+        <View style={[st.frame, dyn.frame]}>
+        {/* ═══ Full-bleed gradient hero header ═══════════════════════════════ */}
+        <View style={dyn.heroWrap}>
+          <GradientCard
+            colors={Gradients.purpleHero}
+            radius={Radius.hero}
+            corners="bottom"
+            blobs={[
+              { x: '88%', y: '20%', r: 80, color: Colors.white, opacity: 0.10 },
+              { x: '12%', y: '90%', r: 50, color: Colors.white, opacity: 0.06 },
+            ]}
+            style={[Shadows.purpleSoft, { paddingTop: insets.top }]}
+          >
+            <View style={st.heroRow}>
+              <View>
+                <Text style={[st.heroEyebrow, dyn.heroEyebrow]}>Your</Text>
+                <Text style={[st.heroTitle, dyn.heroTitle]}>Profile</Text>
+              </View>
+              <View style={st.heroPlanBadge}>
+                <Ionicons name={isPremium ? 'star' : 'person'} size={13} color={Colors.white} />
+                <Text style={st.heroPlanText}>{isPremium ? 'Pro' : 'Free'}</Text>
+              </View>
+            </View>
+            <View style={st.heroPainRow}>
+              <Text style={st.heroPainLabel}>Current pain</Text>
+              <View style={st.heroPainPill}>
+                <View style={[st.heroPainDot, { backgroundColor: painColor }]} />
+                <Text style={st.heroPainNum}>{painIntensity}/10</Text>
+              </View>
+            </View>
+          </GradientCard>
         </View>
 
         {/* Pain profile card */}
-        <View style={st.profileCard}>
+        <View style={[st.profileCard, dyn.cardWrap]}>
           <Text style={st.cardLabel}>PAIN PROFILE</Text>
 
           {/* Locations */}
@@ -137,7 +166,7 @@ export default function ProfileScreen() {
           {painTypes.length > 0 && (
             <View style={st.typeRow}>
               {painTypes.map(t => {
-                const meta = PAIN_TYPE_META[t];
+                const meta = PainTypePalette[t];
                 if (!meta) return null;
                 return (
                   <View key={t} style={[st.typeChip, { backgroundColor: meta.color + '18', borderColor: meta.color + '40' }]}>
@@ -176,13 +205,13 @@ export default function ProfileScreen() {
         </View>
 
         {/* Subscription card */}
-        <View style={[st.subCard, isPremium && st.subCardPro]}>
+        <View style={[st.subCard, dyn.cardWrap, isPremium && st.subCardPro]}>
           <View style={st.subLeft}>
             <View style={[st.subIconWrap, isPremium && { backgroundColor: Colors.amber + '22' }]}>
               <Ionicons name={isPremium ? 'star' : 'lock-closed-outline'} size={22} color={isPremium ? Colors.amber : Colors.textMuted} />
             </View>
             <View>
-              <Text style={st.subTitle}>{isPremium ? 'AlignPal Pro' : 'Free Plan'}</Text>
+              <Text style={[st.subTitle, dyn.subTitle]}>{isPremium ? 'AlignPal Pro' : 'Free Plan'}</Text>
               <Text style={st.subSub}>{isPremium ? 'Full access enabled' : 'Unlock all features'}</Text>
             </View>
           </View>
@@ -198,8 +227,8 @@ export default function ProfileScreen() {
         </View>
 
         {/* Settings */}
-        <View style={st.section}>
-          <Text style={st.sectionTitle}>Settings</Text>
+        <View style={[st.section, dyn.sectionWrap]}>
+          <Text style={[st.sectionTitle, dyn.sectionTitle]}>Settings</Text>
           <View style={st.settingsCard}>
             <SettingRow
               icon="create-outline"
@@ -232,8 +261,8 @@ export default function ProfileScreen() {
           </View>
         </View>
 
-        <View style={st.section}>
-          <Text style={st.sectionTitle}>About</Text>
+        <View style={[st.section, dyn.sectionWrap]}>
+          <Text style={[st.sectionTitle, dyn.sectionTitle]}>About</Text>
           <View style={st.settingsCard}>
             <SettingRow icon="shield-checkmark-outline" label="Privacy Policy" onPress={() => {}} />
             <View style={st.rowDivider} />
@@ -247,7 +276,7 @@ export default function ProfileScreen() {
           </View>
         </View>
 
-        <View style={st.section}>
+        <View style={[st.section, dyn.sectionWrap]}>
           <View style={st.settingsCard}>
             <SettingRow
               icon="refresh-outline"
@@ -261,26 +290,32 @@ export default function ProfileScreen() {
 
         <Text style={st.footer}>AlignPal · Built with care for your recovery</Text>
         <View style={{ height: 24 }} />
+        </View>
       </ScrollView>
+     </ScreenFrame>
     </SafeAreaView>
   );
 }
 
 const st = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.bg },
-  content:   { paddingBottom: 20 },
+  content:   { paddingBottom: Spacing.tabBarClearance },
+  frame:     { width: '100%', alignSelf: 'center' },
 
-  header: {
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    paddingHorizontal: 20, paddingTop: 14, paddingBottom: 16,
-  },
-  eyebrow:   { fontSize: 12, color: Colors.textSecondary, fontWeight: '600', letterSpacing: 0.6, textTransform: 'uppercase', marginBottom: 3 },
-  title:     { fontSize: 30, fontWeight: '800', color: Colors.textPrimary },
-  planBadge: { flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: Colors.bgCard, borderRadius: 12, paddingHorizontal: 11, paddingVertical: 6, borderWidth: 1, borderColor: Colors.border },
-  planText:  { fontSize: 13, fontWeight: '700', color: Colors.textMuted },
+  // Hero
+  heroRow:        { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  heroEyebrow:    { fontSize: 12, color: Surfaces.onNavy85, fontWeight: '700', letterSpacing: 0.6, textTransform: 'uppercase' },
+  heroTitle:      { fontSize: 30, fontWeight: '800', color: Colors.white, letterSpacing: -0.6, marginTop: 2 },
+  heroPlanBadge:  { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: Surfaces.onNavy22, borderRadius: Radius.pill, paddingHorizontal: Spacing.sm, paddingVertical: Spacing.xs },
+  heroPlanText:   { color: Colors.white, fontWeight: '800', fontSize: 13 },
+  heroPainRow:    { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: Spacing.md, backgroundColor: Surfaces.onNavy14, borderRadius: Radius.lg, paddingHorizontal: 14, paddingVertical: 10 },
+  heroPainLabel:  { color: Surfaces.onNavy85, fontSize: 12, fontWeight: '700', letterSpacing: 0.4 },
+  heroPainPill:   { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: Surfaces.onNavy22, borderRadius: Radius.pill, paddingHorizontal: 10, paddingVertical: 4 },
+  heroPainDot:    { width: 8, height: 8, borderRadius: 4 },
+  heroPainNum:    { color: Colors.white, fontSize: 13, fontWeight: '800' },
 
   profileCard: {
-    marginHorizontal: 20, marginBottom: 12, backgroundColor: Colors.bgCard,
+    marginBottom: 12, backgroundColor: Colors.bgCard,
     borderRadius: 22, padding: 18, borderWidth: 1, borderColor: Colors.border, ...Shadows.purpleSoft,
   },
   cardLabel:      { fontSize: 10, fontWeight: '800', color: Colors.purple, letterSpacing: 1.2, textTransform: 'uppercase', marginBottom: 14 },
@@ -308,7 +343,7 @@ const st = StyleSheet.create({
 
   subCard: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    marginHorizontal: 20, marginBottom: 12, backgroundColor: Colors.bgCard,
+    marginBottom: 12, backgroundColor: Colors.bgCard,
     borderRadius: 20, padding: 16, borderWidth: 1, borderColor: Colors.border,
   },
   subCardPro: { borderColor: Colors.amber + '40', backgroundColor: Colors.amber + '08' },
@@ -319,7 +354,7 @@ const st = StyleSheet.create({
   subManageBtn:  { backgroundColor: Colors.bgInput, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 8, borderWidth: 1, borderColor: Colors.border },
   subManageText: { fontSize: 13, fontWeight: '700', color: Colors.textSecondary },
 
-  section:      { paddingHorizontal: 20, marginBottom: 12 },
+  section:      { marginBottom: 12 },
   sectionTitle: { fontSize: 15, fontWeight: '800', color: Colors.textSecondary, marginBottom: 10, letterSpacing: 0.3 },
 
   settingsCard: { backgroundColor: Colors.bgCard, borderRadius: 20, borderWidth: 1, borderColor: Colors.border, overflow: 'hidden' },

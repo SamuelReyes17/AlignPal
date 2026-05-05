@@ -10,6 +10,7 @@
  */
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { getInstallId } from '../services/deviceId';
 import {
   initializePurchases,
   getOfferings,
@@ -44,7 +45,8 @@ export const SubscriptionProvider = ({ children }) => {
     let removeCustomerInfoListener = null;
     async function init() {
       try {
-        await initializePurchases();
+        const id = await getInstallId();
+        await initializePurchases(id);
 
         // Load current premium status
         const info = await getCustomerInfo();

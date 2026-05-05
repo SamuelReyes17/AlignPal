@@ -1,4 +1,7 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useMutation } from 'convex/react';
+import { api } from '../../convex/_generated/api';
+import { getInstallId } from '../services/deviceId';
 
 const OnboardingContext = createContext();
 
@@ -14,16 +17,28 @@ export const OnboardingProvider = ({ children }) => {
   const [onboardingData, setOnboardingData] = useState({
     painLocations: [],
     painIntensity: 5,
-    painTypes: [],       // multi-select: 'sharp' | 'dull' | 'burning' | 'stiff' | 'radiating' | 'numb' | 'cramping' | 'throbbing'
+    painTypes: [],
+    painDescription: '',
     painDuration: '',
+    directionalPreference: '',
+    radiatingPain: [],
+    redFlags: [],
     worstTimeTriggers: [],
     sittingHours: '',
     trainingFrequency: '',
     pastInjuries: '',
     ageRange: '',
+    email: '',
   });
 
   const [isOnboardingComplete, setIsOnboardingComplete] = useState(false);
+  const [installId, setInstallId] = useState(null);
+
+  const upsertProfile = useMutation(api.users.upsertProfile);
+
+  useEffect(() => {
+    getInstallId().then(setInstallId);
+  }, []);
 
   const updateOnboardingData = (data) => {
     setOnboardingData((prev) => ({ ...prev, ...data }));
@@ -31,6 +46,24 @@ export const OnboardingProvider = ({ children }) => {
 
   const completeOnboarding = () => {
     setIsOnboardingComplete(true);
+    if (installId) {
+      upsertProfile({
+        installId,
+        painLocations: onboardingData.painLocations,
+        painIntensity: onboardingData.painIntensity,
+        painTypes: onboardingData.painTypes,
+        painDescription: onboardingData.painDescription || undefined,
+        worstTimeTriggers: onboardingData.worstTimeTriggers,
+        sittingHours: onboardingData.sittingHours || undefined,
+        trainingFrequency: onboardingData.trainingFrequency || undefined,
+        ageRange: onboardingData.ageRange || undefined,
+        email: onboardingData.email || undefined,
+        painDuration: onboardingData.painDuration || undefined,
+        directionalPreference: onboardingData.directionalPreference || undefined,
+        radiatingPain: onboardingData.radiatingPain?.length ? onboardingData.radiatingPain : undefined,
+        redFlags: onboardingData.redFlags?.length ? onboardingData.redFlags : undefined,
+      }).catch((e) => console.error('[OnboardingContext] Failed to save profile:', e));
+    }
   };
 
   const resetOnboarding = () => {
@@ -38,21 +71,21 @@ export const OnboardingProvider = ({ children }) => {
       painLocations: [],
       painIntensity: 5,
       painTypes: [],
+      painDescription: '',
       painDuration: '',
+      directionalPreference: '',
+      radiatingPain: [],
+      redFlags: [],
       worstTimeTriggers: [],
       sittingHours: '',
       trainingFrequency: '',
       pastInjuries: '',
       ageRange: '',
+      email: '',
     });
     setIsOnboardingComplete(false);
   };
 
-  /**
-   * generatePersonalizedPlan — kept for DashboardScreen / RecoveryOverviewCard compatibility.
-   * PainProfileScreen and Day1ProtocolScreen now compute their own logic inline
-   * using the full onboardingData from context.
-   */
   const generatePersonalizedPlan = () => {
     const { painLocations, painIntensity, painDuration, worstTimeTriggers, sittingHours, painTypes = [] } = onboardingData;
 
@@ -83,7 +116,7 @@ export const OnboardingProvider = ({ children }) => {
 
     return {
       patterns: patterns.slice(0, 3),
-      exercises: [],       // Exercises are now driven by Day1ProtocolScreen
+      exercises: [],
       totalDuration: 7,
     };
   };
@@ -97,6 +130,7 @@ export const OnboardingProvider = ({ children }) => {
         completeOnboarding,
         resetOnboarding,
         generatePersonalizedPlan,
+        installId,
       }}
     >
       {children}

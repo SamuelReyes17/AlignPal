@@ -10,7 +10,12 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useMutation, useQuery } from 'convex/react';
+import { api } from '../../convex/_generated/api';
+import { useOnboarding } from '../context/OnboardingContext';
 import { Colors, Shadows } from '../constants/brand';
+
+const TODAY = new Date().toISOString().slice(0, 10); // "YYYY-MM-DD"
 
 // ─── Coach responses based on pain + exercise combo ──────────────────────────
 const getCoachResponse = (pain, didExercise) => {
@@ -44,15 +49,36 @@ function getTodayLabel() {
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function PainTrackerCard() {
+  const { installId } = useOnboarding();
+  const logCheckIn = useMutation(api.checkIns.logCheckIn);
+  const savedCheckIn = useQuery(
+    api.checkIns.getTodayCheckIn,
+    installId ? { installId, date: TODAY } : 'skip'
+  );
+
   const [selectedPain, setSelectedPain] = useState(null);
   const [didExercise, setDidExercise] = useState(null);
   const [submitted, setSubmitted] = useState(false);
 
+  // If there's already a saved check-in for today, show it in logged state
+  const activePain       = submitted ? selectedPain : savedCheckIn?.painLevel ?? null;
+  const activeExercise   = submitted ? didExercise  : savedCheckIn?.exercisesDone ?? null;
+  const isLoggedToday    = submitted || savedCheckIn != null;
+
   const canSubmit = selectedPain !== null && didExercise !== null;
-  const coachResponse = submitted ? getCoachResponse(selectedPain, didExercise) : null;
+  const coachResponse = isLoggedToday ? getCoachResponse(activePain, activeExercise) : null;
 
   const handleSubmit = () => {
-    if (canSubmit) setSubmitted(true);
+    if (!canSubmit) return;
+    setSubmitted(true);
+    if (installId) {
+      logCheckIn({
+        installId,
+        date: TODAY,
+        painLevel: selectedPain,
+        exercisesDone: didExercise,
+      }).catch((e) => console.error('[PainTrackerCard] Failed to log check-in:', e));
+    }
   };
 
   const handleReset = () => {
@@ -75,7 +101,7 @@ export default function PainTrackerCard() {
         </View>
       </View>
 
-      {!submitted ? (
+      {!isLoggedToday ? (
         <>
           {/* Pain rating */}
           <Text style={styles.sectionLabel}>
@@ -166,15 +192,15 @@ export default function PainTrackerCard() {
           {/* Logged state */}
           <View style={styles.loggedRow}>
             <View style={styles.loggedStat}>
-              <Text style={[styles.loggedValue, { color: getPainColor(selectedPain) }]}>
-                {selectedPain}/10
+              <Text style={[styles.loggedValue, { color: getPainColor(activePain) }]}>
+                {activePain}/10
               </Text>
               <Text style={styles.loggedStatLabel}>Pain level</Text>
             </View>
             <View style={styles.loggedDivider} />
             <View style={styles.loggedStat}>
-              <Text style={[styles.loggedValue, { color: didExercise ? Colors.green : Colors.red }]}>
-                {didExercise ? 'Done' : 'Skipped'}
+              <Text style={[styles.loggedValue, { color: activeExercise ? Colors.green : Colors.red }]}>
+                {activeExercise ? 'Done' : 'Skipped'}
               </Text>
               <Text style={styles.loggedStatLabel}>Exercises</Text>
             </View>
@@ -238,7 +264,7 @@ const styles = StyleSheet.create({
   },
   painButton: {
     flex: 1,
-    aspectRatio: 1,
+    height: 44,
     borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',

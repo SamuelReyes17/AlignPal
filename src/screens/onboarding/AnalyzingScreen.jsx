@@ -1,21 +1,23 @@
 /**
  * AnalyzingScreen
  *
- * Full-screen loader shown after the user completes all 6 onboarding steps,
+ * Full-screen loader shown after the user completes the clinical onboarding,
  * before the Pain Profile is revealed. Plays for ~3.5s then auto-navigates.
  *
  * Design: minimalist / futuristic — pulsing orbital rings, scanning line,
  * gradient background with slow wave motion, sequential status messages.
+ *
+ * Responsive: orbit + blob sizes react to live window dimensions so the
+ * layout looks balanced on iPhone SE → iPad and across orientation changes.
  */
 
 import React, { useEffect, useRef, useState } from 'react';
 import {
-  View, Text, StyleSheet, Animated, Dimensions, Easing,
+  View, Text, StyleSheet, Animated, useWindowDimensions, Easing,
 } from 'react-native';
 import Svg, { Circle, G } from 'react-native-svg';
 import { Colors } from '../../constants/brand';
-
-const { width: W, height: H } = Dimensions.get('window');
+import { useResponsive, fs } from '../../utils/responsive';
 
 // ─── Status messages that sequence during the loader ─────────────────────────
 const STEPS = [
@@ -27,7 +29,7 @@ const STEPS = [
 ];
 
 // ─── Animated gradient blobs (background "lava lamp" movement) ───────────────
-function GradientBackground() {
+function GradientBackground({ W, H }) {
   const b1 = useRef(new Animated.Value(0)).current;
   const b2 = useRef(new Animated.Value(0)).current;
   const b3 = useRef(new Animated.Value(0)).current;
@@ -54,26 +56,33 @@ function GradientBackground() {
   const s2 = b2.interpolate({ inputRange: [0, 1], outputRange: [1, 1.15] });
   const s3 = b3.interpolate({ inputRange: [0, 1], outputRange: [1, 1.1] });
 
+  // Blob radius is a fraction of the smaller dimension — keeps composition
+  // balanced on portrait phones AND landscape tablets.
+  const base = Math.min(W, H);
+  const blobLg = base * 0.85;
+  const blobMd = base * 0.78;
+  const blobSm = base * 0.62;
+
   return (
     <View style={StyleSheet.absoluteFill} pointerEvents="none">
       {/* Top-left — primary purple */}
       <Animated.View style={[g.blob, {
         top: H * 0.05, left: -W * 0.2,
-        width: W * 0.8, height: W * 0.8,
+        width: blobLg, height: blobLg,
         backgroundColor: '#5B21B6',
         transform: [{ translateX: x1 }, { translateY: y1 }, { scale: s1 }],
       }]} />
       {/* Bottom-right — deep violet */}
       <Animated.View style={[g.blob, {
         bottom: H * 0.05, right: -W * 0.15,
-        width: W * 0.75, height: W * 0.75,
+        width: blobMd, height: blobMd,
         backgroundColor: '#3B0764',
         transform: [{ translateX: x2 }, { translateY: y2 }, { scale: s2 }],
       }]} />
       {/* Center accent — bright indigo */}
       <Animated.View style={[g.blob, {
         top: H * 0.35, left: W * 0.1,
-        width: W * 0.6, height: W * 0.6,
+        width: blobSm, height: blobSm,
         backgroundColor: '#7C3AED',
         transform: [{ translateX: x3 }, { translateY: y3 }, { scale: s3 }],
       }]} />
@@ -117,7 +126,6 @@ function OrbitRing({ radius, strokeWidth, color, duration, delay, opacity = 1 })
     }}>
       <Svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
         <G>
-          {/* Full dim ring */}
           <Circle
             cx={size / 2} cy={size / 2} r={radius}
             fill="none"
@@ -125,7 +133,6 @@ function OrbitRing({ radius, strokeWidth, color, duration, delay, opacity = 1 })
             strokeWidth={strokeWidth}
             opacity={0.12}
           />
-          {/* Arc segment — top-right quarter, gives spinning feel */}
           <Circle
             cx={size / 2} cy={size / 2} r={radius}
             fill="none"
@@ -142,7 +149,7 @@ function OrbitRing({ radius, strokeWidth, color, duration, delay, opacity = 1 })
 }
 
 // ─── Pulsing center core ──────────────────────────────────────────────────────
-function CorePulse() {
+function CorePulse({ size }) {
   const pulse = useRef(new Animated.Value(1)).current;
   const glow  = useRef(new Animated.Value(0.3)).current;
 
@@ -161,37 +168,28 @@ function CorePulse() {
     ).start();
   }, []);
 
+  const outer = size;
+  const mid   = size * 0.72;
+  const inner = size * 0.39;
+
   return (
-    <View style={core.wrap}>
-      {/* Outer glow ring */}
-      <Animated.View style={[core.glow, { opacity: glow, transform: [{ scale: pulse }] }]} />
-      {/* Mid ring */}
-      <Animated.View style={[core.mid, { transform: [{ scale: pulse }] }]} />
-      {/* Inner solid circle */}
-      <View style={core.inner} />
+    <View style={{ alignItems: 'center', justifyContent: 'center', width: outer, height: outer }}>
+      <Animated.View style={[{
+        position: 'absolute',
+        width: outer, height: outer, borderRadius: outer / 2,
+        backgroundColor: '#7C5CF0',
+        opacity: 0.4,
+      }, { opacity: glow, transform: [{ scale: pulse }] }]} />
+      <Animated.View style={[{
+        position: 'absolute',
+        width: mid, height: mid, borderRadius: mid / 2,
+        backgroundColor: '#9B6BFF',
+        opacity: 0.7,
+      }, { transform: [{ scale: pulse }] }]} />
+      <View style={{ width: inner, height: inner, borderRadius: inner / 2, backgroundColor: '#D4C0FF' }} />
     </View>
   );
 }
-
-const core = StyleSheet.create({
-  wrap: { alignItems: 'center', justifyContent: 'center', width: 72, height: 72 },
-  glow: {
-    position: 'absolute',
-    width: 72, height: 72, borderRadius: 36,
-    backgroundColor: '#7C5CF0',
-    opacity: 0.4,
-  },
-  mid: {
-    position: 'absolute',
-    width: 52, height: 52, borderRadius: 26,
-    backgroundColor: '#9B6BFF',
-    opacity: 0.7,
-  },
-  inner: {
-    width: 28, height: 28, borderRadius: 14,
-    backgroundColor: '#D4C0FF',
-  },
-});
 
 // ─── Scanning line ────────────────────────────────────────────────────────────
 function ScanLine({ orbitDiameter }) {
@@ -257,8 +255,10 @@ const dp = StyleSheet.create({
 // ─── Main Screen ──────────────────────────────────────────────────────────────
 export default function AnalyzingScreen({ navigation }) {
   const [stepIndex, setStepIndex] = useState(0);
-  const fadeMsg   = useRef(new Animated.Value(1)).current;
+  const fadeMsg    = useRef(new Animated.Value(1)).current;
   const screenFade = useRef(new Animated.Value(0)).current;
+  const { width: W, height: H } = useWindowDimensions();
+  const { isSmall, isTablet, fontScale } = useResponsive();
 
   // Fade screen in on mount
   useEffect(() => {
@@ -274,25 +274,22 @@ export default function AnalyzingScreen({ navigation }) {
 
     const advance = () => {
       if (idx >= STEPS.length - 1) {
-        // Last message — fade out and navigate
         setTimeout(() => {
           Animated.timing(screenFade, {
             toValue: 0, duration: 500, useNativeDriver: true,
           }).start(() => {
-            navigation.replace('PainProfile');
+            navigation.replace('EmailCapture');
           });
         }, STEPS[idx].duration);
         return;
       }
 
       timeout = setTimeout(() => {
-        // Fade out current message
         Animated.timing(fadeMsg, {
           toValue: 0, duration: 200, useNativeDriver: true,
         }).start(() => {
           idx += 1;
           setStepIndex(idx);
-          // Fade in new message
           Animated.timing(fadeMsg, {
             toValue: 1, duration: 300, useNativeDriver: true,
           }).start(() => advance());
@@ -304,61 +301,39 @@ export default function AnalyzingScreen({ navigation }) {
     return () => clearTimeout(timeout);
   }, []);
 
-  const ORBIT_1 = 90;   // inner ring radius
-  const ORBIT_2 = 130;  // outer ring radius
+  // Orbit sizes scale by device tier
+  const ORBIT_1 = isSmall ? 76  : isTablet ? 110 : 90;   // inner
+  const ORBIT_2 = isSmall ? 110 : isTablet ? 160 : 130;  // outer
+  const CORE    = isSmall ? 60  : isTablet ? 88  : 72;
+  const containerSize = (ORBIT_2 + 4) * 2;
 
   return (
     <Animated.View style={[s.screen, { opacity: screenFade }]}>
 
       {/* Gradient background blobs */}
-      <GradientBackground />
+      <GradientBackground W={W} H={H} />
 
       {/* Center stage */}
-      <View style={s.center}>
+      <View style={[s.center, { gap: isSmall ? 28 : isTablet ? 44 : 36 }]}>
 
         {/* Orbit container */}
-        <View style={[s.orbitContainer, {
-          width: (ORBIT_2 + 4) * 2,
-          height: (ORBIT_2 + 4) * 2,
-        }]}>
-
-          {/* Outer ring — slow, counter-clockwise-ish */}
-          <OrbitRing
-            radius={ORBIT_2}
-            strokeWidth={1.5}
-            color="#9B6BFF"
-            duration={6000}
-            delay={0}
-            opacity={0.85}
-          />
-
-          {/* Inner ring — faster, opposite direction handled by negative start */}
-          <OrbitRing
-            radius={ORBIT_1}
-            strokeWidth={2}
-            color="#C4B8FF"
-            duration={3800}
-            delay={0}
-            opacity={0.9}
-          />
-
-          {/* Scanning line within the outer orbit */}
-          <ScanLine orbitDiameter={(ORBIT_2) * 2} />
-
-          {/* Pulsing core */}
-          <CorePulse />
+        <View style={[s.orbitContainer, { width: containerSize, height: containerSize }]}>
+          <OrbitRing radius={ORBIT_2} strokeWidth={1.5} color="#9B6BFF" duration={6000} delay={0} opacity={0.85} />
+          <OrbitRing radius={ORBIT_1} strokeWidth={2}   color="#C4B8FF" duration={3800} delay={0} opacity={0.9} />
+          <ScanLine orbitDiameter={ORBIT_2 * 2} />
+          <CorePulse size={CORE} />
         </View>
 
         {/* Status text */}
         <Animated.View style={[s.statusWrap, { opacity: fadeMsg }]}>
-          <Text style={s.statusText}>{STEPS[stepIndex].label}</Text>
+          <Text style={[s.statusText, { fontSize: fs(17, fontScale) }]}>{STEPS[stepIndex].label}</Text>
         </Animated.View>
 
         {/* Dot progress */}
         <DotProgress total={STEPS.length} current={stepIndex} />
 
         {/* Bottom label */}
-        <Text style={s.bottomLabel}>
+        <Text style={[s.bottomLabel, { fontSize: fs(12, fontScale) }]}>
           Personalized to your body · Powered by AI
         </Text>
       </View>
@@ -367,38 +342,17 @@ export default function AnalyzingScreen({ navigation }) {
   );
 }
 
-// ─── Styles ───────────────────────────────────────────────────────────────────
 const s = StyleSheet.create({
   screen: {
     flex: 1,
     backgroundColor: '#07050F',
     alignItems: 'center',
     justifyContent: 'center',
+    paddingHorizontal: 24,
   },
-  center: {
-    alignItems: 'center',
-    gap: 36,
-  },
-  orbitContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: 'relative',
-  },
-  statusWrap: {
-    alignItems: 'center',
-    height: 28,
-  },
-  statusText: {
-    fontSize: 17,
-    fontWeight: '600',
-    color: Colors.purplePale,
-    letterSpacing: 0.3,
-    textAlign: 'center',
-  },
-  bottomLabel: {
-    fontSize: 12,
-    color: Colors.textMuted,
-    letterSpacing: 0.5,
-    textAlign: 'center',
-  },
+  center:        { alignItems: 'center' },
+  orbitContainer:{ alignItems: 'center', justifyContent: 'center', position: 'relative' },
+  statusWrap:    { alignItems: 'center', height: 28 },
+  statusText:    { fontWeight: '600', color: Colors.purplePale, letterSpacing: 0.3, textAlign: 'center' },
+  bottomLabel:   { color: Colors.textMuted, letterSpacing: 0.5, textAlign: 'center' },
 });

@@ -1,15 +1,18 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createStackNavigator } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../constants/brand';
 
-import DashboardScreen from '../screens/DashboardScreen';
-import WorkoutScreen   from '../screens/WorkoutScreen';
-import HistoryScreen   from '../screens/HistoryScreen';
-import ExploreScreen   from '../screens/ExploreScreen';
-import ProfileScreen   from '../screens/ProfileScreen';
+import DashboardScreen       from '../screens/DashboardScreen';
+import WorkoutScreen         from '../screens/WorkoutScreen';
+import HistoryScreen         from '../screens/HistoryScreen';
+import ExploreScreen         from '../screens/ExploreScreen';
+import ProfileScreen         from '../screens/ProfileScreen';
+import RecoverySessionScreen from '../screens/RecoverySessionScreen';
 
-const Tab = createBottomTabNavigator();
+const Tab   = createBottomTabNavigator();
+const Stack = createStackNavigator();
 
 const TABS = [
   { name: 'Home',    label: 'Home',    icon: 'home',        component: DashboardScreen },
@@ -19,7 +22,13 @@ const TABS = [
   { name: 'Me',      label: 'Me',      icon: 'person',      component: ProfileScreen   },
 ];
 
-export default function AppNavigator() {
+const fadeTransition = {
+  cardStyleInterpolator: ({ current }) => ({
+    cardStyle: { opacity: current.progress },
+  }),
+};
+
+function TabNavigator() {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -70,5 +79,18 @@ export default function AppNavigator() {
         />
       ))}
     </Tab.Navigator>
+  );
+}
+
+export default function AppNavigator() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false, cardStyle: { flex: 1 } }}>
+      <Stack.Screen name="Tabs" component={TabNavigator} />
+      <Stack.Screen
+        name="RecoverySession"
+        component={RecoverySessionScreen}
+        options={{ gestureEnabled: false, ...fadeTransition }}
+      />
+    </Stack.Navigator>
   );
 }

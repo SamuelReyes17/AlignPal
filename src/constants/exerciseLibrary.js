@@ -126,6 +126,52 @@ export const EXERCISE_LIBRARY = {
       why: 'The pelvic tilt reestablishes the neuromotor connection between the brain and lumbar stabilizers after pain has disrupted normal coordination. Safe starting point for very acute or sensitive lower back pain.',
       priority: 2, goodFor: ['sharp', 'burning'], triggers: ['morning', 'sleeping'],
     },
+    {
+      name: 'McGill Side Bridge',
+      duration: '3 min',
+      reps: '3 × 10 sec each side (build to 30 sec)',
+      focus: 'Lateral chain stiffness (QL + obliques)',
+      phase: 'Stability',
+      icon: 'reorder-three-outline',
+      howTo: '1. Lie on your side, propped on the elbow directly under the shoulder.\n2. Beginner: bend knees 90°, lift hips so the body forms a straight line from knees to head.\n3. Advanced: stack the feet, lift hips so the body is straight head-to-heels.\n4. Hold a strong brace — do NOT let the hips sag or rotate forward.\n5. Lower with control. Repeat on the other side.',
+      why: 'The third of McGill\'s "Big 3" — completing Bird-Dog and Curl-Up. Trains quadratus lumborum and oblique stiffness with ~2,500N spinal compression (vs 6,000N+ for full sit-ups). Vera-Garcia (J Electromyogr Kinesiol 2014) confirmed it as the highest-EMG-to-load-ratio lateral core exercise in the literature.',
+      priority: 5, goodFor: ['dull', 'stiff'], triggers: ['lifting', 'training', 'standing'],
+    },
+    {
+      name: 'Relaxed Lumbar Flexion (CFT)',
+      duration: '3 min',
+      reps: '8–10 slow reps × 2',
+      focus: 'Graded exposure / fear reduction',
+      phase: 'Exposure',
+      icon: 'leaf-outline',
+      howTo: '1. Stand with feet hip-width apart. Slow exhale.\n2. Bend forward letting the spine round naturally — do NOT brace the core, do NOT squeeze the glutes.\n3. Cue: "let the back go soft, let the breath out slowly."\n4. Pause at your comfortable end-range for 3 seconds. Roll back up vertebra by vertebra.\n5. Progress: pick up a light object (book, water bottle) from the floor with the same relaxed pattern.',
+      why: 'The 2023 RESTORE trial (Kent et al., The Lancet, n=1011) showed Cognitive Functional Therapy outperformed usual care 3:1 for chronic LBP, with effects sustained at 12 months. The mechanism is reversing the "guard-before-you-move" overcontraction that defines chronic LBP. Hurt does not equal harm — the spine is robust, and re-teaching it that flexion is safe is therapeutic.',
+      priority: 5, goodFor: ['dull', 'stiff'], triggers: ['lifting', 'morning', 'sitting'],
+      avoidIfSharp: true,
+    },
+    {
+      name: 'Sit-to-Stand Without Bracing (CFT)',
+      duration: '2 min',
+      reps: '3 × 10 reps',
+      focus: 'Pattern unlearning / movement reintegration',
+      phase: 'Exposure',
+      icon: 'arrow-up-outline',
+      howTo: '1. Sit on a normal chair, feet flat.\n2. Stand up letting the belly stay soft — no breath hold, no glute squeeze, no abdominal brace.\n3. Sit back down with the same softness.\n4. Cue: "move like you do not have back pain." Imagine standing up from a couch as a child.\n5. Progress: stand from a lower chair, then single-leg sit-to-stand.',
+      why: 'Caneiro et al. (BJSM 2020) documented that chronic LBP patients unconsciously brace before every transition, sustaining the pain cycle. Reversing this conditioned response is one of the highest-impact interventions in CFT — it directly retrains the protective system that has become the problem.',
+      priority: 4, goodFor: ['dull', 'stiff'], triggers: ['sitting', 'morning'],
+      avoidIfSharp: true,
+    },
+    {
+      name: 'Pallof Press (Anti-Rotation)',
+      duration: '3 min',
+      reps: '3 × 10 each side, 2 sec hold',
+      focus: 'Anti-rotation core stiffness',
+      phase: 'Stability',
+      icon: 'git-compare-outline',
+      howTo: '1. Anchor a resistance band at chest height. Stand sideways to the anchor, feet hip-width.\n2. Hold the band with both hands at your sternum.\n3. Press the band straight out in front of you — the band will try to rotate you toward the anchor. Resist with your core.\n4. Hold 2 seconds at full extension. Return slowly. Do NOT let your torso twist.\n5. Progression: tall kneeling → half kneeling → standing → split stance.',
+      why: 'Coulombe et al. (J Athl Train 2017) and Calatayud et al. (JSCR 2019) established the Pallof Press as the gold standard for anti-rotation core stability — the one plane the McGill Big 3 does not directly load. Critical for everyday function: anti-rotation is what protects the spine when you carry a bag, open a door, or twist to grab something.',
+      priority: 4, goodFor: ['dull', 'stiff'], triggers: ['lifting', 'training', 'standing'],
+    },
   ],
 
   // ── UPPER BACK ──────────────────────────────────────────────────────────────
@@ -267,6 +313,40 @@ export const EXERCISE_LIBRARY = {
       why: 'The rhomboids and middle trapezius are chronically elongated and weak in forward-head posture, creating the pull that loads the posterior cervical spine. Activating them provides the postural antagonist to pec/neck flexor tightness.',
       priority: 3, goodFor: ['dull'], triggers: ['sitting', 'training'],
     },
+    {
+      name: 'Cervical Retraction with Extension (McKenzie)',
+      duration: '3 min',
+      reps: '10 reps every 2 hours during a flare',
+      focus: 'Cervical extension / radicular centralization',
+      phase: 'Mobility',
+      icon: 'arrow-up-circle-outline',
+      howTo: '1. Sit tall. Start with a chin tuck — draw the chin straight back into a "double chin."\n2. From the retracted position, slowly extend the head back as if looking up at the ceiling.\n3. Hold 2 seconds at end-range. Return through the chin-tuck position.\n4. Progress: add gentle overpressure with one hand on the forehead at end-range.\n5. Stop and reverse if symptoms travel further down the arm — continue if they retreat toward the spine.',
+      why: 'The cervical equivalent of the lumbar press-up. McKenzie & May (The Cervical and Thoracic Spine, 2006) demonstrated that for posterior-derangement presentations, repeated retraction-extension centralizes radicular arm symptoms — pulling them out of the arm and back toward the neck. Abdulwahab & Sabbahi (Spine 2000) showed it also reduces nerve root irritation in C6/C7 radiculopathy.',
+      priority: 5, goodFor: ['sharp', 'stiff', 'burning'], triggers: ['sitting', 'morning'],
+    },
+    {
+      name: 'Cervical SNAG — Self C1-C2 Rotation (Mulligan)',
+      duration: '3 min',
+      reps: '6–10 reps × 3 sets each direction',
+      focus: 'Upper cervical mobilization (cervicogenic headache)',
+      phase: 'Mobility',
+      icon: 'reload-outline',
+      howTo: '1. Loop a rolled hand towel around the back of your neck, sitting tall.\n2. Locate the bony bump just below the base of the skull on the side of restriction (C1-C2 level).\n3. Pull the towel forward toward your eye on that side — applying a sustained anterior glide.\n4. While holding the glide, slowly rotate your head toward the same side as far as comfortable.\n5. Return through neutral. Maintain the glide throughout each rep.',
+      why: 'Hall et al. (JOSPT 2007) RCT showed self-applied SNAGs significantly reduced cervicogenic headache vs placebo at 12 months. Hidalgo et al. (J Man Manip Ther 2017) systematic review confirmed efficacy. Mechanism: restoring upper-cervical (C1-C2) rotation, which carries 50% of total cervical rotation and is the most common restriction in cervicogenic headache.',
+      priority: 4, goodFor: ['stiff', 'dull'], triggers: ['morning', 'stress'],
+    },
+    {
+      name: 'Median Nerve Slider',
+      duration: '3 min',
+      reps: '10 reps × 3 sets, 2× per day',
+      focus: 'Median nerve mechanosensitivity',
+      phase: 'Release',
+      icon: 'pulse-outline',
+      howTo: '1. Sit tall. Abduct one arm to 90° (out to the side, elbow bent).\n2. As you EXTEND the elbow and the wrist (palm up, fingers back), simultaneously side-bend your neck TOWARD the same side.\n3. Reverse: as you bend the elbow and let the wrist relax, side-bend the neck AWAY from the arm.\n4. Move slowly and smoothly. Stay in pain-free range only — should feel a stretch sensation, not a sharp or burning pain.\n5. If symptoms travel further down the arm, reduce range or stop.',
+      why: 'Wolny & Linek (Clin Rehabil 2019) RCT: median nerve sliders matched physiotherapy outcomes for carpal tunnel syndrome and outperformed splinting alone. Basson et al. (JOSPT 2017) systematic review supports use in cervical radiculopathy. Sliders (one end loads while the other unloads) are far better tolerated than tensioners in irritable presentations.',
+      priority: 4, goodFor: ['burning', 'sharp'], triggers: ['sitting', 'sleeping'],
+      avoidIfSharp: false,
+    },
   ],
 
   // ── SHOULDER ────────────────────────────────────────────────────────────────
@@ -339,6 +419,18 @@ export const EXERCISE_LIBRARY = {
       priority: 3, goodFor: ['dull'], triggers: ['training'],
       avoidIfSharp: true,
     },
+    {
+      name: 'Frozen Shoulder Pain-Free Mobility (UK FROST Protocol)',
+      duration: '4 min',
+      reps: 'Pendulums 30 sec × 5, AAROM ER 10 reps × 3, 3× per day',
+      focus: 'Pain-free range during freezing/frozen phase',
+      phase: 'Mobility',
+      icon: 'sync-circle-outline',
+      howTo: '1. PENDULUMS: bend at the waist, let the affected arm hang down. Shift body weight in small circles to swing the arm — the muscles stay relaxed. 30 seconds clockwise, 30 seconds counter.\n2. SUPINE AAROM EXTERNAL ROTATION: lie on your back, elbow tucked at side bent 90°, holding a stick or umbrella with both hands.\n3. Use the unaffected arm to gently push the stick (and affected forearm) outward.\n4. Stop AT pain-free end-range — do NOT push into pain.\n5. CRITICAL: avoid aggressive end-range stretching during the freezing/frozen phase — it increases pain without changing the natural trajectory.',
+      why: 'Rangan et al. (UK FROST trial, The Lancet 2020, n=503) and Challoumas et al. (JAMA Network Open 2020 network meta-analysis) confirmed: in the irritable freezing/frozen phase, gentle pain-free ROM matches outcomes of aggressive stretching with significantly less pain. Hydrodilatation + this exercise approach outperformed corticosteroid alone at 6 months. Patience is the treatment — natural recovery takes 12–24 months regardless of intervention.',
+      priority: 5, goodFor: ['stiff', 'sharp'], triggers: ['morning', 'sleeping'],
+      avoidIfSharp: false,
+    },
   ],
 
   // ── KNEE ────────────────────────────────────────────────────────────────────
@@ -410,6 +502,17 @@ export const EXERCISE_LIBRARY = {
       why: 'IT band tightness causes lateral knee friction syndrome, the most common running injury. Rolling the TFL (tensor fasciae latae) at the hip and lateral quad reduces fascial tension through the IT band chain, reducing lateral tracking forces at the knee.',
       priority: 3, goodFor: ['sharp', 'burning'], triggers: ['walking', 'training'],
     },
+    {
+      name: 'Heavy Slow Resistance — Patellar (HSR)',
+      duration: '15 min',
+      reps: '3× per week. Wk1: 3×15RM. Wk2-3: 3×12RM. Wk4-5: 4×10RM. Wk6-8: 4×8RM. Wk9-12: 4×6RM',
+      focus: 'Tendon remodeling / patellar tendinopathy',
+      phase: 'Strength',
+      icon: 'barbell-outline',
+      howTo: '1. Use bodyweight squats, goblet squats, or leg press depending on access. Build to a load you can do for the prescribed reps.\n2. CRITICAL TEMPO: 3 seconds down (eccentric), 3 seconds up (concentric) — every rep is 6 seconds.\n3. Squat to ~70-90° knee flexion. Track knees over toes.\n4. Pain during loading up to 5/10 is acceptable and does not damage the tendon — follow the "24-hour rule": pain should return to baseline within 24 hours.\n5. Progressively reduce reps and increase load each week per the schedule above.',
+      why: 'Beyer et al. (Am J Sports Med 2015) RCT: HSR matched eccentric-only loading at 12 weeks but produced significantly higher patient satisfaction at 12 months (96% vs 76%). Malliaras 2024 meta-analysis confirmed HSR and eccentric are equivalent for outcomes — but HSR is dramatically more time-efficient (3×/week vs 2×/day eccentrics) and feels more like normal training, driving better adherence. The slow tempo is the active ingredient.',
+      priority: 5, goodFor: ['dull', 'sharp'], triggers: ['training', 'walking'],
+    },
   ],
 
   // ── HIP ─────────────────────────────────────────────────────────────────────
@@ -469,6 +572,28 @@ export const EXERCISE_LIBRARY = {
       howTo: '1. Stand tall, holding something for balance.\n2. Lift one knee to 90°.\n3. Slowly rotate the hip through its full range — move the knee in a large circle: forward, out, back, in.\n4. Keep the movement as slow and controlled as possible. Feel every degree of range.',
       why: 'Dr. Andreo Spina\'s FRC (Functional Range Conditioning) principle: joint capacity is only maintained through active use of full range. Hip CARs explore and reinforce end-range positions that are lost through years of limited movement, preventing hip degeneration.',
       priority: 3, goodFor: ['stiff'], triggers: ['morning'],
+    },
+    {
+      name: 'Copenhagen Adduction Exercise',
+      duration: '4 min',
+      reps: '3× per week. Wk1: 1×5 short-lever. Wk4: 2×8 long-lever. Wk8: 3×10 long-lever',
+      focus: 'Adductor + glute med strength (groin pain prevention)',
+      phase: 'Strength',
+      icon: 'fitness-outline',
+      howTo: '1. Lie on your side. Top leg supported on a bench or chair.\n2. SHORT LEVER (beginner): support point at the knee. LONG LEVER (advanced): support point at the ankle.\n3. Lift your hips and your bottom leg off the ground simultaneously — body forms a straight line, bottom leg meets the supported top leg.\n4. Hold 1 second at the top. Lower with control over 2-3 seconds.\n5. Build progressively: do not jump to long lever before week 3-4.',
+      why: 'Harøy et al. (BJSM 2019, n=660 male footballers): the Copenhagen Adduction Protocol reduced groin problems by 41% over a season — one of the strongest prevention effects ever documented in sports medicine. Serner et al. (2014) EMG study: also activates gluteus medius >80% MVC, making this a dual-purpose exercise for adductor pain AND lateral hip dysfunction.',
+      priority: 4, goodFor: ['dull', 'sharp'], triggers: ['training'],
+    },
+    {
+      name: 'GTPS Isometric Hip Abduction (LEAP-derived)',
+      duration: '4 min',
+      reps: '5 × 45 sec holds, 70% effort, 2 min rest',
+      focus: 'Gluteal tendinopathy load tolerance',
+      phase: 'Activation',
+      icon: 'pause-outline',
+      howTo: '1. STANDING: place a resistance band around your knees. Stand with feet hip-width and press the knees outward against the band — hold 45 seconds at moderate-firm effort.\n2. SIDE-LYING: lie on the unaffected side. Lift the top leg ~15-20° and HOLD without moving — 45 seconds at 70% effort.\n3. Combine with load management: NO leg crossing, NO sleeping on affected side without a pillow between the knees, NO standing with weight shifted onto one hip.\n4. Repeat 5 holds. Pain up to 4/10 during the hold is acceptable; should settle within 24 hours.',
+      why: 'Mellor et al. (LEAP RCT, BMJ 2018, n=204): education + isometric loading outperformed corticosteroid injection AND wait-and-see at 8 weeks AND 12 months. The load-management piece (avoiding sustained adduction positions) drove most of the effect. Plinsinga et al. (BJSM 2022) and 2023-2024 follow-ups confirm durability. Isometrics produce immediate analgesia in tendinopathy via cortical inhibition.',
+      priority: 5, goodFor: ['dull', 'sharp'], triggers: ['sitting', 'walking', 'sleeping'],
     },
   ],
 
@@ -834,6 +959,17 @@ export const EXERCISE_LIBRARY = {
       why: 'Rio et al. (2015) demonstrated that isometric loading of tendons provides immediate pain relief (up to 45% VAS reduction) during a painful flare. This makes isometrics the recommended first-line exercise when eccentric loading is too painful to perform.',
       priority: 4, goodFor: ['sharp'], triggers: ['training'],
     },
+    {
+      name: 'Heavy Slow Resistance — Achilles (HSR)',
+      duration: '15 min',
+      reps: '3× per week. Wk1: 3×15RM. Wk2-3: 3×12RM. Wk4-5: 4×10RM. Wk6-8: 4×8RM. Wk9-12: 4×6RM',
+      focus: 'Tendon remodeling / mid-portion Achilles tendinopathy',
+      phase: 'Strength',
+      icon: 'barbell-outline',
+      howTo: '1. Stand on the edge of a step, balls of both feet on the step, heels hanging off.\n2. Add load via backpack, dumbbells, or single-leg progression as you advance.\n3. CRITICAL TEMPO: 3 seconds up onto your toes (concentric), 3 seconds down past the step level (eccentric) — every rep is 6 seconds.\n4. Pain up to 5/10 during loading is acceptable and does not damage the tendon — pain should return to baseline within 24 hours ("24-hour rule").\n5. Progress through the 12-week schedule. Stay strict on tempo — speed kills the adaptation.',
+      why: 'Beyer et al. (Am J Sports Med 2015) head-to-head RCT vs Alfredson eccentrics: equivalent outcomes at 12 weeks, but HSR produced significantly higher patient satisfaction at 12 months (96% vs 76%) and dramatically better adherence. Kongsgaard et al. (Scand J Med Sci Sports 2009) showed comparable collagen turnover. HSR is the modern evidence-based alternative to twice-daily eccentrics — same biology, far better life-fit.',
+      priority: 5, goodFor: ['dull', 'sharp'], triggers: ['training', 'walking'],
+    },
   ],
 
   // ── PLANTAR FASCIA ────────────────────────────────────────────────────────────
@@ -1028,6 +1164,30 @@ export const EXERCISE_LIBRARY = {
       why: 'Radioulnar joint stiffness is a common secondary finding in elbow pain. Restricted pronation/supination alters loading mechanics at the lateral epicondyle and can perpetuate wrist-related elbow pain. Addressing it restores normal forearm biomechanics.',
       priority: 3, goodFor: ['stiff'], triggers: ['training'],
     },
+    {
+      name: 'Ulnar Nerve Slider',
+      duration: '3 min',
+      reps: '10 reps × 3 sets, 2× per day',
+      focus: 'Ulnar nerve mechanosensitivity (cubital tunnel)',
+      phase: 'Release',
+      icon: 'pulse-outline',
+      howTo: '1. Make an "OK sign" with your thumb and index finger — keep this loop intact through the whole movement.\n2. Bring the OK sign to your eye on the SAME side, like a monocle. As you do this, BEND the elbow and your wrist comes near your face.\n3. Now reverse: extend the elbow out to the side, palm down, while side-bending your head AWAY from the arm.\n4. Alternate smoothly between the two ends — neck and wrist move opposite each other (slider, not tensioner).\n5. Stop and reduce range if symptoms travel further into the 4th-5th fingers.',
+      why: 'Coppieters & Butler (Man Ther 2008) defined the slider technique: one end of the nerve loads while the other unloads, restoring mechanosensitivity without provoking neural inflammation. Oskay et al. (J Hand Ther 2010) RCT: ulnar nerve sliders reduced pain and improved function in cubital tunnel syndrome. Indicated for medial elbow pain with 4th-5th finger numbness/burning.',
+      priority: 4, goodFor: ['burning', 'sharp'], triggers: ['sitting', 'training', 'sleeping'],
+      avoidIfSharp: false,
+    },
+    {
+      name: 'Radial Nerve Slider',
+      duration: '3 min',
+      reps: '10 reps × 3 sets, 2× per day',
+      focus: 'Radial nerve mechanosensitivity (lateral epicondylitis with neural component)',
+      phase: 'Release',
+      icon: 'pulse-outline',
+      howTo: '1. Stand or sit tall. Arm by your side, palm facing back.\n2. ONE END LOAD: depress the shoulder (down and slightly back), straighten the elbow, flex the wrist (palm-down curl), ulnar deviate (pinky toward forearm). Side-bend the head AWAY from the arm.\n3. OTHER END UNLOAD: relax the shoulder, soften the elbow and wrist, side-bend the head TOWARD the arm.\n4. Alternate smoothly — the wrist and head move in opposite phases (slider).\n5. Stop and reduce range if pain or burning travels further into the forearm.',
+      why: 'Ekstrom & Holden (Phys Ther 2002) and Ellis & Hing (J Man Manip Ther 2008) systematic review: radial nerve sliders are indicated for radial tunnel syndrome and for lateral epicondylitis presentations with a neural component (burning, radiation, or paresthesias rather than pure mechanical pain). Pair with Tyler Twist when standard tendon loading alone is not enough.',
+      priority: 4, goodFor: ['burning', 'sharp'], triggers: ['sitting', 'training'],
+      avoidIfSharp: false,
+    },
   ],
 
   // ── ABDOMEN ──────────────────────────────────────────────────────────────────
@@ -1141,23 +1301,296 @@ export const EXERCISE_LIBRARY = {
 };
 
 // ─── Smart exercise selection ─────────────────────────────────────────────────
+// ─── Free-text pain description analyzer ─────────────────────────────────────
+// Applies clinical keyword mapping inspired by McKenzie classification,
+// Janda muscle-imbalance syndromes, Cyriax end-feel assessment,
+// nociceptive vs neuropathic pain classification (IASP), and McGill spine
+// biomechanics to extract clinically meaningful signals from a user's
+// own words about their pain.
+export const analyzePainDescription = (text = '') => {
+  if (!text || text.trim().length < 4) return null;
+
+  const t = text.toLowerCase();
+  const has = (...words) => words.some(w => t.includes(w));
+
+  const signals = {
+    neurological:  false,
+    discogenic:    false,
+    facetogenic:   false,
+    myofascial:    false,
+    inflammatory:  false,
+    postural:      false,
+    sacroiliac:    false,
+    acuteOnset:    false,
+    centralSensitization: false,
+    redFlags:      [],
+    insights:      [],
+  };
+
+  // ── Neurological / nerve-root involvement ──────────────────────────────────
+  // Neuropathic pain descriptors (IASP): burning, electric, shooting; plus
+  // dermatomal radiation patterns and allodynia-type descriptors.
+  if (has(
+    'burning', 'electric', 'shock', 'lightning', 'shooting',
+    'pins and needles', 'tingling', 'numb', 'numbness',
+    'radiates', 'radiating', 'travels', 'goes down', 'runs down',
+    'down my leg', 'down the leg', 'into my leg', 'into my foot',
+    'down my arm', 'into my hand', 'into my fingers',
+    'sciatica', 'sciatic', 'nerve', 'zaps',
+  )) {
+    signals.neurological = true;
+    signals.insights.push({
+      icon: 'pulse-outline',
+      color: '#7C5CF0',
+      title: 'Nerve pathway involvement',
+      text: 'Your description contains neuropathic pain descriptors — burning, electric, radiating, or tingling. These signal that a nerve may be sensitized, compressed at its root, or irritated along its path. Nerve-biased pain responds best to decompression movements and neural mobilization rather than aggressive stretching or heavy loading.',
+    });
+  }
+
+  // ── Discogenic pain (intervertebral disc) ──────────────────────────────────
+  // McKenzie centralisation principle: disc pain worsens in flexion (sitting),
+  // improves with extension (walking/standing). Intradiscal pressure is ~40%
+  // higher in sitting than standing (Nachemson 1966), and pain with cough/sneeze
+  // (Valsalva) confirms discal origin via intradiscal pressure spike.
+  if (has(
+    'worse sitting', 'sitting makes it', 'after sitting', 'after i sit',
+    'worse when i sit', 'desk makes', 'driving makes',
+    'better walking', 'better when i walk', 'better standing',
+    'worse coughing', 'cough makes', 'sneeze makes', 'when i cough',
+    'when i sneeze', 'valsalva',
+    'morning is worst', 'worst in the morning', 'first steps', 'first thing',
+    'getting out of bed', 'hard to get up',
+    'shoots down', 'shoots into',
+  )) {
+    signals.discogenic = true;
+    signals.insights.push({
+      icon: 'layers-outline',
+      color: '#60A5FA',
+      title: 'Discogenic loading pattern',
+      text: 'Pain that is significantly worse with sitting and/or coughing, and better with walking, is a hallmark of intervertebral disc involvement. The disc bears 40% more load in flexion than standing. McKenzie extension exercises specifically centralise disc material away from nerve roots — they are first-line for this pattern.',
+    });
+  }
+
+  // ── Facetogenic pain (zygapophyseal / facet joints) ────────────────────────
+  // Facet joints are maximally compressed in extension and ipsilateral
+  // rotation. One-sided pain that worsens with backward bending and is
+  // relieved by flexion (sitting forward) is the Cyriax pattern for facet
+  // irritation. Locking / catching = acute facet fixation.
+  if (has(
+    'worse bending back', 'worse arching', 'arching hurts', 'worse extending',
+    'worse looking up', 'rotation hurts', 'turning makes',
+    'worse twisting', 'one side only', 'only on one side', 'just on the left',
+    'just on the right', 'right side only', 'left side only',
+    'locks', 'catches', 'catch', 'stuck', 'clunks',
+    'better sitting forward', 'better leaning forward', 'relief sitting',
+    'worse standing long', 'standing makes it worse',
+  )) {
+    signals.facetogenic = true;
+    signals.insights.push({
+      icon: 'git-network-outline',
+      color: '#818CF8',
+      title: 'Facet joint loading pattern',
+      text: 'Pain worse with backward bending, rotation, or one-sided — and often relieved by flexion — is the clinical signature of facet joint irritation. The facet joints are compressive structures that bear significant load in extension. Flexion-biased mobility work and deep multifidus stabilisation are the primary interventions.',
+    });
+  }
+
+  // ── Myofascial trigger points (Travell & Simons) ───────────────────────────
+  // Trigger points: hyperirritable loci in taut muscle bands, producing
+  // referred pain in predictable patterns. Key descriptors: localised knot,
+  // rope-like band, referred ache that spreads to a distant site.
+  if (has(
+    'knot', 'tight spot', 'tender spot', 'trigger', 'tense',
+    'spasm', 'muscle tension', 'referr', 'refers to', 'spreads to',
+    'deep ache', 'rope', 'band', 'lump in the muscle',
+    'presses and it hurts somewhere else', 'point tender',
+  )) {
+    signals.myofascial = true;
+    signals.insights.push({
+      icon: 'body-outline',
+      color: '#34D399',
+      title: 'Myofascial trigger point pattern',
+      text: 'Descriptions of tight knots, ropes, or localised tenderness that refers pain elsewhere are the clinical hallmarks of myofascial trigger points (Travell & Simons). These hyperirritable loci in muscle tissue maintain a pain-spasm-pain cycle. Release techniques combined with targeted strengthening of the inhibited antagonist muscle are the evidence-based approach.',
+    });
+  }
+
+  // ── Inflammatory pain ─────────────────────────────────────────────────────
+  // Inflammatory pain (IASP): worse after rest, morning stiffness >30 min,
+  // warmth, swelling. Prolonged morning stiffness is the discriminating
+  // feature of inflammatory arthropathy vs mechanical pain (which improves
+  // within minutes of moving). Exercise is still first-line but a GP review
+  // is warranted if symptoms persist > 6 weeks.
+  if (has(
+    'swollen', 'swelling', 'puffy', 'hot to touch', 'warm to touch',
+    'warm around it', 'inflamed', 'red',
+    'stiff for more than', 'stiff for over', 'stiff all morning',
+    'morning stiffness', 'takes an hour', 'takes hours to loosen',
+    'worse after rest', 'better after moving around',
+    'flare up', 'flare-up',
+  )) {
+    signals.inflammatory = true;
+    signals.insights.push({
+      icon: 'flame-outline',
+      color: '#FB923C',
+      title: 'Inflammatory component',
+      text: 'Morning stiffness lasting more than 30 minutes, warmth, or swelling around a joint can indicate an active inflammatory process (as distinct from simple mechanical stiffness, which usually resolves within minutes). Gentle movement is still the correct treatment — inflammatory pain responds to graded loading — but if these features persist beyond 6 weeks, a GP visit to rule out inflammatory arthropathy is recommended.',
+    });
+  }
+
+  // ── Postural / ergonomic loading ───────────────────────────────────────────
+  // Janda Upper and Lower Crossed Syndromes: predictable patterns of
+  // tightness and weakness caused by sustained static posture. Screen/desk
+  // posture = upper crossed. Prolonged sitting = lower crossed.
+  if (has(
+    'desk', 'computer', 'screen', 'monitor', 'phone', 'driving', 'car',
+    'slouch', 'slouching', 'hunched', 'forward head', 'head forward',
+    'office', 'sitting all day', 'work from home', 'wfh',
+    'keyboard', 'mouse', 'looking down', 'head down',
+    'after a long day', 'end of the day',
+  )) {
+    signals.postural = true;
+    signals.insights.push({
+      icon: 'desktop-outline',
+      color: '#9B8BF4',
+      title: 'Postural loading (Janda syndrome)',
+      text: 'Your description confirms significant postural loading. Janda\'s crossed syndromes describe predictable muscle tightness and weakness patterns that emerge from sustained static postures — tight hip flexors + weak glutes (lower crossed), tight pecs/neck flexors + weak deep neck flexors and lower traps (upper crossed). Counteracting your specific pattern is the treatment, not rest.',
+    });
+  }
+
+  // ── Sacroiliac joint involvement ───────────────────────────────────────────
+  // SIJ pain is notoriously misdiagnosed as lumbar disc pain. Cluster of
+  // Laslett tests: pain at PSIS, Fortin finger sign (patient points to dimple
+  // with one finger), worse crossing legs, unilateral buttock pain above knee.
+  if (has(
+    'tailbone', 'coccyx', 'sacrum', 'si joint', 'sacroiliac',
+    'across my back', 'belt line', 'just above my buttock', 'dimple',
+    'pelvis', 'pelvic', 'crossing legs hurts', 'climbing stairs',
+    'uneven hips', 'hip tilted', 'one leg feels shorter',
+  )) {
+    signals.sacroiliac = true;
+    signals.insights.push({
+      icon: 'git-compare-outline',
+      color: '#F472B6',
+      title: 'Sacroiliac joint pattern',
+      text: 'Pain in the dimple area above the buttock — especially if it worsens when crossing legs, climbing stairs, or walking unevenly — is characteristic of SIJ dysfunction. The SI joint is commonly misidentified as lumbar disc pain. It has distinct biomechanics and responds best to SIJ stabilisation exercises targeting the deep gluteals, transverse abdominis, and multifidus.',
+    });
+  }
+
+  // ── Acute / sudden onset ───────────────────────────────────────────────────
+  if (has(
+    'sudden', 'suddenly', 'snapped', 'pop', 'popped', 'cracked',
+    'accident', 'fell', 'fall', 'crash', 'impact', 'hit',
+    'out of nowhere', 'overnight', 'woke up with',
+    'lifting and then', 'twisted and', 'moved wrong',
+  )) {
+    signals.acuteOnset = true;
+    signals.insights.push({
+      icon: 'alert-circle-outline',
+      color: '#FBBF24',
+      title: 'Acute onset / sudden mechanism',
+      text: 'Sudden-onset pain — whether from a specific movement, a fall, or waking up with it — signals that tissues are in an acute phase. The priority is gentle graded movement to maintain circulation and prevent secondary stiffness, not complete rest (which is now known to delay recovery). Loading begins light and progresses as tolerance improves.',
+    });
+  }
+
+  // ── Central sensitization markers ─────────────────────────────────────────
+  // Central sensitization (Woolf 2011): amplified pain processing by the CNS.
+  // Signs: widespread pain, allodynia (light touch hurts), hyperalgesia,
+  // pain disproportionate to findings, multiple failed treatments.
+  if (has(
+    'everywhere', 'whole body', 'all over', 'everything hurts',
+    'light touch hurts', 'clothes hurt', 'wind hurts',
+    'tried everything', 'nothing helps', 'nothing works',
+    'constant no matter what', 'no position helps', 'relentless',
+    'pain for years', 'fibro',
+  )) {
+    signals.centralSensitization = true;
+    signals.insights.push({
+      icon: 'infinite-outline',
+      color: '#F472B6',
+      title: 'Possible central sensitization',
+      text: 'When pain becomes widespread, is disproportionate to findings, or when many treatments have failed, the nervous system itself may have become sensitized — amplifying pain signals beyond the original tissue source. This is called central sensitization (Woolf 2011). Graded exposure, paced activity, and movement — not rest — are the cornerstone treatments. A pain psychologist working alongside physiotherapy produces the best outcomes.',
+    });
+  }
+
+  // ── Red flag screening ────────────────────────────────────────────────────
+  // Red flags (NICE CG59 / ACP 2017): features that require urgent medical
+  // referral before exercise rehabilitation.
+  if (has('bladder', 'bowel', 'incontinence', 'wet myself', 'saddle area', 'saddle numb', 'groin numb', 'both legs weak', 'both legs numb')) {
+    signals.redFlags.push('Bladder, bowel, or saddle area symptoms alongside back pain can be signs of cauda equina syndrome — a medical emergency. Please seek urgent medical care before starting any exercise program.');
+  }
+  if (has('cancer', 'tumor', 'tumour', 'malignancy', 'metastasis', 'chemo', 'radiation therapy')) {
+    signals.redFlags.push('You mentioned a history of cancer. Pain associated with cancer history requires medical evaluation before rehabilitation to rule out spinal involvement.');
+  }
+  if (has('night sweat', 'unexplained weight loss', 'lost a lot of weight', 'fever with', 'temperature with')) {
+    signals.redFlags.push('Pain accompanied by night sweats, unexplained weight loss, or fever should be medically evaluated to rule out infection or systemic disease.');
+  }
+  if (has('wakes me', 'woke me', 'waking me up', 'pain at night no matter', 'constant night pain')) {
+    signals.redFlags.push('Pain that consistently wakes you from sleep — especially with no position giving relief — can indicate non-mechanical causes that require medical evaluation.');
+  }
+  if (has('foot drop', 'can\'t lift my foot', 'leg gives way', 'legs collapse', 'progressive weakness', 'getting weaker')) {
+    signals.redFlags.push('Progressive muscle weakness — especially foot drop or legs giving way — can indicate significant nerve compression. Please see a doctor or physiotherapist before beginning exercise rehabilitation.');
+  }
+  if (has('steroid', 'immunosuppres', 'hiv', 'transplant', 'osteoporosis', 'bone density')) {
+    signals.redFlags.push('History of long-term steroid use, immunosuppression, or osteoporosis means fracture risk must be considered before loading exercises. Please discuss with your doctor.');
+  }
+
+  return signals;
+};
+
 export const selectExercises = (onboardingData = {}) => {
   const {
     painLocations = [],
     painTypes = [],
     worstTimeTriggers = [],
     sittingHours = '',
-    trainingFrequency = '',
+    painDescription = '',
+    painDuration = '',
+    directionalPreference = '',
+    radiatingPain = [],
+    redFlags = [],
   } = onboardingData;
 
   const types = painTypes.length ? painTypes : ['dull'];
   const has = (t) => types.includes(t);
 
-  // Map new symptom types to treatment groups
-  const isNeuralPain  = has('sharp') || has('radiating') || has('numb');
-  const isInflamPain  = has('burning') || has('throbbing');
+  // Map symptom types to treatment groups
+  const isNeuralPain   = has('sharp') || has('radiating') || has('numb');
+  const isInflamPain   = has('burning') || has('throbbing');
   const isMobilityPain = has('stiff') || has('cramping');
   const isChronicPain  = has('dull') || has('throbbing');
+
+  // Augment with free-text description signals
+  const desc = analyzePainDescription(painDescription);
+  const descNeural      = desc?.neurological;
+  const descDiscogenic  = desc?.discogenic;
+  const descFacetogenic = desc?.facetogenic;
+  const descMyofascial  = desc?.myofascial;
+  const descPostural    = desc?.postural;
+  const descAcute       = desc?.acuteOnset;
+
+  // ─── Clinical signals from dedicated screens ─────────────────────────────
+  // Pain duration → drives whether to load tissue or protect it.
+  const isAcute     = painDuration === 'acute';
+  const isSubacute  = painDuration === 'subacute';
+  const isChronic   = painDuration === 'chronic';
+  const isRecurrent = painDuration === 'recurrent';
+
+  // Directional preference → centralization / McKenzie classification.
+  const flexIntolerant  = directionalPreference === 'flexion';     // worse bending forward → discogenic-leaning
+  const extIntolerant   = directionalPreference === 'extension';   // worse bending back → facet/stenosis-leaning
+  const rotIntolerant   = directionalPreference === 'rotation';
+  const sustainedAggrav = directionalPreference === 'sustained';
+
+  // Radiating pain → neural involvement signal.
+  const radList         = Array.isArray(radiatingPain) ? radiatingPain : [];
+  const hasNoneRadiating= radList.includes('none') || radList.length === 0;
+  const hasAnyRadiating = !hasNoneRadiating;
+  const hasSciatic      = radList.includes('below_knee');                          // true sciatica
+  const hasArmRad       = radList.includes('arm') || radList.includes('hand');     // cervical radiculopathy
+  const hasCervHeadache = radList.includes('headache');
+
+  // Red flags → bias the plan toward gentle, low-load options.
+  const flagList = Array.isArray(redFlags) ? redFlags : [];
+  const anyRedFlag = flagList.length > 0 && !flagList.every((f) => f === 'none');
 
   const primaryLoc = painLocations[0] || 'default';
   const libraryKey = normalizeLocation(primaryLoc);
@@ -1165,31 +1598,127 @@ export const selectExercises = (onboardingData = {}) => {
 
   const scored = pool.map((ex) => {
     let score = (ex.priority || 3) * 10;
+    const focus = (ex.focus || '').toLowerCase();
+    const name  = (ex.name  || '').toLowerCase();
 
-    // Boost if any selected pain type matches what this exercise helps
+    // ─── Pain-type & trigger fit ────────────────────────────────────────────
     if (ex.goodFor?.some(g => types.includes(g))) score += 25;
 
-    // Boost for each matching trigger
     if (worstTimeTriggers?.length) {
       const hits = (ex.triggers || []).filter((t) => worstTimeTriggers.includes(t)).length;
       score += hits * 15;
     }
 
-    // Boost sitting-specific exercises for desk workers
-    if (sittingHours === '6+' && ex.triggers?.includes('sitting')) score += 10;
+    if ((sittingHours === '6+' || descPostural) && ex.triggers?.includes('sitting')) score += 10;
 
-    // Deprioritize loading exercises for neural/acute pain
-    if (isNeuralPain && ex.avoidIfSharp) score -= 30;
+    // ─── Pain-type penalties ────────────────────────────────────────────────
+    if ((isNeuralPain || descNeural || descAcute) && ex.avoidIfSharp) score -= 30;
     if (isInflamPain && ex.avoidIfSharp) score -= 20;
 
-    // Boost mobility exercises for stiff/cramping presentation
+    // ─── Phase × pain-type ──────────────────────────────────────────────────
     if (isMobilityPain && ex.phase === 'Mobility') score += 10;
-
-    // Boost activation/stability for chronic/dull pain
     if (isChronicPain && (ex.phase === 'Activation' || ex.phase === 'Stability')) score += 8;
+    if ((isNeuralPain || descNeural) && ex.phase === 'Release') score += 15;
 
-    // Extra boost for Release phase when neural symptoms present
-    if (isNeuralPain && ex.phase === 'Release') score += 12;
+    // ─── Free-text description signals ──────────────────────────────────────
+    if (descDiscogenic && ex.phase === 'Mobility') score += 12;
+    if (descDiscogenic && focus.includes('extension')) score += 10;
+    if (descFacetogenic && (ex.phase === 'Stability' || ex.phase === 'Activation')) score += 12;
+    if (descMyofascial && ex.phase === 'Release') score += 15;
+    if (descAcute && ex.phase === 'Strength') score -= 20;
+    if (descAcute && (ex.phase === 'Mobility' || ex.phase === 'Release')) score += 10;
+
+    // ─── Pain duration gating ───────────────────────────────────────────────
+    // Acute (<6 weeks): protect tissue. Avoid heavy loading and CFT exposure.
+    if (isAcute) {
+      if (ex.phase === 'Strength')   score -= 25;
+      if (ex.phase === 'Exposure')   score -= 30;
+      if (ex.phase === 'Mobility' || ex.phase === 'Release') score += 8;
+      if (ex.avoidIfSharp)           score -= 15;
+    }
+    // Subacute (6–12 weeks): bridge. Light loading + activation.
+    if (isSubacute) {
+      if (ex.phase === 'Activation') score += 6;
+      if (ex.phase === 'Strength')   score -= 8;
+    }
+    // Chronic (>3 months): CFT exposure + strength is the evidence-based treatment.
+    // Kent et al., RESTORE trial, The Lancet 2023 (n=1011).
+    if (isChronic) {
+      if (ex.phase === 'Exposure')   score += 22;
+      if (ex.phase === 'Strength')   score += 10;
+      if (ex.phase === 'Stability')  score += 6;
+    }
+    // Recurrent: stability-first, build resilience between flares.
+    if (isRecurrent) {
+      if (ex.phase === 'Stability')  score += 10;
+      if (ex.phase === 'Activation') score += 6;
+    }
+
+    // ─── Directional preference (centralization model) ──────────────────────
+    // Worse with FLEXION → typically discogenic → load extension, AVOID deep flexion.
+    if (flexIntolerant) {
+      if (focus.includes('extension')) score += 22;
+      if (focus.includes('flexion'))   score -= 12;
+      if (name.includes('mckenzie press-up'))    score += 18;
+      if (name.includes('cervical retraction'))  score += 10;
+      // CFT relaxed-flexion exposure is contraindicated direction in this group.
+      if (ex.phase === 'Exposure' && name.includes('flexion')) score -= 22;
+    }
+    // Worse with EXTENSION → typically facet/stenosis → flexion-bias, no press-ups.
+    if (extIntolerant) {
+      if (focus.includes('extension')) score -= 18;
+      if (name.includes('mckenzie press-up')) score -= 30;
+      if (focus.includes('flexion'))   score += 12;
+      if (ex.phase === 'Stability')    score += 8;
+      if (name.includes('cat-cow') || name.includes('pelvic tilt')) score += 8;
+    }
+    // Worse with ROTATION → emphasize anti-rotation core stability.
+    if (rotIntolerant) {
+      if (name.includes('pallof'))     score += 18;
+      if (focus.includes('anti-rotation') || focus.includes('rotation')) score += 10;
+    }
+    // Sustained-position aggravation → mobility breaks + activation cycles.
+    if (sustainedAggrav) {
+      if (ex.phase === 'Mobility')     score += 6;
+      if (ex.triggers?.includes('sitting')) score += 8;
+    }
+
+    // ─── Radiating pain → neural-priority bias ──────────────────────────────
+    if (hasAnyRadiating) {
+      if (ex.phase === 'Release')      score += 12;
+      // Heavy end-range loading is less safe in the presence of neural involvement,
+      // except for HSR (gradual concentric/eccentric — well-tolerated).
+      if (ex.phase === 'Strength' && !name.includes('hsr')) score -= 8;
+    }
+    // True sciatica (below knee) → sciatic nerve work first; extension bias if not extIntolerant.
+    if (hasSciatic) {
+      if (name.includes('sciatic'))                            score += 30;
+      if (name.includes('mckenzie press-up') && !extIntolerant) score += 12;
+      if (focus.includes('hamstring stretch'))                 score -= 10;
+    }
+    // Cervical radiculopathy (arm/hand) → upper-limb nerve sliders + cervical retraction.
+    if (hasArmRad) {
+      if (name.includes('median nerve') || name.includes('ulnar nerve') || name.includes('radial nerve')) score += 28;
+      if (name.includes('cervical retraction')) score += 18;
+      if (libraryKey === 'shoulder' && ex.phase === 'Mobility') score += 6;
+    }
+    // Cervicogenic headache → suboccipital release + cervical SNAG.
+    if (hasCervHeadache) {
+      if (name.includes('suboccipital'))                  score += 22;
+      if (name.includes('snag') || name.includes('c1-c2')) score += 22;
+      if (name.includes('upper trapezius'))               score += 8;
+    }
+
+    // ─── Red flags present → conservative bias ──────────────────────────────
+    // The user has been warned via modal; if they continued, the plan should
+    // still be safe-by-default — avoid heavy loading and graded exposure.
+    if (anyRedFlag) {
+      if (ex.phase === 'Strength')  score -= 30;
+      if (ex.phase === 'Exposure')  score -= 25;
+      if (ex.phase === 'Mobility')  score += 10;
+      if (ex.phase === 'Release')   score += 10;
+      if (ex.avoidIfSharp)          score -= 25;
+    }
 
     return { ...ex, score };
   });
@@ -1305,8 +1834,9 @@ export const getPainCondition = (onboardingData = {}) => {
 
 // ─── Root causes ──────────────────────────────────────────────────────────────
 export const getCauses = (onboardingData = {}) => {
-  const { painLocations = [], painTypes = [], worstTimeTriggers = [], sittingHours, trainingFrequency, painDuration } = onboardingData;
+  const { painLocations = [], painTypes = [], worstTimeTriggers = [], sittingHours, trainingFrequency, painDuration, painDescription = '' } = onboardingData;
   const loc = normalizeLocation(painLocations[0]);
+  const desc = analyzePainDescription(painDescription);
   const causes = [];
 
   if (worstTimeTriggers.includes('sitting') || sittingHours === '6+') {
@@ -1346,13 +1876,30 @@ export const getCauses = (onboardingData = {}) => {
     causes.push({ icon: 'walk-outline', text: 'Pain with weight-bearing activities typically involves a load tolerance deficit — the tissue is not yet resilient enough for the demands placed on it. Progressive loading is the specific solution.' });
   }
 
+  // ── Description-derived causes (highest clinical specificity) ──────────────
+  if (desc?.discogenic) {
+    causes.push({ icon: 'layers-outline', text: 'Your description suggests a discogenic pattern (McKenzie classification): the disc bears 40% more load in flexion than standing. Extension-biased movement is the primary tool for centralising disc-related pain.' });
+  }
+  if (desc?.facetogenic) {
+    causes.push({ icon: 'git-network-outline', text: 'One-sided pain worse with backward bending or rotation is the Cyriax facet pattern: the small guiding joints between vertebrae are compressed in extension, creating local and referred pain. Deep segmental stabilisation directly reduces this load.' });
+  }
+  if (desc?.myofascial) {
+    causes.push({ icon: 'body-outline', text: 'Trigger points in your description (Travell & Simons): hyperirritable loci in muscle tissue that perpetuate a pain-spasm cycle and refer pain to predictable distant sites. Release of the trigger point plus activation of the inhibited antagonist breaks the cycle.' });
+  }
+  if (desc?.sacroiliac) {
+    causes.push({ icon: 'git-compare-outline', text: 'SIJ dysfunction: the sacroiliac joint transfers load between the spine and pelvis via a form-closure and force-closure mechanism. When the deep stabilisers (transversus abdominis, multifidus, deep gluteals) fail, shear stress at the SIJ increases sharply.' });
+  }
+  if (desc?.centralSensitization) {
+    causes.push({ icon: 'infinite-outline', text: 'Central sensitization (Woolf 2011): prolonged pain rewires the nervous system to amplify pain signals beyond the original tissue source. Graded exposure, movement, and pain education are the evidence-based interventions — the goal is to recalibrate the alarm system, not eliminate all sensation.' });
+  }
+
   // Ensure at least 2 causes
   if (causes.length < 2) {
     causes.push({ icon: 'fitness-outline', text: 'Muscle imbalances between your dominant and stabilizing muscle groups are creating uneven load distribution across the painful area.' });
     causes.push({ icon: 'leaf-outline', text: 'Reduced movement variety — the body thrives on varied movement patterns. Repetitive daily postures and movements without variation contribute to local tissue overload.' });
   }
 
-  return causes.slice(0, 4);
+  return causes.slice(0, 5);
 };
 
 // ─── Recovery outlook ─────────────────────────────────────────────────────────

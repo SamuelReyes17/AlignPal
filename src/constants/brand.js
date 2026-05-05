@@ -84,6 +84,8 @@ export const Radius = {
   md:  16,
   lg:  20,
   xl:  26,
+  xxl: 32,
+  hero:36,
   pill:40,
 };
 
@@ -93,4 +95,106 @@ export const Spacing = {
   md:  20,
   lg:  28,
   xl:  40,
+  // 70pt tab bar (AppNavigator) + comfort gap. Use as paddingBottom on scroll
+  // containers inside any TabNavigator screen.
+  tabBarClearance: 120,
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Template-style accent palette
+// Vibrant pops used on hero cards, chart bars, accent blocks.
+// ═══════════════════════════════════════════════════════════════════════════
+export const Accents = {
+  coral:       '#FF6B6B',
+  coralSoft:   '#FFB4A2',
+  pink:        '#FF5C8A',
+  pinkSoft:    '#FFD1DC',
+  teal:        '#4ECDC4',
+  tealSoft:    '#A8E6E0',
+  avocado:     '#7BC950',
+  avocadoSoft: '#C8E6C9',
+  sunny:       '#FFD166',
+  sunnySoft:   '#FFE5A0',
+  sky:         '#73C2FB',
+  skySoft:     '#B8E0F8',
+  violet:      '#9B5DE5',
+  // Pain-type / phase palette colors — no equivalent in Colors.* yet.
+  orange:      '#FB923C',
+  indigo:      '#818CF8',
+  skyBright:   '#60A5FA',
+  pinkBright:  '#F472B6',
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Phase palette — single source of truth for exercise-phase colors / icons.
+// Replaces duplicated PHASE maps in ExploreScreen, RecoverySessionScreen,
+// WorkoutScreen. All phases include color, bg (color + 12% alpha), icon, label.
+// ═══════════════════════════════════════════════════════════════════════════
+export const PhasePalette = {
+  Mobility:   { color: '#7C5CF0', bg: '#7C5CF018', icon: 'sync-outline',    label: 'Mobility'   },
+  Activation: { color: '#34D399', bg: '#34D39918', icon: 'flash-outline',   label: 'Activation' },
+  Stability:  { color: '#FBBF24', bg: '#FBBF2418', icon: 'shield-outline',  label: 'Stability'  },
+  Strength:   { color: '#FF6B9D', bg: '#FF6B9D18', icon: 'barbell-outline', label: 'Strength'   },
+  Release:    { color: '#C4B8FF', bg: '#C4B8FF18', icon: 'leaf-outline',    label: 'Release'    },
+  Exposure:   { color: '#7C5CF0', bg: '#7C5CF018', icon: 'walk-outline',    label: 'Exposure'   },
+};
+export const getPhaseMeta = (name) => PhasePalette[name] || PhasePalette.Mobility;
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Pain-type palette — single source of truth for pain-type colors / icons.
+// Replaces duplicated PAIN_TYPE_META maps in HistoryScreen, ProfileScreen.
+// ═══════════════════════════════════════════════════════════════════════════
+export const PainTypePalette = {
+  sharp:     { label: 'Sharp',     color: '#FF6B9D', icon: 'flash' },
+  dull:      { label: 'Dull',      color: '#FBBF24', icon: 'remove-circle' },
+  burning:   { label: 'Burning',   color: '#FB923C', icon: 'flame' },
+  stiff:     { label: 'Stiff',     color: '#818CF8', icon: 'lock-closed' },
+  radiating: { label: 'Radiating', color: '#7C5CF0', icon: 'git-merge' },
+  numb:      { label: 'Numbness',  color: '#34D399', icon: 'hand-left' },
+  cramping:  { label: 'Cramping',  color: '#60A5FA', icon: 'contract' },
+  throbbing: { label: 'Throbbing', color: '#F472B6', icon: 'pulse' },
+};
+
+// Dark navy surface palette — primary card aesthetic going forward
+// (matches Clear Gym reference: dark navy cards, purple as tiny accent only)
+export const Surfaces = {
+  navy:       '#0F1530',  // base dark-navy bg for hero cards
+  navyDeep:   '#0A0E22',  // deeper navy
+  navyCard:   '#141A38',  // elevated navy card (slightly lighter than navy)
+  navyTop:    '#1A2046',  // top edge of navy hero
+  hairline:   '#23264D',  // subtle border on navy
+
+  // ─── White-alpha overlays for dark-navy hero cards ────────────────────────
+  // Use these for icon backgrounds, badges, dividers, and text colors that
+  // sit on top of the Gradients.purpleHero (dark navy) hero cards.
+  // Replaces the dozens of inline 'rgba(255,255,255,0.X)' literals.
+  onNavy04:   'rgba(255,255,255,0.04)',  // very subtle blob / inner shadow
+  onNavy08:   'rgba(255,255,255,0.08)',  // hairline divider on navy
+  onNavy10:   'rgba(255,255,255,0.10)',  // soft hero blob, faint badge bg
+  onNavy14:   'rgba(255,255,255,0.14)',  // gentle pill / chip bg
+  onNavy18:   'rgba(255,255,255,0.18)',  // icon button bg, badge dot
+  onNavy22:   'rgba(255,255,255,0.22)',  // icon button bg (slightly stronger)
+  onNavy65:   'rgba(255,255,255,0.65)',  // muted text on navy
+  onNavy75:   'rgba(255,255,255,0.75)',  // secondary text on navy
+  onNavy85:   'rgba(255,255,255,0.85)',  // standard body text on navy
+  onNavy92:   'rgba(255,255,255,0.92)',  // emphasized text on navy
+};
+
+// Gradient definitions (start, mid?, end). Used by GradientCard.
+// Note: 'purpleHero' is now a SUBTLE dark navy gradient — purple is no longer
+// the dominant color of hero cards. Reach for it only when you really need a
+// purple panel.
+export const Gradients = {
+  purple:    ['#7C5CF0', '#5B3CC4'],
+  purpleHero:['#1A2046', '#0F1530', '#0A0E22'],   // dark navy hero (was bright purple)
+  purpleBold:['#9B8BF4', '#7C5CF0', '#5B3CC4'],   // OLD bright purple, still available if needed
+  navy:      ['#1A2046', '#0F1530', '#0A0E22'],
+  navySoft:  ['#141A38', '#0F1530'],
+  coral:     ['#FF8A65', '#FF5C7F'],
+  pink:      ['#FF5C8A', '#9B5DE5'],
+  teal:      ['#4ECDC4', '#1A8B82'],
+  avocado:   ['#A8E6A1', '#7BC950'],
+  sunset:    ['#FFD166', '#FF6B6B'],
+  midnight:  ['#1A1235', '#07050F'],
+  cardSoft:  ['#1A1235', '#110C24'],
 };

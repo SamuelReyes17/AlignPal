@@ -1,6 +1,8 @@
 import React, { useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useQuery } from 'convex/react';
+import { api } from '../../convex/_generated/api';
 import { Colors, Shadows } from '../constants/brand';
 import { useOnboarding } from '../context/OnboardingContext';
 import { selectExercises } from '../constants/exerciseLibrary';
@@ -12,26 +14,29 @@ const getPainColor = (level) => {
 };
 
 export default function StatsCard() {
-  const { onboardingData } = useOnboarding();
+  const { onboardingData, installId } = useOnboarding();
   const { painIntensity = 5 } = onboardingData;
+  const dashStats = useQuery(api.stats.getDashboardStats, installId ? { installId } : 'skip');
 
   const exercises = useMemo(() => selectExercises(onboardingData), [onboardingData]);
   const totalMin  = exercises.reduce((s, e) => s + (parseInt(e.duration) || 2), 0);
-  const painColor = getPainColor(painIntensity);
+  const currentPain = dashStats?.latestPainLevel ?? painIntensity;
+  const painColor = getPainColor(currentPain);
+  const sessionCount = dashStats?.sessionCount ?? 0;
 
   const stats = [
     {
       icon: 'trending-down-outline',
-      label: 'Starting Pain',
-      value: `${painIntensity}/10`,
+      label: sessionCount > 0 ? 'Current Pain' : 'Starting Pain',
+      value: `${currentPain}/10`,
       sub: 'goal: ≤3/10',
       color: painColor,
     },
     {
       icon: 'barbell-outline',
-      label: 'Today\'s Plan',
-      value: String(exercises.length),
-      sub: 'exercises',
+      label: sessionCount > 0 ? 'Sessions Done' : 'Today\'s Plan',
+      value: sessionCount > 0 ? String(sessionCount) : String(exercises.length),
+      sub: sessionCount > 0 ? 'completed' : 'exercises',
       color: Colors.purple,
     },
     {
@@ -69,10 +74,10 @@ export default function StatsCard() {
       <View style={styles.goalBar}>
         <View style={styles.goalBarHeader}>
           <Text style={styles.goalBarLabel}>Pain reduction goal</Text>
-          <Text style={styles.goalBarTarget}>{painIntensity}/10 → 3/10</Text>
+          <Text style={styles.goalBarTarget}>{currentPain}/10 → 3/10</Text>
         </View>
         <View style={styles.goalTrack}>
-          <View style={[styles.goalFill, { width: '5%' }]} />
+          <View style={[styles.goalFill, { width: `${Math.min(95, sessionCount * 3 + 2)}%` }]} />
           <View style={styles.goalMarker} />
         </View>
         <Text style={styles.goalHint}>Track daily to see your trend</Text>

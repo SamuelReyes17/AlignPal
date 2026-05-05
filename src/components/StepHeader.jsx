@@ -11,10 +11,8 @@ export function StepHeader({ step, total, onBack }) {
         <Ionicons name="chevron-back" size={20} color={Colors.purplePale} />
       </TouchableOpacity>
 
-      {/* Progress pill track */}
-      <View style={s.track}>
-        <View style={[s.fill, { width: `${(step / total) * 100}%` }]} />
-      </View>
+      {/* Spacer (no more progress bar — minimalist style) */}
+      <View style={{ flex: 1 }} />
 
       {/* Step label */}
       <View style={s.labelWrap}>
@@ -34,26 +32,14 @@ const s = StyleSheet.create({
     gap: 14,
   },
   back: {
-    width: 38,
-    height: 38,
-    borderRadius: 12,
+    width: 44,
+    height: 44,
+    borderRadius: 14,
     backgroundColor: Colors.bgCard,
     borderWidth: 1,
     borderColor: Colors.border,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  track: {
-    flex: 1,
-    height: 4,
-    backgroundColor: Colors.border,
-    borderRadius: 4,
-    overflow: 'hidden',
-  },
-  fill: {
-    height: '100%',
-    backgroundColor: Colors.purple,
-    borderRadius: 4,
   },
   labelWrap: {
     minWidth: 30,

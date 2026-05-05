@@ -1,8 +1,9 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Animated } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Animated, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { Colors, Shadows } from '../../constants/brand';
+import { Colors, Shadows, Surfaces } from '../../constants/brand';
+import { useResponsive, fs, sp } from '../../utils/responsive';
 
 const STATS = [
   { value: '94%',    label: 'feel relief\nin week 1' },
@@ -13,6 +14,7 @@ const STATS = [
 export default function WelcomeScreen({ navigation }) {
   const fade  = useRef(new Animated.Value(0)).current;
   const slideY = useRef(new Animated.Value(40)).current;
+  const { isSmall, isTablet, isShort, horizPad, frameWidth, fontScale, gapScale } = useResponsive();
 
   useEffect(() => {
     Animated.parallel([
@@ -21,133 +23,142 @@ export default function WelcomeScreen({ navigation }) {
     ]).start();
   }, []);
 
+  const dyn = {
+    scrollContent: { paddingHorizontal: horizPad, paddingVertical: sp(24, gapScale) },
+    frame:         { maxWidth: frameWidth, gap: sp(32, gapScale) },
+    logoSize:      { width: isSmall ? 84 : isTablet ? 108 : 96, height: isSmall ? 84 : isTablet ? 108 : 96 },
+    wordmark:      { fontSize: fs(28, fontScale) },
+    taglineText:   { fontSize: fs(12, fontScale) },
+    headline:      { fontSize: fs(38, fontScale), lineHeight: fs(46, fontScale) },
+    body:          { fontSize: fs(15, fontScale), lineHeight: fs(24, fontScale) },
+    statValue:     { fontSize: fs(22, fontScale) },
+    statLabel:     { fontSize: fs(11, fontScale), lineHeight: fs(15, fontScale) },
+    pillText:      { fontSize: fs(12, fontScale) },
+    ctaText:       { fontSize: fs(17, fontScale) },
+    legal:         { fontSize: fs(12, fontScale) },
+    footer:        { paddingHorizontal: horizPad, paddingBottom: isShort ? 22 : 36 },
+    footerInner:   { maxWidth: frameWidth },
+  };
+
   return (
     <SafeAreaView style={s.container} edges={['top', 'bottom']}>
-      <Animated.View style={[s.inner, { opacity: fade, transform: [{ translateY: slideY }] }]}>
+      <ScrollView style={s.scroll} contentContainerStyle={[s.scrollContent, dyn.scrollContent]} showsVerticalScrollIndicator={false}>
+        <Animated.View style={[s.frame, dyn.frame, { opacity: fade, transform: [{ translateY: slideY }] }]}>
 
-        {/* ── Logo area ── */}
-        <View style={s.logoArea}>
-          <View style={s.logoRing}>
-            <View style={s.logoGlow} />
-            <View style={s.logoInner}>
-              <Ionicons name="body" size={34} color={Colors.purple} />
-            </View>
-          </View>
-          <Text style={s.wordmark}>AlignPal</Text>
-          <View style={s.taglinePill}>
-            <View style={s.taglineDot} />
-            <Text style={s.taglineText}>AI-Powered Recovery Coach</Text>
-          </View>
-        </View>
-
-        {/* ── Hero copy ── */}
-        <View style={s.heroArea}>
-          <Text style={s.headline}>
-            End the pain.{'\n'}
-            <Text style={s.headlineAccent}>Start living.</Text>
-          </Text>
-          <Text style={s.body}>
-            AlignPal analyzes your specific pain pattern and builds a personalized physio plan — so you finally know exactly what to do, and why.
-          </Text>
-        </View>
-
-        {/* ── Stats row ── */}
-        <View style={s.statsRow}>
-          {STATS.map((stat, i) => (
-            <React.Fragment key={i}>
-              <View style={s.statItem}>
-                <Text style={s.statValue}>{stat.value}</Text>
-                <Text style={s.statLabel}>{stat.label}</Text>
+          {/* ── Logo area ── */}
+          <View style={s.logoArea}>
+            <View style={[s.logoRing, dyn.logoSize]}>
+              <View style={[s.logoGlow, dyn.logoSize]} />
+              <View style={[s.logoInner, dyn.logoSize]}>
+                <Ionicons name="body" size={isSmall ? 30 : isTablet ? 40 : 34} color={Colors.purple} />
               </View>
-              {i < STATS.length - 1 && <View style={s.statDivider} />}
-            </React.Fragment>
-          ))}
-        </View>
-
-        {/* ── Feature pills ── */}
-        <View style={s.pillsRow}>
-          {['No equipment', 'No guesswork', 'No physio bills'].map((t, i) => (
-            <View key={i} style={s.pill}>
-              <Ionicons name="checkmark-circle" size={13} color={Colors.green} />
-              <Text style={s.pillText}>{t}</Text>
             </View>
-          ))}
-        </View>
+            <Text style={[s.wordmark, dyn.wordmark]}>AlignPal</Text>
+            <View style={s.taglinePill}>
+              <View style={s.taglineDot} />
+              <Text style={[s.taglineText, dyn.taglineText]}>AI-Powered Recovery Coach</Text>
+            </View>
+          </View>
 
-      </Animated.View>
+          {/* ── Hero copy ── */}
+          <View style={s.heroArea}>
+            <Text style={[s.headline, dyn.headline]}>
+              End the pain.{'\n'}
+              <Text style={s.headlineAccent}>Start living.</Text>
+            </Text>
+            <Text style={[s.body, dyn.body]}>
+              AlignPal analyzes your specific pain pattern and builds a personalized physio plan — so you finally know exactly what to do, and why.
+            </Text>
+          </View>
+
+          {/* ── Stats row ── */}
+          <View style={s.statsRow}>
+            {STATS.map((stat, i) => (
+              <React.Fragment key={i}>
+                <View style={s.statItem}>
+                  <Text style={[s.statValue, dyn.statValue]}>{stat.value}</Text>
+                  <Text style={[s.statLabel, dyn.statLabel]}>{stat.label}</Text>
+                </View>
+                {i < STATS.length - 1 && <View style={s.statDivider} />}
+              </React.Fragment>
+            ))}
+          </View>
+
+          {/* ── Feature pills ── */}
+          <View style={s.pillsRow}>
+            {['No equipment', 'No guesswork', 'No physio bills'].map((t, i) => (
+              <View key={i} style={s.pill}>
+                <Ionicons name="checkmark-circle" size={13} color={Colors.green} />
+                <Text style={[s.pillText, dyn.pillText]}>{t}</Text>
+              </View>
+            ))}
+          </View>
+
+        </Animated.View>
+      </ScrollView>
 
       {/* ── CTA ── */}
-      <View style={s.footer}>
-        <TouchableOpacity
-          style={s.cta}
-          onPress={() => navigation.navigate('PainLocation')}
-          activeOpacity={0.88}
-        >
-          <Text style={s.ctaText}>Start My Recovery</Text>
-          <View style={s.ctaArrow}>
-            <Ionicons name="arrow-forward" size={16} color={Colors.purple} />
-          </View>
-        </TouchableOpacity>
+      <View style={[s.footer, dyn.footer]}>
+        <View style={[s.footerInner, dyn.footerInner]}>
+          <TouchableOpacity
+            style={s.cta}
+            onPress={() => navigation.navigate('PainLocation')}
+            activeOpacity={0.88}
+          >
+            <Text style={[s.ctaText, dyn.ctaText]}>Start My Recovery</Text>
+            <View style={s.ctaArrow}>
+              <Ionicons name="arrow-forward" size={16} color={Colors.purple} />
+            </View>
+          </TouchableOpacity>
 
-        <Text style={s.legal}>
-          Free to start · Takes 2 minutes · No credit card
-        </Text>
+          <Text style={[s.legal, dyn.legal]}>
+            Free to start · Takes 2 minutes · No credit card
+          </Text>
+        </View>
       </View>
     </SafeAreaView>
   );
 }
 
 const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.bg },
-  inner:     { flex: 1, paddingHorizontal: 28, justifyContent: 'center', gap: 32 },
+  container:     { flex: 1, backgroundColor: Colors.bg },
+  scroll:        { flex: 1 },
+  scrollContent: { flexGrow: 1, justifyContent: 'center' },
+  frame:         { width: '100%', alignSelf: 'center' },
 
   // Logo
   logoArea: { alignItems: 'center', gap: 10 },
   logoRing: {
-    width: 96, height: 96,
     borderRadius: 30,
     alignItems: 'center', justifyContent: 'center',
     position: 'relative',
   },
   logoGlow: {
-    position: 'absolute',
-    width: 96, height: 96, borderRadius: 30,
-    backgroundColor: Colors.purple,
-    opacity: 0.22,
-    transform: [{ scale: 1.5 }],
+    position: 'absolute', borderRadius: 30,
+    backgroundColor: Colors.purple, opacity: 0.22, transform: [{ scale: 1.5 }],
   },
   logoInner: {
-    width: 96, height: 96, borderRadius: 30,
+    borderRadius: 30,
     backgroundColor: Colors.bgCard,
     borderWidth: 1.5, borderColor: Colors.border,
     alignItems: 'center', justifyContent: 'center',
     ...Shadows.purpleSoft,
   },
-  wordmark: {
-    fontSize: 28, fontWeight: '800', color: Colors.textPrimary, letterSpacing: -0.5,
-  },
+  wordmark: { fontWeight: '800', color: Colors.textPrimary, letterSpacing: -0.5 },
   taglinePill: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
     backgroundColor: Colors.bgCard,
     borderWidth: 1, borderColor: Colors.border,
     borderRadius: 20, paddingHorizontal: 14, paddingVertical: 6,
   },
-  taglineDot: {
-    width: 6, height: 6, borderRadius: 3, backgroundColor: Colors.purple,
-  },
-  taglineText: { fontSize: 12, color: Colors.purplePale, fontWeight: '600' },
+  taglineDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: Colors.purple },
+  taglineText: { color: Colors.purplePale, fontWeight: '600' },
 
   // Hero
   heroArea: { alignItems: 'center', gap: 14 },
-  headline: {
-    fontSize: 38, fontWeight: '800', color: Colors.textPrimary,
-    textAlign: 'center', letterSpacing: -1, lineHeight: 46,
-  },
+  headline: { fontWeight: '800', color: Colors.textPrimary, textAlign: 'center', letterSpacing: -1 },
   headlineAccent: { color: Colors.purple },
-  body: {
-    fontSize: 15, color: Colors.textSecondary, textAlign: 'center',
-    lineHeight: 24, paddingHorizontal: 8,
-  },
+  body: { color: Colors.textSecondary, textAlign: 'center', paddingHorizontal: 8 },
 
   // Stats
   statsRow: {
@@ -158,8 +169,8 @@ const s = StyleSheet.create({
     alignItems: 'center', justifyContent: 'space-around',
   },
   statItem:    { flex: 1, alignItems: 'center', gap: 4 },
-  statValue:   { fontSize: 22, fontWeight: '800', color: Colors.purple },
-  statLabel:   { fontSize: 11, color: Colors.textSecondary, textAlign: 'center', lineHeight: 15 },
+  statValue:   { fontWeight: '800', color: Colors.purple },
+  statLabel:   { color: Colors.textSecondary, textAlign: 'center' },
   statDivider: { width: 1, height: 40, backgroundColor: Colors.border },
 
   // Pills
@@ -170,21 +181,22 @@ const s = StyleSheet.create({
     borderWidth: 1, borderColor: Colors.border,
     borderRadius: 20, paddingHorizontal: 12, paddingVertical: 7,
   },
-  pillText: { fontSize: 12, color: Colors.textSecondary, fontWeight: '600' },
+  pillText: { color: Colors.textSecondary, fontWeight: '600' },
 
   // Footer
-  footer: { paddingHorizontal: 28, paddingBottom: 36, gap: 12 },
+  footer:      { alignItems: 'center' },
+  footerInner: { width: '100%', alignSelf: 'center', gap: 12 },
   cta: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     backgroundColor: Colors.purple,
     borderRadius: 20, paddingVertical: 18, gap: 10,
     ...Shadows.purple,
   },
-  ctaText:  { fontSize: 17, fontWeight: '700', color: Colors.white },
+  ctaText:  { fontWeight: '700', color: Colors.white },
   ctaArrow: {
     width: 28, height: 28, borderRadius: 10,
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    backgroundColor: Surfaces.onNavy22,
     alignItems: 'center', justifyContent: 'center',
   },
-  legal: { fontSize: 12, color: Colors.textMuted, textAlign: 'center' },
+  legal: { color: Colors.textMuted, textAlign: 'center' },
 });
