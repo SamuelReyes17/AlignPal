@@ -2,307 +2,265 @@ import React from 'react';
 import { ScrollView, StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
+import { useQuery } from 'convex/react';
+
+import { api } from '../../convex/_generated/api';
+import { useOnboarding } from '../context/OnboardingContext';
+import { getPainCondition } from '../constants/exerciseLibrary';
+import { KitColors, KitRadius, KitSpacing } from '../constants/brand';
+import { useResponsive, fs, sp } from '../utils/responsive';
+import {
+  GradientCard,
+  BarChart,
+  StatTile,
+  ListCard,
+  ListRow,
+  Button,
+} from '../components/kit';
+
+/**
+ * HistoryScreen — Progress / Pain Journey tab.
+ *
+ * Minimal-dark layout: avocado hero with a single big number, weekly bar
+ * chart, two muted stat tiles, improvements list. Empty state if no sessions.
+ *
+ * Data wiring (preserved):
+ *  - useOnboarding() for installId, painIntensity, painLocations
+ *  - api.sessions.getRecentSessions for the bar chart + counts
+ *  - getPainCondition(onboardingData) for the condition chip
+ */
+
+const LOCATION_LABELS = {
+  lower_back: 'Lower Back', upper_back: 'Upper Back', neck: 'Neck',
+  shoulder: 'Shoulder', knee: 'Knee', hip: 'Hip', glute: 'Glutes',
+  hamstring: 'Hamstring', calf: 'Calf', ankle: 'Ankle',
+};
+const formatLocation = (raw) =>
+  LOCATION_LABELS[raw] || raw.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+
+// Build a 7-day "this week" bar series from session records.
+// session = { date: 'YYYY-MM-DD', durationMinutes, completed }
+function buildWeek(sessions = []) {
+  const now = new Date();
+  const days = [];
+  const dayLabels = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(now);
+    d.setDate(d.getDate() - i);
+    const iso = d.toISOString().slice(0, 10);
+    const minutes = sessions
+      .filter(s => s.date === iso && s.completed)
+      .reduce((sum, s) => sum + (s.durationMinutes || 0), 0);
+    days.push({
+      label: dayLabels[d.getDay()],
+      value: minutes,
+      dim: minutes === 0,
+    });
+  }
+  return days;
+}
 
 export default function HistoryScreen() {
-  // Sample history data
-  const historyData = [
-    {
-      id: 1,
-      date: 'Today',
-      time: '2:30 PM',
-      painLevel: 3,
-      exercises: ['Cat-Cow Stretch', 'Child\'s Pose'],
-      duration: '12 min',
-      notes: 'Feeling better after exercises',
-    },
-    {
-      id: 2,
-      date: 'Yesterday',
-      time: '4:15 PM',
-      painLevel: 5,
-      exercises: ['Pelvic Tilt', 'Cat-Cow Stretch'],
-      duration: '15 min',
-      notes: 'Moderate pain, exercises helped',
-    },
-    {
-      id: 3,
-      date: '2 days ago',
-      time: '10:00 AM',
-      painLevel: 4,
-      exercises: ['Child\'s Pose', 'Pelvic Tilt'],
-      duration: '10 min',
-      notes: 'Morning routine',
-    },
-    {
-      id: 4,
-      date: '3 days ago',
-      time: '6:45 PM',
-      painLevel: 6,
-      exercises: ['Cat-Cow Stretch'],
-      duration: '8 min',
-      notes: 'High pain level, short session',
-    },
-    {
-      id: 5,
-      date: '4 days ago',
-      time: '3:20 PM',
-      painLevel: 4,
-      exercises: ['Pelvic Tilt', 'Child\'s Pose', 'Cat-Cow Stretch'],
-      duration: '18 min',
-      notes: 'Full routine completed',
-    },
-  ];
+  const navigation = useNavigation();
+  const { onboardingData, installId } = useOnboarding();
+  const { painLocations = [], painIntensity = 5 } = onboardingData;
 
-  const getPainLevelColor = (level) => {
-    if (level <= 3) return '#50C878';
-    if (level <= 6) return '#FFA500';
-    return '#FF6B6B';
+  const { isSmall, isTablet, horizPad, frameWidth, fontScale, gapScale } = useResponsive();
+  const dyn = {
+    content:    { paddingHorizontal: horizPad, gap: sp(KitSpacing.s5, gapScale) },
+    name:       { fontSize: fs(22, fontScale) },
+    eyebrow:    { fontSize: fs(13, fontScale) },
+    heroBigNum: { fontSize: fs(42, fontScale), lineHeight: fs(42, fontScale) },
+    heroSub:    { fontSize: fs(13, fontScale) },
+    sectionTitle: { fontSize: fs(16, fontScale) },
+    chartTitle:   { fontSize: fs(14, fontScale) },
+    frame:        { width: '100%', alignSelf: 'center', maxWidth: Math.max(frameWidth, 0) },
   };
 
-  const getPainLevelLabel = (level) => {
-    if (level <= 3) return 'Mild';
-    if (level <= 6) return 'Moderate';
-    return 'Severe';
-  };
+  const recentSessions = useQuery(
+    api.sessions.getRecentSessions,
+    installId ? { installId } : 'skip'
+  );
+  const condition = getPainCondition(onboardingData);
+
+  const completed = recentSessions?.filter(s => s.completed) ?? [];
+  const totalSessions = completed.length;
+  const totalMinutes  = completed.reduce((sum, s) => sum + (s.durationMinutes || 0), 0);
+  const avgMinutes    = totalSessions > 0 ? Math.round(totalMinutes / totalSessions) : 0;
+
+  const weekData = buildWeek(recentSessions ?? []);
+  const weekMinutes = weekData.reduce((s, d) => s + d.value, 0);
+  const sessionsThisWeek = weekData.filter(d => d.value > 0).length;
+
+  // Friendly "X% ahead of last week" — placeholder until we track previous week.
+  const aheadCopy = sessionsThisWeek > 0
+    ? `${sessionsThisWeek} session${sessionsThisWeek === 1 ? '' : 's'} this week`
+    : 'No sessions yet this week';
+
+  const primaryArea = painLocations[0] ? formatLocation(painLocations[0]) : null;
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>History</Text>
-        <TouchableOpacity style={styles.filterButton}>
-          <Ionicons name="filter-outline" size={24} color="#7CC7FF" />
-        </TouchableOpacity>
-      </View>
-
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        {historyData.length === 0 ? (
-          <View style={styles.emptyState}>
-            <Ionicons name="document-text-outline" size={64} color="#bdc3c7" />
-            <Text style={styles.emptyStateText}>No history yet</Text>
-            <Text style={styles.emptyStateSubtext}>
-              Your pain tracking and exercise history will appear here
-            </Text>
+      <ScrollView
+        contentContainerStyle={[styles.content, dyn.content]}
+        showsVerticalScrollIndicator={false}
+      >
+       <View style={dyn.frame}>
+        {/* Header */}
+        <View style={styles.header}>
+          <View>
+            <Text style={[styles.eyebrow, dyn.eyebrow]}>Your week</Text>
+            <Text style={[styles.name, dyn.name]}>Progress</Text>
           </View>
-        ) : (
-          historyData.map((item) => (
-            <View key={item.id} style={styles.historyCard}>
-              <View style={styles.historyHeader}>
-                <View style={styles.dateContainer}>
-                  <Text style={styles.dateText}>{item.date}</Text>
-                  <Text style={styles.timeText}>{item.time}</Text>
-                </View>
-                <View style={[styles.painBadge, { backgroundColor: `${getPainLevelColor(item.painLevel)}26` }]}>
-                  <View style={[styles.painIndicator, { backgroundColor: getPainLevelColor(item.painLevel) }]} />
-                  <Text style={[styles.painLevelText, { color: getPainLevelColor(item.painLevel) }]}>
-                    {item.painLevel}/10 - {getPainLevelLabel(item.painLevel)}
-                  </Text>
-                </View>
-              </View>
+          <TouchableOpacity activeOpacity={0.7} style={styles.iconBtn}>
+            <Ionicons name="ellipsis-horizontal" size={18} color={KitColors.text1} />
+          </TouchableOpacity>
+        </View>
 
-              <View style={styles.exercisesContainer}>
-                <View style={styles.exercisesHeader}>
-                  <Ionicons name="fitness-outline" size={18} color="#7CC7FF" />
-                  <Text style={styles.exercisesTitle}>Exercises</Text>
-                </View>
-                <View style={styles.exercisesList}>
-                  {item.exercises.map((exercise, index) => (
-                    <View key={index} style={styles.exerciseTag}>
-                      <Text style={styles.exerciseTagText}>{exercise}</Text>
-                    </View>
-                  ))}
-                </View>
-              </View>
+        {/* Violet hero — brand purple, single big number */}
+        <GradientCard variant="violet">
+          <Text style={styles.heroEyebrow}>This week</Text>
+          <Text style={[styles.heroBigNumber, dyn.heroBigNum]}>{weekMinutes} min</Text>
+          <Text style={[styles.heroSub, dyn.heroSub]}>
+            {aheadCopy}
+            {primaryArea ? ` · Focused on ${primaryArea.toLowerCase()}` : ''}
+          </Text>
+        </GradientCard>
 
-              <View style={styles.statsRow}>
-                <View style={styles.statItem}>
-                  <Ionicons name="time-outline" size={16} color="#7f8c8d" />
-                  <Text style={styles.statText}>{item.duration}</Text>
-                </View>
-                <View style={styles.statItem}>
-                  <Ionicons name="checkmark-circle-outline" size={16} color="#50C878" />
-                  <Text style={styles.statText}>Completed</Text>
-                </View>
-              </View>
+        {/* Bar chart */}
+        <View style={styles.chartCard}>
+          <View style={styles.chartHead}>
+            <Text style={[styles.chartTitle, dyn.chartTitle]}>Daily mobility</Text>
+            <Text style={styles.chartPeriod}>This week</Text>
+          </View>
+          <BarChart data={weekData} />
+        </View>
 
-              {item.notes && (
-                <View style={styles.notesContainer}>
-                  <Ionicons name="document-text-outline" size={16} color="#7f8c8d" />
-                  <Text style={styles.notesText}>{item.notes}</Text>
-                </View>
-              )}
+        {/* Stat tiles */}
+        <View style={styles.statRow}>
+          <StatTile
+            label="Avg. session"
+            value={avgMinutes > 0 ? `${avgMinutes}m` : '—'}
+          />
+          <View style={{ width: 12 }} />
+          <StatTile
+            label="Pain at start"
+            value={`${painIntensity}/10`}
+          />
+        </View>
 
-              <View style={styles.divider} />
-            </View>
-          ))
+        {/* Condition / improvements */}
+        <View style={styles.sectionHead}>
+          <Text style={[styles.sectionTitle, dyn.sectionTitle]}>Your recovery</Text>
+        </View>
+        <ListCard>
+          <ListRow
+            icon="◇"
+            iconColor="violet"
+            title={condition.name}
+            sub={condition.description}
+          />
+          {totalSessions > 0 && (
+            <ListRow
+              icon="↗"
+              iconColor="avocado"
+              title="Sessions completed"
+              sub={`${totalMinutes} minutes total`}
+              trailing={String(totalSessions)}
+            />
+          )}
+        </ListCard>
+
+        {/* Empty state if no sessions yet */}
+        {totalSessions === 0 && (
+          <View style={styles.emptyCard}>
+            <Text style={styles.emptyTitle}>No sessions yet</Text>
+            <Text style={styles.emptySubtitle}>
+              Once you complete your first session, your weekly mobility minutes
+              and improvements will show up here.
+            </Text>
+            <View style={{ height: 16 }} />
+            <Button
+              label="Start today's session"
+              onPress={() => navigation.navigate('RecoverySession')}
+            />
+          </View>
         )}
-        <View style={styles.bottomSpacing} />
+       </View>
       </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#0B1220',
+  container: { flex: 1, backgroundColor: KitColors.bg },
+  content: {
+    paddingTop: 22,
+    paddingBottom: 120,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingTop: 10,
-    paddingBottom: 20,
-    backgroundColor: '#0B1220',
   },
-  headerTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#E6EDFF',
+  eyebrow: { color: KitColors.text3, fontSize: 13, fontWeight: '500' },
+  name: {
+    fontSize: 22, fontWeight: '700', color: KitColors.text1,
+    letterSpacing: -0.4, marginTop: 2,
   },
-  filterButton: {
-    padding: 5,
+  iconBtn: {
+    width: 40, height: 40,
+    backgroundColor: KitColors.surface1,
+    borderRadius: 12,
+    borderWidth: 1, borderColor: KitColors.hairline,
+    alignItems: 'center', justifyContent: 'center',
   },
-  scrollView: {
-    flex: 1,
-  },
-  emptyState: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 80,
-    paddingHorizontal: 40,
-  },
-  emptyStateText: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#E6EDFF',
-    marginTop: 20,
-    marginBottom: 8,
-  },
-  emptyStateSubtext: {
-    fontSize: 14,
-    color: '#94A3B8',
-    textAlign: 'center',
-    lineHeight: 20,
-  },
-  historyCard: {
-    backgroundColor: '#0F182A',
-    marginHorizontal: 20,
-    marginTop: 16,
-    borderRadius: 18,
-    padding: 20,
-    borderWidth: 1,
-    borderColor: '#1F2A3D',
-  },
-  historyHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 16,
-  },
-  dateContainer: {
-    flex: 1,
-  },
-  dateText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#E6EDFF',
+  heroEyebrow: {
+    color: 'rgba(255,255,255,0.75)',
+    fontSize: 12, fontWeight: '600',
+    letterSpacing: 1.2, textTransform: 'uppercase',
     marginBottom: 4,
   },
-  timeText: {
-    fontSize: 14,
-    color: '#94A3B8',
+  heroBigNumber: {
+    color: '#FFFFFF', fontSize: 42, fontWeight: '800',
+    letterSpacing: -1, lineHeight: 42, marginBottom: 8,
   },
-  painBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-    marginLeft: 12,
+  heroSub: { color: 'rgba(255,255,255,0.85)', fontSize: 13, lineHeight: 18 },
+  chartCard: {
+    backgroundColor: KitColors.surface1,
+    borderColor: KitColors.hairline, borderWidth: 1,
+    borderRadius: KitRadius.lg,
+    padding: 18, paddingBottom: 14,
   },
-  painIndicator: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    marginRight: 6,
+  chartHead: {
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline',
+    marginBottom: 14,
   },
-  painLevelText: {
-    fontSize: 12,
-    fontWeight: '600',
+  chartTitle:  { fontSize: 14, fontWeight: '600', color: KitColors.text1 },
+  chartPeriod: { fontSize: 12, color: KitColors.text3 },
+  statRow: { flexDirection: 'row' },
+  sectionHead: {
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline',
+    marginTop: KitSpacing.s3, marginBottom: -KitSpacing.s1, gap: 12,
   },
-  exercisesContainer: {
-    marginBottom: 12,
+  sectionTitle: {
+    fontSize: 16, fontWeight: '700', color: KitColors.text1, letterSpacing: -0.2,
+    flexShrink: 1,
   },
-  exercisesHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  exercisesTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#E6EDFF',
-    marginLeft: 6,
-  },
-  exercisesList: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginTop: 4,
-  },
-  exerciseTag: {
-    backgroundColor: '#0B1220',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-    marginRight: 8,
-    marginBottom: 8,
+  emptyCard: {
+    backgroundColor: KitColors.surface1,
+    borderColor: KitColors.hairline,
     borderWidth: 1,
-    borderColor: '#1F2A3D',
+    borderRadius: KitRadius.lg,
+    padding: 22,
+    alignItems: 'stretch',
   },
-  exerciseTagText: {
-    fontSize: 12,
-    color: '#7CC7FF',
-    fontWeight: '500',
+  emptyTitle: {
+    color: KitColors.text1, fontSize: 16, fontWeight: '700',
+    letterSpacing: -0.2, marginBottom: 6,
   },
-  statsRow: {
-    flexDirection: 'row',
-    marginBottom: 12,
-  },
-  statItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginRight: 20,
-  },
-  statText: {
-    fontSize: 12,
-    color: '#94A3B8',
-    marginLeft: 6,
-  },
-  notesContainer: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    backgroundColor: '#0B1220',
-    padding: 12,
-    borderRadius: 8,
-    marginTop: 8,
-    borderWidth: 1,
-    borderColor: '#1F2A3D',
-  },
-  notesText: {
-    fontSize: 13,
-    color: '#E6EDFF',
-    marginLeft: 8,
-    flex: 1,
-    lineHeight: 18,
-  },
-  divider: {
-    height: 1,
-    backgroundColor: '#1F2A3D',
-    marginTop: 16,
-  },
-  bottomSpacing: {
-    height: 20,
+  emptySubtitle: {
+    color: KitColors.text2, fontSize: 13, lineHeight: 18,
   },
 });

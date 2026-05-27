@@ -1,6 +1,32 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useMutation } from 'convex/react';
+import { api } from '../../convex/_generated/api';
+import { getInstallId } from '../services/deviceId';
+import { skipOnboarding, seedSampleProfile, DEV_SAMPLE_PROFILE } from '../constants/devConfig';
 
 const OnboardingContext = createContext();
+
+// The blank pain profile every new user starts with. Kept at module scope so
+// both the initial state and resetOnboarding() share one source of truth.
+const DEFAULT_ONBOARDING_DATA = {
+  painLocations: [],
+  painIntensity: 5,
+  painTypes: [],
+  painDescription: '',
+  painDuration: '',
+  directionalPreference: '',
+  radiatingPain: [],
+  redFlags: [],
+  worstTimeTriggers: [],
+  sittingHours: '',
+  trainingFrequency: '',
+  pastInjuries: '',
+  ageRange: '',
+  email: '',
+  // 'female' | 'male' — chosen via the BodyMap sex toggle on PainLocation step.
+  // Drives which silhouette is shown. Defaults to female; user can change any time.
+  sex: 'female',
+};
 
 export const useOnboarding = () => {
   const context = useContext(OnboardingContext);
@@ -11,18 +37,23 @@ export const useOnboarding = () => {
 };
 
 export const OnboardingProvider = ({ children }) => {
-  const [onboardingData, setOnboardingData] = useState({
-    painLocations: [],
-    painIntensity: 5,
-    painDuration: '',
-    worstTimeTriggers: [],
-    sittingHours: '',
-    trainingFrequency: '',
-    pastInjuries: '',
-    ageRange: '',
-  });
+  // In a dev preview mode (main-app or screen-catalog), start with a sample
+  // profile so the screens that need pain data have realistic content.
+  const [onboardingData, setOnboardingData] = useState(
+    seedSampleProfile
+      ? { ...DEFAULT_ONBOARDING_DATA, ...DEV_SAMPLE_PROFILE }
+      : { ...DEFAULT_ONBOARDING_DATA }
+  );
 
-  const [isOnboardingComplete, setIsOnboardingComplete] = useState(false);
+  // skipOnboarding boots the app straight into the main app (dev only).
+  const [isOnboardingComplete, setIsOnboardingComplete] = useState(skipOnboarding);
+  const [installId, setInstallId] = useState(null);
+
+  const upsertProfile = useMutation(api.users.upsertProfile);
+
+  useEffect(() => {
+    getInstallId().then(setInstallId);
+  }, []);
 
   const updateOnboardingData = (data) => {
     setOnboardingData((prev) => ({ ...prev, ...data }));
@@ -30,73 +61,64 @@ export const OnboardingProvider = ({ children }) => {
 
   const completeOnboarding = () => {
     setIsOnboardingComplete(true);
+    if (installId) {
+      upsertProfile({
+        installId,
+        painLocations: onboardingData.painLocations,
+        painIntensity: onboardingData.painIntensity,
+        painTypes: onboardingData.painTypes,
+        painDescription: onboardingData.painDescription || undefined,
+        worstTimeTriggers: onboardingData.worstTimeTriggers,
+        sittingHours: onboardingData.sittingHours || undefined,
+        trainingFrequency: onboardingData.trainingFrequency || undefined,
+        ageRange: onboardingData.ageRange || undefined,
+        email: onboardingData.email || undefined,
+        painDuration: onboardingData.painDuration || undefined,
+        directionalPreference: onboardingData.directionalPreference || undefined,
+        radiatingPain: onboardingData.radiatingPain?.length ? onboardingData.radiatingPain : undefined,
+        redFlags: onboardingData.redFlags?.length ? onboardingData.redFlags : undefined,
+        sex: onboardingData.sex || undefined,
+      }).catch((e) => console.error('[OnboardingContext] Failed to save profile:', e));
+    }
   };
 
   const resetOnboarding = () => {
-    setOnboardingData({
-      painLocations: [],
-      painIntensity: 5,
-      painDuration: '',
-      worstTimeTriggers: [],
-      sittingHours: '',
-      trainingFrequency: '',
-      pastInjuries: '',
-      ageRange: '',
-    });
+    setOnboardingData({ ...DEFAULT_ONBOARDING_DATA });
     setIsOnboardingComplete(false);
   };
 
   const generatePersonalizedPlan = () => {
-    // Mock AI logic - maps user inputs to personalized plan
-    const { painLocations, painIntensity, painDuration, worstTimeTriggers, sittingHours } = onboardingData;
-    
+    const { painLocations, painIntensity, painDuration, worstTimeTriggers, sittingHours, painTypes = [] } = onboardingData;
+
     let patterns = [];
-    let exercises = [];
 
-    // Analyze pain locations
-    if (painLocations.includes('lower back')) {
-      patterns.push('Tight hip flexors from prolonged sitting');
-      patterns.push('Weak glutes causing lower back overload');
-      exercises.push({ name: 'Hip Flexor Stretch', duration: '2 min', focus: 'Hip mobility' });
-      exercises.push({ name: 'Glute Bridge', duration: '3 min', focus: 'Glute activation' });
+    if (worstTimeTriggers?.includes('sitting') || sittingHours === '6+') {
+      patterns.push('Prolonged sitting is compressing your joints and shortening your hip flexors');
     }
-    if (painLocations.includes('upper back') || painLocations.includes('shoulders')) {
-      patterns.push('Forward head posture from desk work');
-      patterns.push('Tight chest muscles pulling shoulders forward');
-      exercises.push({ name: 'Chin Tuck', duration: '2 min', focus: 'Neck alignment' });
-      exercises.push({ name: 'Doorway Chest Stretch', duration: '2 min', focus: 'Chest opening' });
+    if (painLocations?.includes('lower back')) {
+      patterns.push('Weak glutes and tight hip flexors are overloading your lumbar spine');
     }
-    if (painLocations.includes('neck')) {
-      patterns.push('Text neck from phone usage');
-      exercises.push({ name: 'Neck Side Stretch', duration: '2 min', focus: 'Neck mobility' });
+    if (painLocations?.includes('upper back') || painLocations?.includes('neck')) {
+      patterns.push('Forward head posture is adding excess load to your cervical and thoracic spine');
     }
-    if (painLocations.includes('hips')) {
-      patterns.push('Hip flexor tightness from sitting');
-      exercises.push({ name: 'Pigeon Pose', duration: '3 min', focus: 'Hip opening' });
+    if (worstTimeTriggers?.includes('training')) {
+      patterns.push('Training load or movement mechanics are stressing the affected area');
+    }
+    if (painTypes.includes('stiff') || painTypes.includes('cramping')) {
+      patterns.push('Reduced joint mobility is limiting your movement and increasing compression');
+    }
+    if (painDuration === 'months' || painDuration === 'years') {
+      patterns.push('Long-standing pain has created compensatory movement patterns that need resetting');
     }
 
-    // Analyze triggers
-    if (worstTimeTriggers.includes('sitting') && sittingHours === '6+ hours') {
-      patterns.push('Postural fatigue from extended sitting');
-      exercises.push({ name: 'Seated Spinal Twist', duration: '2 min', focus: 'Spine mobility' });
+    if (patterns.length === 0) {
+      patterns.push('General musculoskeletal imbalance detected across your pain profile');
     }
-
-    // Default exercises if none selected
-    if (exercises.length === 0) {
-      exercises = [
-        { name: 'Cat-Cow Stretch', duration: '2 min', focus: 'Spine mobility' },
-        { name: 'Child\'s Pose', duration: '2 min', focus: 'Back release' },
-        { name: 'Pelvic Tilt', duration: '2 min', focus: 'Core stability' },
-      ];
-    }
-
-    // Limit to 3 exercises for 7-minute routine
-    exercises = exercises.slice(0, 3);
 
     return {
-      patterns: patterns.length > 0 ? patterns : ['General postural imbalance detected'],
-      exercises,
-      totalDuration: exercises.reduce((sum, ex) => sum + parseInt(ex.duration), 0),
+      patterns: patterns.slice(0, 3),
+      exercises: [],
+      totalDuration: 7,
     };
   };
 
@@ -109,6 +131,7 @@ export const OnboardingProvider = ({ children }) => {
         completeOnboarding,
         resetOnboarding,
         generatePersonalizedPlan,
+        installId,
       }}
     >
       {children}
