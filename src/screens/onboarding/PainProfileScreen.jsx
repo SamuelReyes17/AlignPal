@@ -4,22 +4,23 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useOnboarding } from '../../context/OnboardingContext';
 import { Colors, Shadows, Accents, Gradients, Radius, Spacing, Surfaces } from '../../constants/brand';
-import { getPainCondition, getCauses, getOutlook, analyzePainDescription } from '../../constants/exerciseLibrary';
+import { getPainCondition, getCauses, getOutlook, analyzePainDescription, getStrategy, getMilestones } from '../../constants/exerciseLibrary';
 import GradientCard from '../../components/GradientCard';
 import CircularProgress from '../../components/CircularProgress';
 import BarChart from '../../components/BarChart';
 import ScreenFrame from '../../components/ScreenFrame';
 import { useResponsive, fs, sp } from '../../utils/responsive';
 
+// Purple-only treatment — labels and icons differ but color does not.
 const PAIN_TYPE_META = {
-  sharp:     { label: 'Sharp',     color: Accents.pink,    icon: 'flash' },
-  dull:      { label: 'Dull',      color: Accents.sunny,   icon: 'radio-button-on' },
-  burning:   { label: 'Burning',   color: Accents.coral,   icon: 'flame' },
-  stiff:     { label: 'Stiff',     color: Accents.violet,  icon: 'lock-closed' },
-  radiating: { label: 'Radiating', color: Colors.purple,   icon: 'trending-down-outline' },
-  numb:      { label: 'Numbness',  color: Accents.teal,    icon: 'hand-right-outline' },
-  cramping:  { label: 'Cramping',  color: Accents.sky,     icon: 'body-outline' },
-  throbbing: { label: 'Throbbing', color: Accents.pink,    icon: 'pulse-outline' },
+  sharp:     { label: 'Sharp',     color: Colors.purpleLight, icon: 'flash' },
+  dull:      { label: 'Dull',      color: Colors.purpleLight, icon: 'radio-button-on' },
+  burning:   { label: 'Burning',   color: Colors.purpleLight, icon: 'flame' },
+  stiff:     { label: 'Stiff',     color: Colors.purpleLight, icon: 'lock-closed' },
+  radiating: { label: 'Radiating', color: Colors.purpleLight, icon: 'trending-down-outline' },
+  numb:      { label: 'Numbness',  color: Colors.purpleLight, icon: 'hand-right-outline' },
+  cramping:  { label: 'Cramping',  color: Colors.purpleLight, icon: 'body-outline' },
+  throbbing: { label: 'Throbbing', color: Colors.purpleLight, icon: 'pulse-outline' },
 };
 
 const OUTLOOK_PERCENT = {
@@ -40,6 +41,8 @@ export default function PainProfileScreen({ navigation }) {
   const condition   = getPainCondition(onboardingData);
   const causes      = getCauses(onboardingData);
   const outlook     = getOutlook(onboardingData);
+  const strategy    = getStrategy(onboardingData);
+  const milestones  = getMilestones(onboardingData);
   const descSignals = analyzePainDescription(painDescription);
   const hasDesc     = painDescription.trim().length > 10;
   const hasInsights = hasDesc && descSignals?.insights?.length > 0;
@@ -62,15 +65,14 @@ export default function PainProfileScreen({ navigation }) {
     .map((l) => l.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()))
     .join(', ') || 'General area';
 
+  // All bars in the same brand purple — height alone communicates magnitude.
   const factorData = [
-    { label: 'Sit',     value: onboardingData.sittingHours === '6+' ? 9 : onboardingData.sittingHours === '3-5' ? 6 : 3, color: Accents.coral },
-    { label: 'Load',    value: onboardingData.trainingFrequency === 'active' ? 7 : onboardingData.trainingFrequency === 'moderate' ? 5 : onboardingData.trainingFrequency === 'light' ? 3 : 2, color: Accents.sunny },
-    { label: 'Pain',    value: painIntensity, color: painIntensity >= 7 ? Accents.pink : painIntensity >= 4 ? Accents.sunny : Accents.avocado },
-    { label: 'Symptoms',value: Math.min(8, painTypes.length * 2 + 2), color: Accents.teal },
-    { label: 'Triggers',value: Math.min(8, (onboardingData.worstTimeTriggers?.length || 0) + 1), color: Accents.violet },
+    { label: 'Sit',     value: onboardingData.sittingHours === '6+' ? 9 : onboardingData.sittingHours === '3-5' ? 6 : 3, color: Colors.purple },
+    { label: 'Load',    value: onboardingData.trainingFrequency === 'active' ? 7 : onboardingData.trainingFrequency === 'moderate' ? 5 : onboardingData.trainingFrequency === 'light' ? 3 : 2, color: Colors.purple },
+    { label: 'Pain',    value: painIntensity, color: Colors.purple },
+    { label: 'Symptoms',value: Math.min(8, painTypes.length * 2 + 2), color: Colors.purple },
+    { label: 'Triggers',value: Math.min(8, (onboardingData.worstTimeTriggers?.length || 0) + 1), color: Colors.purple },
   ];
-
-  const intensityColor = painIntensity >= 7 ? Accents.pink : painIntensity >= 4 ? Accents.sunny : Accents.avocado;
 
   // Hero ring size scales with device tier
   const ringSize = isSmall ? 140 : isTablet ? 200 : 170;
@@ -109,7 +111,7 @@ export default function PainProfileScreen({ navigation }) {
     planItemText:  { fontSize: fs(13, fontScale), lineHeight: fs(20, fontScale) },
     disclaimer:    { fontSize: fs(11, fontScale), lineHeight: fs(17, fontScale) },
     continueBtnText: { fontSize: fs(17, fontScale) },
-    footer:        { paddingHorizontal: horizPad, paddingBottom: isShort ? 18 : 28, paddingTop: 12 },
+    footer:        { paddingHorizontal: horizPad, paddingBottom: isShort ? 28 : 40, paddingTop: 24 },
     footerInner:   { maxWidth: wideFrame },
   };
 
@@ -137,10 +139,7 @@ export default function PainProfileScreen({ navigation }) {
           <GradientCard
             colors={Gradients.purpleHero}
             radius={Radius.hero}
-            blobs={[
-              { x: '85%', y: '15%', r: 90, color: '#FFFFFF', opacity: 0.10 },
-              { x: '15%', y: '90%', r: 70, color: '#FFFFFF', opacity: 0.06 },
-            ]}
+            blobs={[]}
             style={s.heroCard}
           >
             <View style={s.heroTopRow}>
@@ -148,7 +147,7 @@ export default function PainProfileScreen({ navigation }) {
                 <Text style={s.heroBadgePillText}>{condition.emoji}  Diagnosis</Text>
               </View>
               <View style={s.heroOutlookPill}>
-                <View style={[s.heroOutlookDot, { backgroundColor: Accents.avocado }]} />
+                <View style={[s.heroOutlookDot, { backgroundColor: Colors.purplePale }]} />
                 <Text style={s.heroOutlookText}>{outlook.label}</Text>
               </View>
             </View>
@@ -186,9 +185,11 @@ export default function PainProfileScreen({ navigation }) {
             )}
           </GradientCard>
 
-          {/* ═══ Stat row ════════════════════════════════════════════════════════ */}
+          {/* ═══ Stat row ════════════════════════════════════════════════════════
+              Both tiles sit on a calm muted surface. The numbers — large and
+              white — communicate state; the surface color does not. */}
           <View style={s.statsRow}>
-            <View style={[s.statCard, { backgroundColor: intensityColor }]}>
+            <View style={s.statCard}>
               <Text style={[s.statCardLabel, dyn.statCardLabel]}>PAIN LEVEL</Text>
               <View style={s.statValueRow}>
                 <Text style={[s.statValueBig, dyn.statValueBig]}>{painIntensity}</Text>
@@ -198,7 +199,7 @@ export default function PainProfileScreen({ navigation }) {
                 {painIntensity >= 7 ? 'Significant' : painIntensity >= 4 ? 'Moderate' : 'Mild'}
               </Text>
             </View>
-            <View style={[s.statCard, { backgroundColor: Accents.teal }]}>
+            <View style={s.statCard}>
               <Text style={[s.statCardLabel, dyn.statCardLabel]}>DAILY PRACTICE</Text>
               <View style={s.statValueRow}>
                 <Text style={[s.statValueBig, dyn.statValueBig]}>5</Text>
@@ -216,7 +217,7 @@ export default function PainProfileScreen({ navigation }) {
                 <Text style={[s.chartSub, dyn.chartSub]}>Higher bar = bigger contributor</Text>
               </View>
               <View style={s.chartBadge}>
-                <Ionicons name="analytics" size={14} color={Accents.coral} />
+                <Ionicons name="analytics" size={14} color={Colors.purpleLight} />
               </View>
             </View>
             <View style={{ marginTop: 18 }}>
@@ -227,7 +228,7 @@ export default function PainProfileScreen({ navigation }) {
           {/* ═══ Red flags ═══════════════════════════════════════════════════════ */}
           {hasRedFlags && descSignals.redFlags.map((flag, i) => (
             <View key={i} style={s.redFlagCard}>
-              <Ionicons name="alert-circle" size={18} color={Colors.red} />
+              <Ionicons name="alert-circle" size={18} color={Colors.purpleLight} />
               <Text style={[s.redFlagText, dyn.redFlagText]}>{flag}</Text>
             </View>
           ))}
@@ -274,18 +275,14 @@ export default function PainProfileScreen({ navigation }) {
               <Text style={[s.sectionCount, dyn.sectionCount]}>{causes.length} factors</Text>
             </View>
             <View style={s.causesCard}>
-              {causes.map((cause, i) => {
-                const palette = [Accents.coral, Accents.sunny, Accents.teal, Accents.violet, Accents.pink];
-                const color = palette[i % palette.length];
-                return (
-                  <View key={i} style={[s.causeRow, i < causes.length - 1 && s.causeRowBorder]}>
-                    <View style={[s.causeNumber, { backgroundColor: color + '22', borderColor: color + '55' }]}>
-                      <Text style={[s.causeNumberText, dyn.causeNumberText, { color }]}>{String(i + 1).padStart(2, '0')}</Text>
-                    </View>
-                    <Text style={[s.causeText, dyn.causeText]}>{cause.text}</Text>
+              {causes.map((cause, i) => (
+                <View key={i} style={[s.causeRow, i < causes.length - 1 && s.causeRowBorder]}>
+                  <View style={s.causeNumber}>
+                    <Text style={[s.causeNumberText, dyn.causeNumberText]}>{String(i + 1).padStart(2, '0')}</Text>
                   </View>
-                );
-              })}
+                  <Text style={[s.causeText, dyn.causeText]}>{cause.text}</Text>
+                </View>
+              ))}
             </View>
           </View>
 
@@ -293,9 +290,9 @@ export default function PainProfileScreen({ navigation }) {
           <View style={s.section}>
             <Text style={[s.sectionTitle, dyn.sectionTitle]}>Recovery outlook</Text>
             <GradientCard
-              colors={Gradients.teal}
+              colors={Gradients.purple}
               radius={Radius.xl}
-              blobs={[{ x: '90%', y: '50%', r: 60, color: '#FFFFFF', opacity: 0.10 }]}
+              blobs={[]}
               style={{ minHeight: 100 }}
             >
               <View style={s.outlookHeader}>
@@ -311,49 +308,99 @@ export default function PainProfileScreen({ navigation }) {
           {/* ═══ Pain warning ════════════════════════════════════════════════════ */}
           {painIntensity >= 7 && (
             <View style={s.warningCard}>
-              <Ionicons name="warning-outline" size={18} color={Colors.amber} />
+              <Ionicons name="warning-outline" size={18} color={Colors.purpleLight} />
               <Text style={[s.warningText, dyn.warningText]}>
                 Pain at {painIntensity}/10 is significant. We'll start with gentle mobility and activation. If pain worsens or you feel numbness or weakness, see a healthcare professional.
               </Text>
             </View>
           )}
 
-          {/* ═══ Plan ════════════════════════════════════════════════════════════ */}
+          {/* ═══ Your strategy ═══════════════════════════════════════════════════ */}
           <View style={s.section}>
+            <View style={s.sectionHead}>
+              <Text style={[s.sectionTitle, dyn.sectionTitle]}>Your strategy</Text>
+              <Text style={[s.sectionCount, dyn.sectionCount]}>Personalized</Text>
+            </View>
+            <Text style={s.sectionSubtitle}>How we'll approach your specific pattern</Text>
+
             <GradientCard
-              colors={Gradients.pink}
+              colors={Gradients.purpleHero}
               radius={Radius.xl}
-              blobs={[
-                { x: '90%', y: '20%', r: 70, color: '#FFFFFF', opacity: 0.12 },
-                { x: '10%', y: '95%', r: 50, color: '#FFFFFF', opacity: 0.08 },
-              ]}
+              blobs={[]}
+              style={s.strategyPhaseCard}
             >
-              <View style={s.planHead}>
-                <View>
-                  <Text style={[s.planTitle, dyn.planTitle]}>Your plan starts now</Text>
-                  <Text style={[s.planSub, dyn.planSub]}>5 steps · Updates daily</Text>
-                </View>
-                <View style={s.planIconBubble}>
-                  <Ionicons name="sparkles" size={18} color="#FFFFFF" />
-                </View>
+              <View style={s.strategyPhasePill}>
+                <Ionicons name="compass-outline" size={11} color="#FFFFFF" />
+                <Text style={s.strategyPhaseLabel}>PHASE  ·  {strategy.phase.toUpperCase()}</Text>
               </View>
-              <View style={s.planList}>
-                {[
-                  { icon: 'today-outline',         text: 'Day 1: 5 exercises personalized to your pain' },
-                  { icon: 'trending-up-outline',   text: 'Progressive loading as your tolerance improves' },
-                  { icon: 'analytics-outline',     text: 'Daily pain tracking to monitor your trend' },
-                  { icon: 'school-outline',        text: 'Evidence-based protocols from physiotherapy' },
-                  { icon: 'notifications-outline', text: 'Recovery reminders timed to your schedule' },
-                ].map((item, i) => (
-                  <View key={i} style={s.planItem}>
-                    <View style={s.planItemDot}>
-                      <Ionicons name={item.icon} size={12} color="#FFFFFF" />
-                    </View>
-                    <Text style={[s.planItemText, dyn.planItemText]}>{item.text}</Text>
-                  </View>
-                ))}
-              </View>
+              <Text style={[s.strategyPhaseDesc, dyn.outlookText]}>{strategy.phaseDescription}</Text>
             </GradientCard>
+
+            <View style={s.strategyApproachCard}>
+              {strategy.approach.map((item, i) => (
+                <View key={i} style={[s.approachRow, i < strategy.approach.length - 1 && s.approachRowBorder]}>
+                  <View style={s.approachIconWrap}>
+                    <Ionicons name={item.icon} size={15} color={Colors.purpleLight} />
+                  </View>
+                  <View style={{ flex: 1, gap: 4 }}>
+                    <View style={s.approachLabelRow}>
+                      <Text style={[s.approachLabel, dyn.sectionCount]}>{item.label.toUpperCase()}</Text>
+                      <Text style={s.approachValue}>{item.value}</Text>
+                    </View>
+                    <Text style={[s.approachWhy, dyn.causeText]}>{item.why}</Text>
+                  </View>
+                </View>
+              ))}
+            </View>
+
+            <View style={s.avoidCard}>
+              <Ionicons name="alert-circle-outline" size={16} color={Colors.purpleLight} />
+              <View style={{ flex: 1, gap: 3 }}>
+                <Text style={[s.avoidLabel, dyn.sectionCount]}>AVOID THIS WEEK</Text>
+                <Text style={[s.avoidText, dyn.causeText]}>{strategy.avoid}</Text>
+              </View>
+            </View>
+
+            <View style={s.goalCard}>
+              <Ionicons name="flag-outline" size={16} color={Colors.purpleLight} />
+              <View style={{ flex: 1, gap: 3 }}>
+                <Text style={[s.goalLabel, dyn.sectionCount]}>WEEK 1 GOAL</Text>
+                <Text style={[s.goalText, dyn.causeText]}>{strategy.goalThisWeek}</Text>
+              </View>
+            </View>
+          </View>
+
+          {/* ═══ Milestones ══════════════════════════════════════════════════════ */}
+          <View style={s.section}>
+            <View style={s.sectionHead}>
+              <Text style={[s.sectionTitle, dyn.sectionTitle]}>What success looks like</Text>
+              <Text style={[s.sectionCount, dyn.sectionCount]}>Timeline</Text>
+            </View>
+            <Text style={s.sectionSubtitle}>Concrete signals you're on the right path</Text>
+
+            <View style={s.milestonesCard}>
+              {milestones.map((m, i) => {
+                // Three shades of the same brand purple — time progression by lightness.
+                const palette = [Colors.purple, Colors.purpleLight, Colors.purplePale];
+                const dotColor = palette[i] || Colors.purple;
+                const isLast = i === milestones.length - 1;
+                return (
+                  <View key={i} style={s.milestoneRow}>
+                    <View style={s.milestoneTimeline}>
+                      <View style={[s.milestoneDot, { backgroundColor: dotColor, borderColor: dotColor + '55' }]} />
+                      {!isLast && <View style={s.milestoneLine} />}
+                    </View>
+                    <View style={[s.milestoneContent, !isLast && s.milestoneContentSpacing]}>
+                      <View style={s.milestoneHead}>
+                        <Text style={[s.milestoneWhen, dyn.sectionCount]}>{m.when.toUpperCase()}</Text>
+                        <Text style={[s.milestoneLabel, { color: dotColor }]}>{m.label}</Text>
+                      </View>
+                      <Text style={[s.milestoneSignal, dyn.causeText]}>{m.signal}</Text>
+                    </View>
+                  </View>
+                );
+              })}
+            </View>
           </View>
 
           <Text style={[s.disclaimer, dyn.disclaimer]}>
@@ -407,18 +454,22 @@ const s = StyleSheet.create({
   heroSymptomChipText:{ color: '#FFFFFF', fontWeight: '700' },
 
   statsRow:        { flexDirection: 'row', gap: 12, marginBottom: 18 },
-  statCard:        { flex: 1, borderRadius: Radius.xxl, padding: 18, ...Shadows.card },
-  statCardLabel:   { fontWeight: '800', color: Surfaces.onNavy85, letterSpacing: 1.4 },
-  statValueRow:    { flexDirection: 'row', alignItems: 'baseline', gap: 4, marginTop: 14 },
-  statValueBig:    { fontWeight: '800', color: '#FFFFFF', letterSpacing: -1.4 },
-  statValueSub:    { fontWeight: '700', color: Surfaces.onNavy85 },
-  statCardFooter:  { fontWeight: '700', color: Surfaces.onNavy92, marginTop: 10 },
+  statCard:        {
+    flex: 1, borderRadius: Radius.xl, padding: 18,
+    backgroundColor: Colors.bgCard,
+    borderWidth: 1, borderColor: Colors.border,
+  },
+  statCardLabel:   { fontWeight: '700', color: Colors.textMuted, letterSpacing: 1.4 },
+  statValueRow:    { flexDirection: 'row', alignItems: 'baseline', gap: 4, marginTop: 12 },
+  statValueBig:    { fontWeight: '800', color: Colors.textPrimary, letterSpacing: -1.4 },
+  statValueSub:    { fontWeight: '700', color: Colors.purplePale },
+  statCardFooter:  { fontWeight: '600', color: Colors.textSecondary, marginTop: 8 },
 
   chartCard:    { backgroundColor: Colors.bgCard, borderRadius: Radius.xxl, padding: 20, borderWidth: 1, borderColor: Colors.border, marginBottom: 24 },
   chartHead:    { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   chartTitle:   { fontWeight: '800', color: Colors.textPrimary, letterSpacing: -0.3 },
   chartSub:     { color: Colors.textMuted, fontWeight: '600', marginTop: 3 },
-  chartBadge:   { width: 36, height: 36, borderRadius: 12, backgroundColor: Accents.coral + '1F', alignItems: 'center', justifyContent: 'center' },
+  chartBadge:   { width: 36, height: 36, borderRadius: 12, backgroundColor: Colors.purpleDim, alignItems: 'center', justifyContent: 'center' },
 
   section:        { marginBottom: 24 },
   sectionHead:    { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 4 },
@@ -429,8 +480,13 @@ const s = StyleSheet.create({
   causesCard:     { backgroundColor: Colors.bgCard, borderRadius: Radius.xxl, borderWidth: 1, borderColor: Colors.border, overflow: 'hidden' },
   causeRow:       { flexDirection: 'row', alignItems: 'flex-start', padding: 16, gap: 14 },
   causeRowBorder: { borderBottomWidth: 1, borderBottomColor: Colors.borderSubtle },
-  causeNumber:    { width: 36, height: 36, borderRadius: 12, justifyContent: 'center', alignItems: 'center', flexShrink: 0, borderWidth: 1 },
-  causeNumberText:{ fontWeight: '800', letterSpacing: 0.4 },
+  causeNumber:    {
+    width: 36, height: 36, borderRadius: 12,
+    justifyContent: 'center', alignItems: 'center', flexShrink: 0,
+    backgroundColor: Colors.purpleDim,
+    borderWidth: 1, borderColor: 'rgba(155,139,244,0.35)',
+  },
+  causeNumberText:{ fontWeight: '800', letterSpacing: 0.4, color: Colors.purpleLight },
   causeText:      { color: Colors.textSecondary, flex: 1, paddingTop: 6 },
 
   outlookHeader:      { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 },
@@ -441,19 +497,19 @@ const s = StyleSheet.create({
 
   warningCard: {
     flexDirection: 'row', alignItems: 'flex-start', gap: 12,
-    backgroundColor: Colors.amber + '12',
-    borderWidth: 1, borderColor: Colors.amber + '40',
+    backgroundColor: Colors.bgCard,
+    borderWidth: 1, borderColor: Colors.border,
     borderRadius: Radius.xl, padding: 14, marginBottom: 24,
   },
-  warningText: { flex: 1, color: Colors.amber },
+  warningText: { flex: 1, color: Colors.textSecondary },
 
   redFlagCard: {
     flexDirection: 'row', alignItems: 'flex-start', gap: 12,
-    backgroundColor: '#FF6B9D12',
-    borderWidth: 1, borderColor: '#FF6B9D40',
+    backgroundColor: Colors.bgCard,
+    borderWidth: 1, borderColor: Colors.border,
     borderRadius: Radius.xl, padding: 14, marginBottom: 14,
   },
-  redFlagText: { flex: 1, color: Colors.red, fontWeight: '600' },
+  redFlagText: { flex: 1, color: Colors.textPrimary, fontWeight: '600' },
 
   quoteCard: {
     backgroundColor: Colors.bgCard,
@@ -477,14 +533,65 @@ const s = StyleSheet.create({
   insightTitle:    { fontWeight: '800', letterSpacing: -0.1 },
   insightText:     { color: Colors.textSecondary },
 
-  planHead:       { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 },
-  planTitle:      { fontWeight: '800', color: '#FFFFFF', letterSpacing: -0.4 },
-  planSub:        { color: Surfaces.onNavy85, marginTop: 4, fontWeight: '600' },
-  planIconBubble: { width: 40, height: 40, borderRadius: 14, backgroundColor: Surfaces.onNavy22, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: Surfaces.onNavy22 },
-  planList:       { gap: 12 },
-  planItem:       { flexDirection: 'row', alignItems: 'flex-start', gap: 12 },
-  planItemDot:    { width: 26, height: 26, borderRadius: 9, backgroundColor: Surfaces.onNavy22, alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1 },
-  planItemText:   { color: '#FFFFFF', flex: 1, fontWeight: '500' },
+  // ─── Strategy section ───────────────────────────────────────────────────
+  strategyPhaseCard:  { marginTop: 4, marginBottom: 14, ...Shadows.purpleSoft },
+  strategyPhasePill:  { flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start', backgroundColor: Surfaces.onNavy22, paddingHorizontal: 10, paddingVertical: 5, borderRadius: Radius.pill, marginBottom: 12 },
+  strategyPhaseLabel: { color: '#FFFFFF', fontSize: 10, fontWeight: '800', letterSpacing: 1.2 },
+  strategyPhaseDesc:  { color: Surfaces.onNavy92, fontWeight: '500' },
+
+  strategyApproachCard: {
+    backgroundColor: Colors.bgCard, borderRadius: Radius.xxl,
+    borderWidth: 1, borderColor: Colors.border, overflow: 'hidden',
+    marginBottom: 14, ...Shadows.card,
+  },
+  approachRow:        { flexDirection: 'row', alignItems: 'flex-start', padding: 16, gap: 12 },
+  approachRowBorder:  { borderBottomWidth: 1, borderBottomColor: Colors.borderSubtle },
+  approachIconWrap:   {
+    width: 32, height: 32, borderRadius: 10,
+    alignItems: 'center', justifyContent: 'center',
+    backgroundColor: Colors.purpleDim,
+    borderWidth: 1, borderColor: 'rgba(155,139,244,0.35)',
+    flexShrink: 0,
+  },
+  approachLabelRow:   { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
+  approachLabel:      { color: Colors.textMuted, fontWeight: '800', letterSpacing: 1.2 },
+  approachValue:      { fontSize: 14, fontWeight: '800', letterSpacing: -0.2, color: Colors.purpleLight },
+  approachWhy:        { color: Colors.textSecondary },
+
+  avoidCard: {
+    flexDirection: 'row', alignItems: 'flex-start', gap: 12,
+    backgroundColor: Colors.bgCard,
+    borderWidth: 1, borderColor: Colors.border,
+    borderRadius: Radius.xl, padding: 14, marginBottom: 12,
+  },
+  avoidLabel: { color: Colors.purpleLight, fontWeight: '800', letterSpacing: 1.2 },
+  avoidText:  { color: Colors.textSecondary, fontWeight: '500' },
+
+  goalCard: {
+    flexDirection: 'row', alignItems: 'flex-start', gap: 12,
+    backgroundColor: Colors.bgCard,
+    borderWidth: 1, borderColor: Colors.border,
+    borderRadius: Radius.xl, padding: 14,
+  },
+  goalLabel: { color: Colors.purpleLight, fontWeight: '800', letterSpacing: 1.2 },
+  goalText:  { color: Colors.textSecondary, fontWeight: '500' },
+
+  // ─── Milestones timeline ────────────────────────────────────────────────
+  milestonesCard: {
+    backgroundColor: Colors.bgCard, borderRadius: Radius.xxl,
+    borderWidth: 1, borderColor: Colors.border,
+    padding: 18, ...Shadows.card,
+  },
+  milestoneRow:        { flexDirection: 'row', alignItems: 'flex-start', gap: 14 },
+  milestoneTimeline:   { alignItems: 'center', width: 14 },
+  milestoneDot:        { width: 14, height: 14, borderRadius: 7, borderWidth: 2, marginTop: 2 },
+  milestoneLine:       { flex: 1, width: 2, backgroundColor: Colors.borderSubtle, marginTop: 4, marginBottom: -4 },
+  milestoneContent:    { flex: 1, gap: 6 },
+  milestoneContentSpacing: { paddingBottom: 18 },
+  milestoneHead:       { flexDirection: 'row', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' },
+  milestoneWhen:       { color: Colors.textMuted, fontWeight: '800', letterSpacing: 1.2 },
+  milestoneLabel:      { fontSize: 15, fontWeight: '800', letterSpacing: -0.2 },
+  milestoneSignal:     { color: Colors.textSecondary, fontWeight: '500' },
 
   disclaimer: { color: Colors.textMuted, textAlign: 'center', marginTop: 8 },
 

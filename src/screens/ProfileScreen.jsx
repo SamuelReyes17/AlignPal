@@ -1,13 +1,28 @@
 import React from 'react';
 import { ScrollView, View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { Colors, Shadows, Accents, Gradients, Radius, Spacing, Surfaces, PainTypePalette } from '../constants/brand';
+
 import { useOnboarding } from '../context/OnboardingContext';
 import { useSubscription } from '../context/SubscriptionContext';
-import GradientCard from '../components/GradientCard';
-import ScreenFrame from '../components/ScreenFrame';
+import { Colors, KitColors, KitAccents, KitRadius, KitSpacing, PainTypePalette } from '../constants/brand';
+import { GradientCard, ListCard, ListRow, Chip } from '../components/kit';
 import { useResponsive, fs, sp } from '../utils/responsive';
+
+/**
+ * ProfileScreen — Me tab.
+ *
+ * Uniform layout (matches Dashboard/History/Workout/Explore):
+ *  - Header row (eyebrow + title + plan badge)
+ *  - Violet hero with current pain summary
+ *  - Pain profile card (locations, intensity, types, lifestyle)
+ *  - Subscription card
+ *  - Settings sections
+ *
+ * Data wiring preserved:
+ *  - useOnboarding() onboardingData + resetOnboarding
+ *  - useSubscription() isPremium + presentCustomerCenter
+ */
 
 const LOCATION_LABELS = {
   lower_back: 'Lower Back', upper_back: 'Upper Back', neck: 'Neck',
@@ -18,32 +33,51 @@ const LOCATION_LABELS = {
   left_shoulder: 'Left Shoulder', right_shoulder: 'Right Shoulder',
   left_knee: 'Left Knee', right_knee: 'Right Knee',
 };
-
-
-const getPainColor = (level) => {
-  if (level <= 3) return Colors.green;
-  if (level <= 6) return Colors.amber;
-  return Colors.red;
-};
-
 const TRAINING_LABELS = {
   sedentary: 'Sedentary',
   light:     'Lightly Active',
   moderate:  'Moderately Active',
   active:    'Very Active',
 };
+const getPainColor = (level) => {
+  if (level <= 3) return KitAccents.avocado;
+  if (level <= 6) return Colors.amber;
+  return KitAccents.coral;
+};
 
 function SettingRow({ icon, label, sub, onPress, danger, rightEl }) {
   return (
-    <TouchableOpacity style={st.settingRow} onPress={onPress} activeOpacity={0.7} disabled={!onPress}>
-      <View style={[st.settingIcon, danger && { backgroundColor: Colors.red + '18' }]}>
-        <Ionicons name={icon} size={18} color={danger ? Colors.red : Colors.textSecondary} />
+    <TouchableOpacity
+      style={styles.settingRow}
+      onPress={onPress}
+      activeOpacity={0.7}
+      disabled={!onPress}
+    >
+      <View
+        style={[
+          styles.settingIcon,
+          danger && { backgroundColor: KitAccents.coral + '20' },
+        ]}
+      >
+        <Ionicons
+          name={icon}
+          size={18}
+          color={danger ? KitAccents.coral : KitColors.text2}
+        />
       </View>
-      <View style={st.settingInfo}>
-        <Text style={[st.settingLabel, danger && { color: Colors.red }]}>{label}</Text>
-        {sub ? <Text style={st.settingSub}>{sub}</Text> : null}
+      <View style={styles.settingInfo}>
+        <Text
+          style={[
+            styles.settingLabel,
+            danger && { color: KitAccents.coral },
+          ]}
+        >
+          {label}
+        </Text>
+        {sub ? <Text style={styles.settingSub}>{sub}</Text> : null}
       </View>
-      {rightEl || (onPress ? <Ionicons name="chevron-forward" size={16} color={Colors.textMuted} /> : null)}
+      {rightEl ||
+        (onPress ? <Ionicons name="chevron-forward" size={16} color={KitColors.text3} /> : null)}
     </TouchableOpacity>
   );
 }
@@ -51,9 +85,15 @@ function SettingRow({ icon, label, sub, onPress, danger, rightEl }) {
 export default function ProfileScreen() {
   const { onboardingData, resetOnboarding } = useOnboarding();
   const { isPremium, presentCustomerCenter } = useSubscription();
-  const insets = useSafeAreaInsets();
-  const { isSmall, isTablet, horizPad, fontScale, gapScale, width } = useResponsive();
-  const frameWidth = Math.min(width - horizPad * 2, 640);
+
+  const { isSmall, isTablet, horizPad, frameWidth, fontScale, gapScale } = useResponsive();
+  const dyn = {
+    content:    { paddingHorizontal: horizPad, gap: sp(KitSpacing.s5, gapScale) },
+    name:       { fontSize: fs(22, fontScale) },
+    eyebrow:    { fontSize: fs(13, fontScale) },
+    sectionTitle:{ fontSize: fs(14, fontScale) },
+    frame:      { width: '100%', alignSelf: 'center', maxWidth: Math.max(frameWidth, 0) },
+  };
 
   const {
     painLocations = [], painIntensity = 5, painTypes = [],
@@ -61,19 +101,6 @@ export default function ProfileScreen() {
   } = onboardingData;
 
   const painColor = getPainColor(painIntensity);
-
-  const dyn = {
-    frame:        { width: '100%', alignSelf: 'center', maxWidth: 640, paddingHorizontal: horizPad, paddingTop: sp(12, gapScale) },
-    heroWrap:     { paddingBottom: sp(12, gapScale) }, // full-bleed: no horizontal padding
-    heroTitle:    { fontSize: fs(30, fontScale) },
-    heroEyebrow:  { fontSize: fs(12, fontScale) },
-    cardWrap:     { marginHorizontal: horizPad },
-    sectionWrap:  { paddingHorizontal: horizPad },
-    sectionTitle: { fontSize: fs(15, fontScale) },
-    subTitle:     { fontSize: fs(15, fontScale) },
-    settingLabel: { fontSize: fs(14, fontScale) },
-    settingSub:   { fontSize: fs(12, fontScale) },
-  };
 
   function handleReset() {
     Alert.alert(
@@ -87,287 +114,358 @@ export default function ProfileScreen() {
   }
 
   return (
-    <SafeAreaView style={st.container} edges={[]}>
-     <ScreenFrame>
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={st.content}>
-        <View style={[st.frame, dyn.frame]}>
-        {/* ═══ Full-bleed gradient hero header ═══════════════════════════════ */}
-        <View style={dyn.heroWrap}>
-          <GradientCard
-            colors={Gradients.purpleHero}
-            radius={Radius.hero}
-            corners="bottom"
-            blobs={[
-              { x: '88%', y: '20%', r: 80, color: Colors.white, opacity: 0.10 },
-              { x: '12%', y: '90%', r: 50, color: Colors.white, opacity: 0.06 },
-            ]}
-            style={[Shadows.purpleSoft, { paddingTop: insets.top }]}
-          >
-            <View style={st.heroRow}>
-              <View>
-                <Text style={[st.heroEyebrow, dyn.heroEyebrow]}>Your</Text>
-                <Text style={[st.heroTitle, dyn.heroTitle]}>Profile</Text>
-              </View>
-              <View style={st.heroPlanBadge}>
-                <Ionicons name={isPremium ? 'star' : 'person'} size={13} color={Colors.white} />
-                <Text style={st.heroPlanText}>{isPremium ? 'Pro' : 'Free'}</Text>
-              </View>
-            </View>
-            <View style={st.heroPainRow}>
-              <Text style={st.heroPainLabel}>Current pain</Text>
-              <View style={st.heroPainPill}>
-                <View style={[st.heroPainDot, { backgroundColor: painColor }]} />
-                <Text style={st.heroPainNum}>{painIntensity}/10</Text>
-              </View>
-            </View>
-          </GradientCard>
+    <SafeAreaView style={styles.container} edges={['top']}>
+      <ScrollView
+        contentContainerStyle={[styles.content, dyn.content]}
+        showsVerticalScrollIndicator={false}
+      >
+       <View style={dyn.frame}>
+        {/* Header */}
+        <View style={styles.header}>
+          <View style={{ flexShrink: 1 }}>
+            <Text style={[styles.eyebrow, dyn.eyebrow]}>Your</Text>
+            <Text style={[styles.name, dyn.name]} numberOfLines={1}>Profile</Text>
+          </View>
+          <View style={[styles.planBadge, isPremium && styles.planBadgePro]}>
+            <Ionicons
+              name={isPremium ? 'star' : 'person-outline'}
+              size={14}
+              color={isPremium ? Colors.amber : KitColors.text2}
+            />
+            <Text style={[styles.planBadgeText, isPremium && { color: Colors.amber }]}>
+              {isPremium ? 'Pro' : 'Free'}
+            </Text>
+          </View>
         </View>
 
-        {/* Pain profile card */}
-        <View style={[st.profileCard, dyn.cardWrap]}>
-          <Text style={st.cardLabel}>PAIN PROFILE</Text>
+        {/* Violet hero — current pain summary */}
+        <GradientCard variant="violet">
+          <Text style={styles.heroEyebrow}>Current pain</Text>
+          <View style={styles.heroRow}>
+            <Text style={styles.heroBigNum}>{painIntensity}/10</Text>
+            <View style={[styles.heroDot, { backgroundColor: painColor }]} />
+          </View>
+          <Text style={styles.heroSub}>
+            {painLocations.length > 0
+              ? painLocations
+                  .slice(0, 3)
+                  .map((loc) => LOCATION_LABELS[loc] || loc.replace(/_/g, ' '))
+                  .join(' · ')
+              : 'No areas selected'}
+          </Text>
+        </GradientCard>
 
-          {/* Locations */}
+        {/* Pain profile card */}
+        <View style={styles.card}>
+          <Text style={styles.cardLabel}>PAIN PROFILE</Text>
+
           {painLocations.length > 0 && (
-            <View style={st.profileRow}>
-              <Ionicons name="location-outline" size={15} color={Colors.purple} />
-              <View style={st.locationChips}>
-                {painLocations.map((loc) => (
-                  <View key={loc} style={st.locChip}>
-                    <Text style={st.locChipText}>
-                      {LOCATION_LABELS[loc] || loc.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}
-                    </Text>
-                  </View>
-                ))}
-              </View>
+            <View style={styles.chipsRow}>
+              {painLocations.map((loc) => (
+                <Chip
+                  key={loc}
+                  label={LOCATION_LABELS[loc] || loc.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}
+                  variant="violet"
+                />
+              ))}
             </View>
           )}
 
-          {/* Intensity */}
-          <View style={st.intensityRow}>
-            <Text style={st.intensityLabel}>Pain Intensity</Text>
-            <View style={st.intensityRight}>
-              <View style={st.intensityBar}>
+          {/* Intensity bar */}
+          <View style={styles.intensityRow}>
+            <Text style={styles.intensityLabel}>Pain intensity</Text>
+            <View style={styles.intensityRight}>
+              <View style={styles.intensityBar}>
                 {Array.from({ length: 10 }).map((_, i) => (
                   <View
                     key={i}
                     style={[
-                      st.intensitySegment,
+                      styles.intensitySegment,
                       i < painIntensity && { backgroundColor: getPainColor(i + 1) },
                     ]}
                   />
                 ))}
               </View>
-              <Text style={[st.intensityNum, { color: painColor }]}>{painIntensity}/10</Text>
+              <Text style={[styles.intensityNum, { color: painColor }]}>
+                {painIntensity}/10
+              </Text>
             </View>
           </View>
 
-          {/* Pain types */}
           {painTypes.length > 0 && (
-            <View style={st.typeRow}>
-              {painTypes.map(t => {
+            <View style={styles.chipsRow}>
+              {painTypes.map((t) => {
                 const meta = PainTypePalette[t];
                 if (!meta) return null;
                 return (
-                  <View key={t} style={[st.typeChip, { backgroundColor: meta.color + '18', borderColor: meta.color + '40' }]}>
-                    <Text style={[st.typeChipText, { color: meta.color }]}>{meta.label}</Text>
+                  <View
+                    key={t}
+                    style={[
+                      styles.typeChip,
+                      { backgroundColor: meta.color + '18', borderColor: meta.color + '40' },
+                    ]}
+                  >
+                    <Text style={[styles.typeChipText, { color: meta.color }]}>
+                      {meta.label}
+                    </Text>
                   </View>
                 );
               })}
             </View>
           )}
 
-          {/* Lifestyle */}
-          <View style={st.divider} />
-          <View style={st.lifestyleGrid}>
+          <View style={styles.divider} />
+
+          <View style={styles.lifestyleGrid}>
             {ageRange ? (
-              <View style={st.lifeItem}>
-                <Ionicons name="person-outline" size={14} color={Colors.textMuted} />
-                <Text style={st.lifeLabel}>Age</Text>
-                <Text style={st.lifeVal}>{ageRange}</Text>
+              <View style={styles.lifeItem}>
+                <Ionicons name="person-outline" size={14} color={KitColors.text3} />
+                <Text style={styles.lifeLabel}>Age</Text>
+                <Text style={styles.lifeVal} numberOfLines={1}>{ageRange}</Text>
               </View>
             ) : null}
             {trainingFrequency ? (
-              <View style={st.lifeItem}>
-                <Ionicons name="fitness-outline" size={14} color={Colors.textMuted} />
-                <Text style={st.lifeLabel}>Activity</Text>
-                <Text style={st.lifeVal}>{TRAINING_LABELS[trainingFrequency] || trainingFrequency}</Text>
+              <View style={styles.lifeItem}>
+                <Ionicons name="fitness-outline" size={14} color={KitColors.text3} />
+                <Text style={styles.lifeLabel}>Activity</Text>
+                <Text style={styles.lifeVal} numberOfLines={1}>
+                  {TRAINING_LABELS[trainingFrequency] || trainingFrequency}
+                </Text>
               </View>
             ) : null}
             {sittingHours ? (
-              <View style={st.lifeItem}>
-                <Ionicons name="desktop-outline" size={14} color={Colors.textMuted} />
-                <Text style={st.lifeLabel}>Sitting</Text>
-                <Text style={st.lifeVal}>{sittingHours}h/day</Text>
+              <View style={styles.lifeItem}>
+                <Ionicons name="desktop-outline" size={14} color={KitColors.text3} />
+                <Text style={styles.lifeLabel}>Sitting</Text>
+                <Text style={styles.lifeVal} numberOfLines={1}>{sittingHours}h/day</Text>
               </View>
             ) : null}
           </View>
         </View>
 
         {/* Subscription card */}
-        <View style={[st.subCard, dyn.cardWrap, isPremium && st.subCardPro]}>
-          <View style={st.subLeft}>
-            <View style={[st.subIconWrap, isPremium && { backgroundColor: Colors.amber + '22' }]}>
-              <Ionicons name={isPremium ? 'star' : 'lock-closed-outline'} size={22} color={isPremium ? Colors.amber : Colors.textMuted} />
+        <TouchableOpacity
+          style={[styles.card, styles.subCard, isPremium && styles.subCardPro]}
+          activeOpacity={isPremium ? 0.7 : 1}
+          onPress={isPremium ? presentCustomerCenter : undefined}
+        >
+          <View style={styles.subLeft}>
+            <View style={[styles.subIconWrap, isPremium && { backgroundColor: Colors.amber + '22' }]}>
+              <Ionicons
+                name={isPremium ? 'star' : 'lock-closed-outline'}
+                size={20}
+                color={isPremium ? Colors.amber : KitColors.text2}
+              />
             </View>
-            <View>
-              <Text style={[st.subTitle, dyn.subTitle]}>{isPremium ? 'AlignPal Pro' : 'Free Plan'}</Text>
-              <Text style={st.subSub}>{isPremium ? 'Full access enabled' : 'Unlock all features'}</Text>
+            <View style={{ flexShrink: 1 }}>
+              <Text style={styles.subTitle} numberOfLines={1}>
+                {isPremium ? 'AlignPal Pro' : 'Free Plan'}
+              </Text>
+              <Text style={styles.subSub} numberOfLines={1}>
+                {isPremium ? 'Full access enabled' : 'Unlock all features'}
+              </Text>
             </View>
           </View>
-          {isPremium ? (
-            <TouchableOpacity style={st.subManageBtn} onPress={presentCustomerCenter} activeOpacity={0.7}>
-              <Text style={st.subManageText}>Manage</Text>
-            </TouchableOpacity>
-          ) : (
-            <View style={[st.subManageBtn, { backgroundColor: Colors.amber + '20', borderColor: Colors.amber + '50' }]}>
-              <Text style={[st.subManageText, { color: Colors.amber }]}>Upgrade</Text>
-            </View>
-          )}
-        </View>
+          <View
+            style={[
+              styles.subActionPill,
+              isPremium ? styles.subActionPillPro : styles.subActionPillUpgrade,
+            ]}
+          >
+            <Text
+              style={[
+                styles.subActionText,
+                isPremium ? { color: Colors.amber } : { color: KitAccents.violet },
+              ]}
+            >
+              {isPremium ? 'Manage' : 'Upgrade'}
+            </Text>
+          </View>
+        </TouchableOpacity>
 
         {/* Settings */}
-        <View style={[st.section, dyn.sectionWrap]}>
-          <Text style={[st.sectionTitle, dyn.sectionTitle]}>Settings</Text>
-          <View style={st.settingsCard}>
-            <SettingRow
-              icon="create-outline"
-              label="Edit Pain Profile"
-              sub="Redo your onboarding assessment"
-              onPress={handleReset}
-            />
-            <View style={st.rowDivider} />
-            <SettingRow
-              icon="notifications-outline"
-              label="Reminders"
-              sub="Daily check-in notifications"
-              rightEl={
-                <View style={st.comingSoon}>
-                  <Text style={st.comingSoonText}>Soon</Text>
-                </View>
-              }
-            />
-            <View style={st.rowDivider} />
-            <SettingRow
-              icon="camera-outline"
-              label="Posture Analysis"
-              sub="AI-powered posture scan"
-              rightEl={
-                <View style={st.comingSoon}>
-                  <Text style={st.comingSoonText}>Soon</Text>
-                </View>
-              }
-            />
-          </View>
-        </View>
+        <Text style={[styles.sectionLabel, dyn.sectionTitle]}>SETTINGS</Text>
+        <ListCard>
+          <ListRow
+            icon="✎"
+            iconColor="violet"
+            title="Edit pain profile"
+            sub="Redo your onboarding assessment"
+            trailing="›"
+            onPress={handleReset}
+          />
+          <ListRow
+            icon="🔔"
+            iconColor="teal"
+            title="Reminders"
+            sub="Daily check-in notifications"
+            trailing="Soon"
+          />
+          <ListRow
+            icon="◎"
+            iconColor="pink"
+            title="Posture analysis"
+            sub="AI-powered posture scan"
+            trailing="Soon"
+          />
+        </ListCard>
 
-        <View style={[st.section, dyn.sectionWrap]}>
-          <Text style={[st.sectionTitle, dyn.sectionTitle]}>About</Text>
-          <View style={st.settingsCard}>
-            <SettingRow icon="shield-checkmark-outline" label="Privacy Policy" onPress={() => {}} />
-            <View style={st.rowDivider} />
-            <SettingRow icon="document-text-outline" label="Terms of Service" onPress={() => {}} />
-            <View style={st.rowDivider} />
-            <SettingRow
-              icon="information-circle-outline"
-              label="Version"
-              rightEl={<Text style={st.versionText}>1.0.0</Text>}
-            />
-          </View>
-        </View>
+        {/* About */}
+        <Text style={[styles.sectionLabel, dyn.sectionTitle]}>ABOUT</Text>
+        <ListCard>
+          <ListRow icon="🛡" iconColor="violet" title="Privacy policy" trailing="›" onPress={() => {}} />
+          <ListRow icon="📄" iconColor="violet" title="Terms of service" trailing="›" onPress={() => {}} />
+          <ListRow icon="ⓘ"  iconColor="violet" title="Version" trailing="1.0.0" />
+        </ListCard>
 
-        <View style={[st.section, dyn.sectionWrap]}>
-          <View style={st.settingsCard}>
-            <SettingRow
-              icon="refresh-outline"
-              label="Reset All Data"
-              sub="Clears profile and restarts setup"
-              onPress={handleReset}
-              danger
-            />
-          </View>
-        </View>
+        {/* Danger zone */}
+        <ListCard>
+          <ListRow
+            icon="⟲"
+            iconColor="coral"
+            title="Reset all data"
+            sub="Clears profile and restarts setup"
+            onPress={handleReset}
+          />
+        </ListCard>
 
-        <Text style={st.footer}>AlignPal · Built with care for your recovery</Text>
-        <View style={{ height: 24 }} />
-        </View>
+        <Text style={styles.footer}>AlignPal · Built with care for your recovery</Text>
+       </View>
       </ScrollView>
-     </ScreenFrame>
     </SafeAreaView>
   );
 }
 
-const st = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.bg },
-  content:   { paddingBottom: Spacing.tabBarClearance },
-  frame:     { width: '100%', alignSelf: 'center' },
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: KitColors.bg },
+  content:   { paddingTop: 22, paddingBottom: 120 },
 
-  // Hero
-  heroRow:        { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  heroEyebrow:    { fontSize: 12, color: Surfaces.onNavy85, fontWeight: '700', letterSpacing: 0.6, textTransform: 'uppercase' },
-  heroTitle:      { fontSize: 30, fontWeight: '800', color: Colors.white, letterSpacing: -0.6, marginTop: 2 },
-  heroPlanBadge:  { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: Surfaces.onNavy22, borderRadius: Radius.pill, paddingHorizontal: Spacing.sm, paddingVertical: Spacing.xs },
-  heroPlanText:   { color: Colors.white, fontWeight: '800', fontSize: 13 },
-  heroPainRow:    { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: Spacing.md, backgroundColor: Surfaces.onNavy14, borderRadius: Radius.lg, paddingHorizontal: 14, paddingVertical: 10 },
-  heroPainLabel:  { color: Surfaces.onNavy85, fontSize: 12, fontWeight: '700', letterSpacing: 0.4 },
-  heroPainPill:   { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: Surfaces.onNavy22, borderRadius: Radius.pill, paddingHorizontal: 10, paddingVertical: 4 },
-  heroPainDot:    { width: 8, height: 8, borderRadius: 4 },
-  heroPainNum:    { color: Colors.white, fontSize: 13, fontWeight: '800' },
-
-  profileCard: {
-    marginBottom: 12, backgroundColor: Colors.bgCard,
-    borderRadius: 22, padding: 18, borderWidth: 1, borderColor: Colors.border, ...Shadows.purpleSoft,
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: 12,
   },
-  cardLabel:      { fontSize: 10, fontWeight: '800', color: Colors.purple, letterSpacing: 1.2, textTransform: 'uppercase', marginBottom: 14 },
-  profileRow:     { flexDirection: 'row', alignItems: 'flex-start', gap: 8, marginBottom: 14 },
-  locationChips:  { flex: 1, flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
-  locChip:        { backgroundColor: Colors.purpleDim, borderRadius: 10, paddingHorizontal: 9, paddingVertical: 4, borderWidth: 1, borderColor: Colors.purple + '40' },
-  locChipText:    { fontSize: 12, fontWeight: '600', color: Colors.purple },
+  eyebrow: { color: KitColors.text3, fontSize: 13, fontWeight: '500' },
+  name: {
+    fontSize: 22, fontWeight: '700', color: KitColors.text1,
+    letterSpacing: -0.4, marginTop: 2,
+  },
+  planBadge: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    backgroundColor: KitColors.surface1,
+    borderColor: KitColors.hairline, borderWidth: 1,
+    borderRadius: 999,
+    paddingHorizontal: 12, paddingVertical: 6,
+  },
+  planBadgePro: {
+    borderColor: Colors.amber + '60',
+    backgroundColor: Colors.amber + '10',
+  },
+  planBadgeText: { color: KitColors.text2, fontWeight: '700', fontSize: 13 },
 
-  intensityRow:   { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 },
-  intensityLabel: { fontSize: 13, fontWeight: '600', color: Colors.textSecondary },
-  intensityRight: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  intensityBar:   { flexDirection: 'row', gap: 2 },
-  intensitySegment: { width: 12, height: 6, borderRadius: 3, backgroundColor: Colors.bgElevated },
-  intensityNum:   { fontSize: 14, fontWeight: '800', minWidth: 36, textAlign: 'right' },
+  heroEyebrow: {
+    color: 'rgba(255,255,255,0.75)',
+    fontSize: 12, fontWeight: '600',
+    letterSpacing: 1.2, textTransform: 'uppercase',
+    marginBottom: 4,
+  },
+  heroRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 14,
+    marginBottom: 8,
+  },
+  heroBigNum: {
+    color: '#FFFFFF', fontSize: 42, fontWeight: '800',
+    letterSpacing: -1, lineHeight: 42,
+  },
+  heroDot: { width: 12, height: 12, borderRadius: 6 },
+  heroSub: { color: 'rgba(255,255,255,0.85)', fontSize: 13, lineHeight: 18 },
 
-  typeRow:      { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 14 },
-  typeChip:     { paddingHorizontal: 10, paddingVertical: 5, borderRadius: 20, borderWidth: 1 },
+  card: {
+    backgroundColor: KitColors.surface1,
+    borderColor: KitColors.hairline, borderWidth: 1,
+    borderRadius: KitRadius.lg, padding: 18,
+  },
+  cardLabel: {
+    fontSize: 10, fontWeight: '800',
+    color: KitAccents.violet,
+    letterSpacing: 1.2, textTransform: 'uppercase',
+    marginBottom: 14,
+  },
+
+  chipsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 14 },
+  typeChip: {
+    paddingHorizontal: 10, paddingVertical: 5,
+    borderRadius: 999, borderWidth: 1,
+  },
   typeChipText: { fontSize: 11, fontWeight: '700' },
 
-  divider:       { height: 1, backgroundColor: Colors.borderSubtle, marginBottom: 14 },
+  intensityRow: {
+    flexDirection: 'row', alignItems: 'center',
+    justifyContent: 'space-between', marginBottom: 14, gap: 12,
+  },
+  intensityLabel: { fontSize: 13, fontWeight: '600', color: KitColors.text2, flexShrink: 1 },
+  intensityRight: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  intensityBar:   { flexDirection: 'row', gap: 2 },
+  intensitySegment: {
+    width: 10, height: 6, borderRadius: 3,
+    backgroundColor: KitColors.surface2,
+  },
+  intensityNum: { fontSize: 14, fontWeight: '800', minWidth: 36, textAlign: 'right' },
+
+  divider: { height: 1, backgroundColor: KitColors.hairline, marginBottom: 14 },
   lifestyleGrid: { flexDirection: 'row', gap: 16 },
-  lifeItem:      { flex: 1, alignItems: 'center', gap: 4 },
-  lifeLabel:     { fontSize: 10, color: Colors.textMuted, fontWeight: '600' },
-  lifeVal:       { fontSize: 12, fontWeight: '700', color: Colors.textSecondary, textAlign: 'center' },
+  lifeItem:  { flex: 1, alignItems: 'center', gap: 4, minWidth: 0 },
+  lifeLabel: { fontSize: 10, color: KitColors.text3, fontWeight: '600' },
+  lifeVal:   { fontSize: 12, fontWeight: '700', color: KitColors.text2, textAlign: 'center' },
 
   subCard: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    marginBottom: 12, backgroundColor: Colors.bgCard,
-    borderRadius: 20, padding: 16, borderWidth: 1, borderColor: Colors.border,
+    padding: 16, gap: 12,
   },
-  subCardPro: { borderColor: Colors.amber + '40', backgroundColor: Colors.amber + '08' },
-  subLeft:       { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  subIconWrap:   { width: 46, height: 46, borderRadius: 14, backgroundColor: Colors.bgElevated, alignItems: 'center', justifyContent: 'center' },
-  subTitle:      { fontSize: 15, fontWeight: '700', color: Colors.textPrimary, marginBottom: 2 },
-  subSub:        { fontSize: 12, color: Colors.textMuted },
-  subManageBtn:  { backgroundColor: Colors.bgInput, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 8, borderWidth: 1, borderColor: Colors.border },
-  subManageText: { fontSize: 13, fontWeight: '700', color: Colors.textSecondary },
+  subCardPro: {
+    borderColor: Colors.amber + '40',
+    backgroundColor: Colors.amber + '08',
+  },
+  subLeft:     { flexDirection: 'row', alignItems: 'center', gap: 12, flexShrink: 1 },
+  subIconWrap: {
+    width: 44, height: 44, borderRadius: 12,
+    backgroundColor: KitColors.surface2,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  subTitle: { fontSize: 15, fontWeight: '700', color: KitColors.text1, marginBottom: 2 },
+  subSub:   { fontSize: 12, color: KitColors.text3 },
+  subActionPill: {
+    paddingHorizontal: 14, paddingVertical: 8,
+    borderRadius: 12, borderWidth: 1,
+  },
+  subActionPillPro:     { backgroundColor: Colors.amber + '14',     borderColor: Colors.amber + '50' },
+  subActionPillUpgrade: { backgroundColor: KitAccents.violet + '20', borderColor: KitAccents.violet + '60' },
+  subActionText: { fontSize: 13, fontWeight: '700' },
 
-  section:      { marginBottom: 12 },
-  sectionTitle: { fontSize: 15, fontWeight: '800', color: Colors.textSecondary, marginBottom: 10, letterSpacing: 0.3 },
+  sectionLabel: {
+    fontSize: 12, fontWeight: '800',
+    color: KitColors.text3, letterSpacing: 1.2,
+    marginTop: KitSpacing.s2, marginBottom: -KitSpacing.s2,
+  },
 
-  settingsCard: { backgroundColor: Colors.bgCard, borderRadius: 20, borderWidth: 1, borderColor: Colors.border, overflow: 'hidden' },
-  settingRow:   { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16 },
-  settingIcon:  { width: 36, height: 36, borderRadius: 10, backgroundColor: Colors.bgElevated, alignItems: 'center', justifyContent: 'center' },
-  settingInfo:  { flex: 1, gap: 2 },
-  settingLabel: { fontSize: 14, fontWeight: '600', color: Colors.textPrimary },
-  settingSub:   { fontSize: 12, color: Colors.textMuted },
-  rowDivider:   { height: 1, backgroundColor: Colors.borderSubtle, marginLeft: 64 },
+  settingRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 12,
+    paddingHorizontal: 18, paddingVertical: 14,
+    borderBottomColor: KitColors.hairline,
+    borderBottomWidth: 1,
+  },
+  settingIcon: {
+    width: 36, height: 36, borderRadius: 10,
+    backgroundColor: KitColors.surface2,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  settingInfo:  { flex: 1, gap: 2, minWidth: 0 },
+  settingLabel: { fontSize: 14, fontWeight: '600', color: KitColors.text1 },
+  settingSub:   { fontSize: 12, color: KitColors.text3 },
 
-  comingSoon:     { backgroundColor: Colors.bgInput, borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3, borderWidth: 1, borderColor: Colors.border },
-  comingSoonText: { fontSize: 10, fontWeight: '700', color: Colors.textMuted },
-  versionText:    { fontSize: 13, color: Colors.textMuted, fontWeight: '600' },
-
-  footer: { fontSize: 12, color: Colors.textDisabled, textAlign: 'center', paddingVertical: 16 },
+  footer: {
+    fontSize: 12, color: KitColors.text3,
+    textAlign: 'center', paddingVertical: 16,
+  },
 });

@@ -3,25 +3,28 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-nati
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { StepHeader } from '../../components/StepHeader';
+import StepFooter from '../../components/StepFooter';
 import { Colors, Shadows, Accents } from '../../constants/brand';
 import { useResponsive, fs, sp } from '../../utils/responsive';
 
+// Purple-only — all three points share the brand color so the icon's
+// glyph carries the meaning, not its hue.
 const POINTS = [
   {
     icon: 'information-circle-outline',
-    color: Accents.violet,
+    color: Colors.purpleLight,
     title: 'Movement guidance, not diagnosis',
     body: 'AlignPal gives you evidence-based exercises tailored to your pain — not a medical diagnosis.',
   },
   {
     icon: 'medkit-outline',
-    color: Accents.coral,
+    color: Colors.purpleLight,
     title: 'See a doctor for serious pain',
     body: 'If your pain is sudden, severe, or accompanied by numbness/weakness — please see a healthcare professional first.',
   },
   {
     icon: 'lock-closed-outline',
-    color: Accents.teal,
+    color: Colors.purpleLight,
     title: 'Your data stays private',
     body: 'Everything you share is used only to personalize your plan. We never sell your health information.',
   },
@@ -31,7 +34,7 @@ export default function DisclaimerScreen({ navigation }) {
   const { isSmall, isTablet, isShort, horizPad, frameWidth, fontScale, gapScale } = useResponsive();
 
   const dyn = {
-    scrollContent: { paddingHorizontal: horizPad, paddingVertical: sp(20, gapScale) },
+    scrollContent: { paddingHorizontal: horizPad, paddingVertical: sp(28, gapScale) },
     frame:         { maxWidth: frameWidth, gap: sp(24, gapScale) },
     title:         { fontSize: fs(34, fontScale) },
     sub:           { fontSize: fs(14, fontScale), lineHeight: fs(22, fontScale) },
@@ -39,10 +42,6 @@ export default function DisclaimerScreen({ navigation }) {
     pointTitle:    { fontSize: fs(14, fontScale) },
     pointBody:     { fontSize: fs(13, fontScale), lineHeight: fs(20, fontScale) },
     agreeText:     { fontSize: fs(13, fontScale), lineHeight: fs(20, fontScale) },
-    btnText:       { fontSize: fs(17, fontScale) },
-    sub2:          { fontSize: fs(12, fontScale) },
-    footer:        { paddingHorizontal: horizPad, paddingBottom: isShort ? 20 : 36, paddingTop: 12 },
-    footerInner:   { maxWidth: frameWidth },
   };
 
   return (
@@ -80,7 +79,7 @@ export default function DisclaimerScreen({ navigation }) {
 
           {/* Agreement box */}
           <View style={s.agreeBox}>
-            <Ionicons name="checkmark-circle" size={24} color={Colors.green} />
+            <Ionicons name="checkmark-circle" size={24} color={Colors.purpleLight} />
             <Text style={[s.agreeText, dyn.agreeText]}>
               I understand AlignPal is a wellness tool — not a replacement for professional medical care
             </Text>
@@ -88,19 +87,10 @@ export default function DisclaimerScreen({ navigation }) {
         </View>
       </ScrollView>
 
-      <View style={[s.footer, dyn.footer]}>
-        <View style={[s.footerInner, dyn.footerInner]}>
-          <TouchableOpacity
-            style={s.btn}
-            onPress={() => navigation.navigate('Analyzing')}
-            activeOpacity={0.88}
-          >
-            <Ionicons name="sparkles" size={18} color={Colors.white} />
-            <Text style={[s.btnText, dyn.btnText]}>Build My Plan</Text>
-          </TouchableOpacity>
-          <Text style={[s.sub2, dyn.sub2]}>Your results will be ready in seconds</Text>
-        </View>
-      </View>
+      <StepFooter
+        label="Build My Plan"
+        onPress={() => navigation.navigate('Analyzing')}
+      />
     </SafeAreaView>
   );
 }
@@ -146,18 +136,8 @@ const s = StyleSheet.create({
   agreeBox: {
     flexDirection: 'row', alignItems: 'flex-start', gap: 12,
     backgroundColor: Colors.bgCard,
-    borderWidth: 1, borderColor: Colors.green + '35',
+    borderWidth: 1, borderColor: 'rgba(155,139,244,0.35)',
     borderRadius: 16, padding: 16,
   },
-  agreeText: { color: Colors.green, flex: 1, opacity: 0.9 },
-
-  footer:      { alignItems: 'center' },
-  footerInner: { width: '100%', alignSelf: 'center', gap: 10 },
-  btn: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
-    backgroundColor: Colors.purple, borderRadius: 20, paddingVertical: 19,
-    ...Shadows.purple,
-  },
-  btnText: { fontWeight: '700', color: Colors.white },
-  sub2:    { color: Colors.textMuted, textAlign: 'center' },
+  agreeText: { color: Colors.purpleLight, flex: 1, opacity: 0.9 },
 });

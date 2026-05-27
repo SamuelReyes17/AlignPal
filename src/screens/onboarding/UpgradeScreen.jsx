@@ -115,7 +115,7 @@ export default function UpgradeScreen({ navigation }) {
     skipText:       { fontSize: fs(13, fontScale) },
     legalText:      { fontSize: fs(10, fontScale), lineHeight: fs(15, fontScale) },
     paywallLinkText:{ fontSize: fs(12, fontScale) },
-    footer:         { paddingHorizontal: horizPad, paddingBottom: isShort ? 12 : 16, paddingTop: 12 },
+    footer:         { paddingHorizontal: horizPad, paddingBottom: isShort ? 24 : 32, paddingTop: 20 },
     footerInner:    { maxWidth: wideFrame },
   };
 
@@ -307,7 +307,7 @@ const styles = StyleSheet.create({
   planTitle:     { fontWeight: '600', color: Colors.textSecondary, marginBottom: 2 },
   planTitleSelected: { color: Colors.textPrimary },
   planTrial:     { color: Colors.purpleLight, fontWeight: '500' },
-  planSavings:   { color: Colors.green, fontWeight: '500' },
+  planSavings:   { color: Colors.purpleLight, fontWeight: '500' },
   planPriceWrap: { alignItems: 'flex-end' },
   planPrice:     { fontWeight: '700', color: Colors.textSecondary },
   planPriceSelected: { color: Colors.textPrimary },

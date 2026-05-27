@@ -1,18 +1,20 @@
 import React, { useState, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Animated, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
 import { useOnboarding } from '../../context/OnboardingContext';
 import { StepHeader } from '../../components/StepHeader';
+import StepFooter from '../../components/StepFooter';
 import { Colors, Shadows } from '../../constants/brand';
 import { useResponsive, fs, sp } from '../../utils/responsive';
 
 const LEVELS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
+// Three shades of brand purple express the gradient — lighter = milder,
+// deeper = stronger. State reads through value, not hue.
 const getColor = (n) => {
-  if (n <= 3) return Colors.green;
-  if (n <= 6) return Colors.amber;
-  return Colors.red;
+  if (n <= 3) return Colors.purplePale;
+  if (n <= 6) return Colors.purpleLight;
+  return Colors.purple;
 };
 
 const DESCRIPTORS = {
@@ -52,7 +54,7 @@ export default function PainIntensityScreen({ navigation }) {
   const desc = level ? DESCRIPTORS[level] : null;
 
   const dyn = {
-    scrollContent: { paddingHorizontal: horizPad, paddingVertical: sp(20, gapScale) },
+    scrollContent: { paddingHorizontal: horizPad, paddingVertical: sp(28, gapScale) },
     frame:         { maxWidth: frameWidth, gap: sp(26, gapScale) },
     question:      { fontSize: fs(38, fontScale), lineHeight: fs(46, fontScale) },
     hint:          { fontSize: fs(14, fontScale) },
@@ -63,9 +65,6 @@ export default function PainIntensityScreen({ navigation }) {
     numBtn:        { height: isSmall ? 44 : isTablet ? 60 : 52 },
     numText:       { fontSize: fs(15, fontScale) },
     legendText:    { fontSize: fs(11, fontScale) },
-    btnText:       { fontSize: fs(17, fontScale) },
-    footer:        { paddingHorizontal: horizPad, paddingBottom: isShort ? 20 : 36, paddingTop: 12 },
-    footerInner:   { maxWidth: frameWidth },
   };
 
   return (
@@ -124,35 +123,26 @@ export default function PainIntensityScreen({ navigation }) {
           {/* Colour legend */}
           <View style={s.legend}>
             <View style={s.legendItem}>
-              <View style={[s.dot, { backgroundColor: Colors.green }]} />
+              <View style={[s.dot, { backgroundColor: Colors.purplePale }]} />
               <Text style={[s.legendText, dyn.legendText]}>Mild (1–3)</Text>
             </View>
             <View style={s.legendItem}>
-              <View style={[s.dot, { backgroundColor: Colors.amber }]} />
+              <View style={[s.dot, { backgroundColor: Colors.purpleLight }]} />
               <Text style={[s.legendText, dyn.legendText]}>Moderate (4–6)</Text>
             </View>
             <View style={s.legendItem}>
-              <View style={[s.dot, { backgroundColor: Colors.red }]} />
+              <View style={[s.dot, { backgroundColor: Colors.purple }]} />
               <Text style={[s.legendText, dyn.legendText]}>Severe (7–10)</Text>
             </View>
           </View>
         </View>
       </ScrollView>
 
-      <View style={[s.footer, dyn.footer]}>
-        <View style={[s.footerInner, dyn.footerInner]}>
-          <TouchableOpacity
-            style={[s.btn, !level && s.btnDisabled]}
-            onPress={handleContinue}
-            activeOpacity={0.88}
-          >
-            <Text style={[s.btnText, dyn.btnText, !level && s.btnTextDisabled]}>
-              {level ? 'Continue' : 'Select your pain level'}
-            </Text>
-            {!!level && <Ionicons name="arrow-forward" size={16} color={Colors.white} />}
-          </TouchableOpacity>
-        </View>
-      </View>
+      <StepFooter
+        label={level ? 'Continue' : 'Select your pain level'}
+        disabled={!level}
+        onPress={handleContinue}
+      />
     </SafeAreaView>
   );
 }
@@ -198,15 +188,4 @@ const s = StyleSheet.create({
   legendItem: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   dot:        { width: 8, height: 8, borderRadius: 4 },
   legendText: { color: Colors.textMuted, fontWeight: '500' },
-
-  footer:      { alignItems: 'center' },
-  footerInner: { width: '100%', alignSelf: 'center' },
-  btn: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
-    backgroundColor: Colors.purple, borderRadius: 20, paddingVertical: 19,
-    ...Shadows.purple,
-  },
-  btnDisabled:     { backgroundColor: Colors.bgCard, shadowOpacity: 0, borderWidth: 1, borderColor: Colors.border },
-  btnText:         { fontWeight: '700', color: Colors.white },
-  btnTextDisabled: { color: Colors.textMuted },
 });

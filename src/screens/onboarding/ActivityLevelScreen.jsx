@@ -4,14 +4,17 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useOnboarding } from '../../context/OnboardingContext';
 import { StepHeader } from '../../components/StepHeader';
+import StepFooter from '../../components/StepFooter';
 import { Colors, Shadows } from '../../constants/brand';
 import { useResponsive, fs, sp } from '../../utils/responsive';
 
+// Purple-only treatment — all four share the same active color so state
+// reads through selection (border/fill), not hue.
 const OPTIONS = [
   { id: 'sedentary', label: 'Not very active',    sub: 'Little to no exercise right now', icon: 'bed-outline',     color: Colors.purpleLight },
-  { id: 'light',     label: 'Lightly active',     sub: 'Walk or move 1–2× a week',        icon: 'walk-outline',    color: Colors.green },
-  { id: 'moderate',  label: 'Moderately active',  sub: 'Exercise or gym 3–4× a week',     icon: 'bicycle-outline', color: Colors.amber },
-  { id: 'active',    label: 'Very active',        sub: 'Train hard 5+ days a week',       icon: 'barbell-outline', color: Colors.red },
+  { id: 'light',     label: 'Lightly active',     sub: 'Walk or move 1–2× a week',        icon: 'walk-outline',    color: Colors.purpleLight },
+  { id: 'moderate',  label: 'Moderately active',  sub: 'Exercise or gym 3–4× a week',     icon: 'bicycle-outline', color: Colors.purpleLight },
+  { id: 'active',    label: 'Very active',        sub: 'Train hard 5+ days a week',       icon: 'barbell-outline', color: Colors.purpleLight },
 ];
 
 export default function ActivityLevelScreen({ navigation }) {
@@ -26,7 +29,7 @@ export default function ActivityLevelScreen({ navigation }) {
   };
 
   const dyn = {
-    scrollContent: { paddingHorizontal: horizPad, paddingVertical: sp(20, gapScale) },
+    scrollContent: { paddingHorizontal: horizPad, paddingVertical: sp(28, gapScale) },
     frame:         { maxWidth: frameWidth, gap: sp(28, gapScale) },
     question:      { fontSize: fs(38, fontScale), lineHeight: fs(46, fontScale) },
     hint:          { fontSize: fs(14, fontScale) },
@@ -34,9 +37,6 @@ export default function ActivityLevelScreen({ navigation }) {
     cardLabel:     { fontSize: fs(16, fontScale) },
     cardSub:       { fontSize: fs(12, fontScale) },
     iconCircle:    { width: isSmall ? 50 : isTablet ? 64 : 58, height: isSmall ? 50 : isTablet ? 64 : 58 },
-    btnText:       { fontSize: fs(17, fontScale) },
-    footer:        { paddingHorizontal: horizPad, paddingBottom: isShort ? 20 : 36, paddingTop: 12 },
-    footerInner:   { maxWidth: frameWidth },
   };
 
   return (
@@ -78,20 +78,11 @@ export default function ActivityLevelScreen({ navigation }) {
         </View>
       </ScrollView>
 
-      <View style={[s.footer, dyn.footer]}>
-        <View style={[s.footerInner, dyn.footerInner]}>
-          <TouchableOpacity
-            style={[s.btn, !selected && s.btnDisabled]}
-            onPress={handleContinue}
-            activeOpacity={0.88}
-          >
-            <Text style={[s.btnText, dyn.btnText, !selected && s.btnTextDisabled]}>
-              {selected ? 'Continue' : 'Select activity level'}
-            </Text>
-            {!!selected && <Ionicons name="arrow-forward" size={16} color={Colors.white} />}
-          </TouchableOpacity>
-        </View>
-      </View>
+      <StepFooter
+        label={selected ? 'Continue' : 'Select activity level'}
+        disabled={!selected}
+        onPress={handleContinue}
+      />
     </SafeAreaView>
   );
 }
@@ -125,15 +116,4 @@ const s = StyleSheet.create({
   cardSub:   { color: Colors.textSecondary },
   radioOn:   { width: 26, height: 26, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
   radioOff:  { width: 26, height: 26, borderRadius: 13, borderWidth: 2, borderColor: Colors.border },
-
-  footer:      { alignItems: 'center' },
-  footerInner: { width: '100%', alignSelf: 'center' },
-  btn: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
-    backgroundColor: Colors.purple, borderRadius: 20, paddingVertical: 19,
-    ...Shadows.purple,
-  },
-  btnDisabled:     { backgroundColor: Colors.bgCard, shadowOpacity: 0, borderWidth: 1, borderColor: Colors.border },
-  btnText:         { fontWeight: '700', color: Colors.white },
-  btnTextDisabled: { color: Colors.textMuted },
 });

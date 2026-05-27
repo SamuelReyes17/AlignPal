@@ -1,19 +1,25 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity,
-  ScrollView, Animated, Dimensions, Easing,
+  ScrollView, Animated, useWindowDimensions, Easing,
 } from 'react-native';
 import Svg, { Ellipse, Path, G, Circle, Line } from 'react-native-svg';
 import { Colors } from '../constants/brand';
 
-const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get('window');
-
 // ─── Responsive sizing ────────────────────────────────────────────────────────
-// Height-first: compute how much vertical space the body can use,
-// then derive width from the 200×380 aspect ratio.
-const RESERVED = 390; // header + question + toggle + chips + footer
-const BODY_H = Math.min(Math.max(SCREEN_H - RESERVED, 250), SCREEN_H * 0.56);
-const BODY_W = BODY_H * (200 / 380);
+// The figure keeps its 200×380 aspect ratio. Its height tracks the live window
+// (so it reacts to rotation and browser resize) but is clamped to a sane range,
+// so it never overflows a tall desktop window nor shrinks away on a small phone.
+const FIGURE_RATIO = 200 / 380;
+const clamp = (v, lo, hi) => Math.min(Math.max(v, lo), hi);
+
+function useBodySize() {
+  const { height } = useWindowDimensions();
+  // Floor 320 so the figure never looks tiny; ceiling 480 so it stays a
+  // comfortable portion of a tall laptop window without dominating it.
+  const bodyH = Math.round(clamp(height * 0.46, 320, 480));
+  return { bodyH, bodyW: Math.round(bodyH * FIGURE_RATIO) };
+}
 
 // ─── Pain Zones ───────────────────────────────────────────────────────────────
 const PAIN_ZONES = {
@@ -75,43 +81,8 @@ const PAIN_ZONES = {
   ],
 };
 
-// ─── Wave background blobs ────────────────────────────────────────────────────
-function WaveBackground() {
-  const w1 = useRef(new Animated.Value(0)).current;
-  const w2 = useRef(new Animated.Value(0)).current;
-  const w3 = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    const go = (v, dur, delay) =>
-      Animated.loop(Animated.sequence([
-        Animated.delay(delay),
-        Animated.timing(v, { toValue: 1, duration: dur, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
-        Animated.timing(v, { toValue: 0, duration: dur, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
-      ])).start();
-    go(w1, 7000, 0);
-    go(w2, 9000, 2500);
-    go(w3, 6500, 4500);
-  }, []);
-
-  const y1 = w1.interpolate({ inputRange: [0,1], outputRange: [0,-12] });
-  const x1 = w1.interpolate({ inputRange: [0,1], outputRange: [0, 8] });
-  const y2 = w2.interpolate({ inputRange: [0,1], outputRange: [0,-9] });
-  const x2 = w2.interpolate({ inputRange: [0,1], outputRange: [0,-10] });
-  const y3 = w3.interpolate({ inputRange: [0,1], outputRange: [0,-14] });
-  const x3 = w3.interpolate({ inputRange: [0,1], outputRange: [0, 5] });
-
-  return (
-    <View style={StyleSheet.absoluteFill} pointerEvents="none">
-      <Animated.View style={[ws.b, { top:-50,left:-30,width:200,height:200,backgroundColor:'#7C5CF0',transform:[{translateX:x1},{translateY:y1}] }]} />
-      <Animated.View style={[ws.b, { bottom:-60,right:-40,width:220,height:220,backgroundColor:'#5B3FBF',transform:[{translateX:x2},{translateY:y2}] }]} />
-      <Animated.View style={[ws.b, { top:'38%',left:'12%',width:160,height:160,backgroundColor:'#9B6BFF',transform:[{translateX:x3},{translateY:y3}] }]} />
-    </View>
-  );
-}
-const ws = StyleSheet.create({ b: { position:'absolute', borderRadius:999, opacity:0.055 } });
-
 // ─── Pulse ring on selected zones ─────────────────────────────────────────────
-function PulseRing({ cx, cy, rx, ry }) {
+function PulseRing({ cx, cy, rx, ry, w, h }) {
   const pulse = useRef(new Animated.Value(0)).current;
   useEffect(() => {
     const loop = Animated.loop(Animated.sequence([
@@ -123,8 +94,8 @@ function PulseRing({ cx, cy, rx, ry }) {
   }, []);
   const scale   = pulse.interpolate({ inputRange:[0,1], outputRange:[1,1.75] });
   const opacity = pulse.interpolate({ inputRange:[0,0.4,1], outputRange:[0.6,0.2,0] });
-  const sx = (cx/200)*BODY_W, sy = (cy/380)*BODY_H;
-  const srx = (rx/200)*BODY_W, sry = ((ry||rx)/380)*BODY_H;
+  const sx = (cx/200)*w, sy = (cy/380)*h;
+  const srx = (rx/200)*w, sry = ((ry||rx)/380)*h;
   return (
     <Animated.View pointerEvents="none" style={{
       position:'absolute', left:sx-srx, top:sy-sry,
@@ -150,8 +121,8 @@ const Joint = ({ cx, cy, r = 7 }) => (
   <Circle cx={cx} cy={cy} r={r} fill={JOINT_FILL} stroke={BODY_STROKE} strokeWidth="1.2" />
 );
 
-const FrontBody = () => (
-  <Svg viewBox="0 0 200 380" width={BODY_W} height={BODY_H} style={StyleSheet.absoluteFill}>
+const FrontBody = ({ w, h }) => (
+  <Svg viewBox="0 0 200 380" width={w} height={h} style={StyleSheet.absoluteFill}>
 
     {/* HEAD */}
     <Ellipse cx="100" cy="36" rx="20" ry="23"
@@ -261,8 +232,8 @@ const FrontBody = () => (
   </Svg>
 );
 
-const BackBody = () => (
-  <Svg viewBox="0 0 200 380" width={BODY_W} height={BODY_H} style={StyleSheet.absoluteFill}>
+const BackBody = ({ w, h }) => (
+  <Svg viewBox="0 0 200 380" width={w} height={h} style={StyleSheet.absoluteFill}>
 
     {/* HEAD */}
     <Ellipse cx="100" cy="36" rx="20" ry="23"
@@ -386,6 +357,7 @@ const BackBody = () => (
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function BodyMap({ selectedParts = [], onSelect }) {
   const [side, setSide] = useState('front');
+  const { bodyW, bodyH } = useBodySize();
   const zones = PAIN_ZONES[side];
 
   const isSelected = (id) => selectedParts.includes(id);
@@ -409,8 +381,6 @@ export default function BodyMap({ selectedParts = [], onSelect }) {
 
   return (
     <View style={st.container}>
-      <WaveBackground />
-
       {/* Toggle */}
       <View style={st.toggle}>
         {['front','back'].map((sv) => (
@@ -428,16 +398,18 @@ export default function BodyMap({ selectedParts = [], onSelect }) {
       </View>
 
       {/* Body */}
-      <View style={[st.body, { width: BODY_W, height: BODY_H }]}>
-        {side === 'front' ? <FrontBody /> : <BackBody />}
+      <View style={[st.body, { width: bodyW, height: bodyH }]}>
+        {side === 'front'
+          ? <FrontBody w={bodyW} h={bodyH} />
+          : <BackBody w={bodyW} h={bodyH} />}
 
         {/* Pulse rings */}
         {zones.filter(z => isSelected(z.id)).map(z => (
-          <PulseRing key={z.id+'_p'} {...z} />
+          <PulseRing key={z.id+'_p'} {...z} w={bodyW} h={bodyH} />
         ))}
 
         {/* Hotspot overlay */}
-        <Svg viewBox="0 0 200 380" width={BODY_W} height={BODY_H} style={StyleSheet.absoluteFill}>
+        <Svg viewBox="0 0 200 380" width={bodyW} height={bodyH} style={StyleSheet.absoluteFill}>
           {zones.map((zone) => {
             const on = isSelected(zone.id);
             const ry = zone.ry || zone.rx;
@@ -462,33 +434,30 @@ export default function BodyMap({ selectedParts = [], onSelect }) {
         </Svg>
       </View>
 
-      {/* Chips */}
+      {/* Chips (no empty-state hint — the screen already says "Tap the area") */}
       <View style={st.chipsWrap}>
-        {chips.length === 0
-          ? <Text style={st.chipsEmpty}>Tap any area on the body</Text>
-          : (
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={st.chipsRow}>
-              {chips.map((z) => (
-                <TouchableOpacity key={z.id} style={st.chip} onPress={() => toggleZone(z)} activeOpacity={0.7}>
-                  <View style={st.chipDot} />
-                  <Text style={st.chipText}>{z.label}</Text>
-                  <Text style={st.chipX}> ×</Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          )
-        }
+        {chips.length > 0 && (
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={st.chipsRow}>
+            {chips.map((z) => (
+              <TouchableOpacity key={z.id} style={st.chip} onPress={() => toggleZone(z)} activeOpacity={0.7}>
+                <View style={st.chipDot} />
+                <Text style={st.chipText}>{z.label}</Text>
+                <Text style={st.chipX}> ×</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        )}
       </View>
     </View>
   );
 }
 
 const st = StyleSheet.create({
-  container: { alignItems:'center', width:'100%', flex:1, overflow:'hidden' },
+  container: { alignItems:'center', width:'100%', overflow:'hidden' },
 
   toggle: {
     flexDirection:'row', backgroundColor:'rgba(17,12,36,0.92)',
-    borderRadius:16, padding:3, marginBottom:10,
+    borderRadius:16, padding:3, marginBottom:18,
     borderWidth:1, borderColor:Colors.border, zIndex:10,
   },
   toggleBtn:    { paddingVertical:8, paddingHorizontal:36, borderRadius:13 },
@@ -496,9 +465,9 @@ const st = StyleSheet.create({
   toggleText:   { fontSize:13, color:Colors.textMuted, fontWeight:'700' },
   toggleTextOn: { color:Colors.white },
 
-  body: { position:'relative', marginBottom:8 },
+  body: { position:'relative', marginBottom:18 },
 
-  chipsWrap:  { height:36, width:'100%', justifyContent:'center', zIndex:10 },
+  chipsWrap:  { minHeight:44, width:'100%', justifyContent:'center', zIndex:10, paddingVertical:4 },
   chipsEmpty: { color:Colors.textMuted, fontSize:12, textAlign:'center', fontStyle:'italic' },
   chipsRow:   { paddingHorizontal:12, alignItems:'center' },
   chip: {

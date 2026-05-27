@@ -12,6 +12,7 @@ import type * as checkIns from "../checkIns.js";
 import type * as email from "../email.js";
 import type * as http from "../http.js";
 import type * as leads from "../leads.js";
+import type * as plan from "../plan.js";
 import type * as sessions from "../sessions.js";
 import type * as stats from "../stats.js";
 import type * as users from "../users.js";
@@ -27,6 +28,7 @@ declare const fullApi: ApiFromModules<{
   email: typeof email;
   http: typeof http;
   leads: typeof leads;
+  plan: typeof plan;
   sessions: typeof sessions;
   stats: typeof stats;
   users: typeof users;

@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useOnboarding } from '../../context/OnboardingContext';
 import { StepHeader } from '../../components/StepHeader';
+import StepFooter from '../../components/StepFooter';
 import { Colors, Shadows } from '../../constants/brand';
 import { useResponsive, fs, sp } from '../../utils/responsive';
 
@@ -33,7 +34,7 @@ export default function PainTriggersScreen({ navigation }) {
   };
 
   const dyn = {
-    scrollContent: { paddingHorizontal: horizPad, paddingVertical: sp(16, gapScale) },
+    scrollContent: { paddingHorizontal: horizPad, paddingVertical: sp(24, gapScale) },
     frame:         { maxWidth: frameWidth, gap: sp(20, gapScale) },
     question:      { fontSize: fs(38, fontScale), lineHeight: fs(46, fontScale) },
     hint:          { fontSize: fs(14, fontScale), lineHeight: fs(21, fontScale) },
@@ -42,9 +43,6 @@ export default function PainTriggersScreen({ navigation }) {
     cardDetail:    { fontSize: fs(11, fontScale) },
     iconWrap:      { width: isSmall ? 38 : isTablet ? 48 : 42, height: isSmall ? 38 : isTablet ? 48 : 42 },
     countText:     { fontSize: fs(13, fontScale) },
-    btnText:       { fontSize: fs(17, fontScale) },
-    footer:        { paddingHorizontal: horizPad, paddingBottom: isShort ? 20 : 36, paddingTop: 8 },
-    footerInner:   { maxWidth: frameWidth },
   };
 
   return (
@@ -89,27 +87,18 @@ export default function PainTriggersScreen({ navigation }) {
 
           {selected.length > 0 && (
             <View style={s.countRow}>
-              <Ionicons name="checkmark-circle" size={14} color={Colors.green} />
+              <Ionicons name="checkmark-circle" size={14} color={Colors.purpleLight} />
               <Text style={[s.countText, dyn.countText]}>{selected.length} trigger{selected.length !== 1 ? 's' : ''} selected</Text>
             </View>
           )}
         </View>
       </ScrollView>
 
-      <View style={[s.footer, dyn.footer]}>
-        <View style={[s.footerInner, dyn.footerInner]}>
-          <TouchableOpacity
-            style={[s.btn, !selected.length && s.btnDisabled]}
-            onPress={handleContinue}
-            activeOpacity={0.88}
-          >
-            <Text style={[s.btnText, dyn.btnText, !selected.length && s.btnTextDisabled]}>
-              {selected.length ? 'Continue' : 'Select triggers'}
-            </Text>
-            {!!selected.length && <Ionicons name="arrow-forward" size={16} color={Colors.white} />}
-          </TouchableOpacity>
-        </View>
-      </View>
+      <StepFooter
+        label={selected.length ? 'Continue' : 'Select triggers'}
+        disabled={!selected.length}
+        onPress={handleContinue}
+      />
     </SafeAreaView>
   );
 }
@@ -150,16 +139,5 @@ const s = StyleSheet.create({
   },
 
   countRow:  { flexDirection: 'row', alignItems: 'center', gap: 6, justifyContent: 'center' },
-  countText: { color: Colors.green, fontWeight: '600' },
-
-  footer:      { alignItems: 'center' },
-  footerInner: { width: '100%', alignSelf: 'center' },
-  btn: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
-    backgroundColor: Colors.purple, borderRadius: 20, paddingVertical: 19,
-    ...Shadows.purple,
-  },
-  btnDisabled:     { backgroundColor: Colors.bgCard, shadowOpacity: 0, borderWidth: 1, borderColor: Colors.border },
-  btnText:         { fontWeight: '700', color: Colors.white },
-  btnTextDisabled: { color: Colors.textMuted },
+  countText: { color: Colors.purpleLight, fontWeight: '600' },
 });

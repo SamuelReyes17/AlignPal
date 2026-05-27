@@ -2,8 +2,31 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useMutation } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 import { getInstallId } from '../services/deviceId';
+import { skipOnboarding, seedSampleProfile, DEV_SAMPLE_PROFILE } from '../constants/devConfig';
 
 const OnboardingContext = createContext();
+
+// The blank pain profile every new user starts with. Kept at module scope so
+// both the initial state and resetOnboarding() share one source of truth.
+const DEFAULT_ONBOARDING_DATA = {
+  painLocations: [],
+  painIntensity: 5,
+  painTypes: [],
+  painDescription: '',
+  painDuration: '',
+  directionalPreference: '',
+  radiatingPain: [],
+  redFlags: [],
+  worstTimeTriggers: [],
+  sittingHours: '',
+  trainingFrequency: '',
+  pastInjuries: '',
+  ageRange: '',
+  email: '',
+  // 'female' | 'male' — chosen via the BodyMap sex toggle on PainLocation step.
+  // Drives which silhouette is shown. Defaults to female; user can change any time.
+  sex: 'female',
+};
 
 export const useOnboarding = () => {
   const context = useContext(OnboardingContext);
@@ -14,24 +37,16 @@ export const useOnboarding = () => {
 };
 
 export const OnboardingProvider = ({ children }) => {
-  const [onboardingData, setOnboardingData] = useState({
-    painLocations: [],
-    painIntensity: 5,
-    painTypes: [],
-    painDescription: '',
-    painDuration: '',
-    directionalPreference: '',
-    radiatingPain: [],
-    redFlags: [],
-    worstTimeTriggers: [],
-    sittingHours: '',
-    trainingFrequency: '',
-    pastInjuries: '',
-    ageRange: '',
-    email: '',
-  });
+  // In a dev preview mode (main-app or screen-catalog), start with a sample
+  // profile so the screens that need pain data have realistic content.
+  const [onboardingData, setOnboardingData] = useState(
+    seedSampleProfile
+      ? { ...DEFAULT_ONBOARDING_DATA, ...DEV_SAMPLE_PROFILE }
+      : { ...DEFAULT_ONBOARDING_DATA }
+  );
 
-  const [isOnboardingComplete, setIsOnboardingComplete] = useState(false);
+  // skipOnboarding boots the app straight into the main app (dev only).
+  const [isOnboardingComplete, setIsOnboardingComplete] = useState(skipOnboarding);
   const [installId, setInstallId] = useState(null);
 
   const upsertProfile = useMutation(api.users.upsertProfile);
@@ -62,27 +77,13 @@ export const OnboardingProvider = ({ children }) => {
         directionalPreference: onboardingData.directionalPreference || undefined,
         radiatingPain: onboardingData.radiatingPain?.length ? onboardingData.radiatingPain : undefined,
         redFlags: onboardingData.redFlags?.length ? onboardingData.redFlags : undefined,
+        sex: onboardingData.sex || undefined,
       }).catch((e) => console.error('[OnboardingContext] Failed to save profile:', e));
     }
   };
 
   const resetOnboarding = () => {
-    setOnboardingData({
-      painLocations: [],
-      painIntensity: 5,
-      painTypes: [],
-      painDescription: '',
-      painDuration: '',
-      directionalPreference: '',
-      radiatingPain: [],
-      redFlags: [],
-      worstTimeTriggers: [],
-      sittingHours: '',
-      trainingFrequency: '',
-      pastInjuries: '',
-      ageRange: '',
-      email: '',
-    });
+    setOnboardingData({ ...DEFAULT_ONBOARDING_DATA });
     setIsOnboardingComplete(false);
   };
 

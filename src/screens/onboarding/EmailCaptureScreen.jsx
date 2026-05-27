@@ -65,7 +65,7 @@ export default function EmailCaptureScreen({ navigation }) {
   const canSubmit = isValidEmail(email.trim()) && !loading;
 
   const dyn = {
-    scrollContent: { paddingHorizontal: horizPad, paddingVertical: sp(24, gapScale) },
+    scrollContent: { paddingHorizontal: horizPad, paddingVertical: sp(32, gapScale) },
     frame:         { maxWidth: frameWidth, gap: sp(20, gapScale) },
     iconRing:      { width: isSmall ? 70 : isTablet ? 90 : 80, height: isSmall ? 70 : isTablet ? 90 : 80 },
     title:         { fontSize: fs(32, fontScale) },
@@ -111,7 +111,7 @@ export default function EmailCaptureScreen({ navigation }) {
                 { icon: 'checkmark-circle', text: 'Pain relief guides' },
               ].map((b) => (
                 <View key={b.text} style={s.benefitItem}>
-                  <Ionicons name={b.icon} size={14} color={Colors.green} />
+                  <Ionicons name={b.icon} size={14} color={Colors.purpleLight} />
                   <Text style={[s.benefitText, dyn.benefitText]}>{b.text}</Text>
                 </View>
               ))}
@@ -122,7 +122,7 @@ export default function EmailCaptureScreen({ navigation }) {
               <Ionicons
                 name="mail-outline"
                 size={18}
-                color={error ? Colors.red : isValidEmail(email.trim()) ? Colors.green : Colors.textMuted}
+                color={error ? Colors.purple : isValidEmail(email.trim()) ? Colors.purpleLight : Colors.textMuted}
                 style={s.inputIcon}
               />
               <TextInput
@@ -141,7 +141,7 @@ export default function EmailCaptureScreen({ navigation }) {
 
             {error ? (
               <View style={s.errorRow}>
-                <Ionicons name="alert-circle-outline" size={13} color={Colors.red} />
+                <Ionicons name="alert-circle-outline" size={13} color={Colors.purple} />
                 <Text style={s.errorText}>{error}</Text>
               </View>
             ) : null}
@@ -214,13 +214,13 @@ const s = StyleSheet.create({
     borderRadius: 18, borderWidth: 1.5, borderColor: Colors.border,
     paddingHorizontal: 16, paddingVertical: 16, gap: 10,
   },
-  inputWrapError: { borderColor: Colors.red + '80' },
-  inputWrapValid: { borderColor: Colors.green + '80' },
+  inputWrapError: { borderColor: Colors.purple + '80' },
+  inputWrapValid: { borderColor: Colors.purpleLight + '80' },
   inputIcon: { flexShrink: 0 },
   input:     { flex: 1, color: Colors.textPrimary, fontWeight: '500' },
 
   errorRow: { flexDirection: 'row', alignItems: 'center', gap: 5, alignSelf: 'flex-start' },
-  errorText: { fontSize: 12, color: Colors.red, fontWeight: '600' },
+  errorText: { fontSize: 12, color: Colors.purple, fontWeight: '600' },
 
   privacyRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   privacyText: { color: Colors.textMuted },

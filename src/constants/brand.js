@@ -198,3 +198,59 @@ export const Gradients = {
   midnight:  ['#1A1235', '#07050F'],
   cardSoft:  ['#1A1235', '#110C24'],
 };
+
+// ═══════════════════════════════════════════════════════════════════════════
+// MINIMAL DARK KIT (Variant B, locked 2026-05-05)
+//
+// New design direction. Use these tokens in any NEW screen/component built
+// to the minimal-dark spec (one accent per card, no decoration, single hero
+// element per screen). Existing screens should keep using Colors / Accents /
+// Gradients exactly as they do — this section is purely additive.
+//
+// Color roles (psychology):
+//   violet  → primary CTA, identity, nav active state    (trust + premium)
+//   avocado → completion, streaks, weekly reward         (positive reward)
+//   teal    → improvements, secondary positive           (calm gain)
+//   coral   → ALERTS only (pain markers, attention)      (urgency, sparingly)
+//   pink    → soft encouragement, low-key callouts       (approachability)
+// Pain-related stats sit on a calm muted surface, NOT on coral.
+// ═══════════════════════════════════════════════════════════════════════════
+
+export const KitColors = {
+  bg:         '#110E1D',   // purpler dark base
+  surface1:   '#1A1729',   // cards
+  surface2:   '#221E33',   // raised surfaces, toggles
+  hairline:   'rgba(180,160,255,0.08)',
+
+  text1:      '#FFFFFF',
+  text2:      '#B6B6C2',
+  text3:      '#6E6E7C',
+};
+
+export const KitAccents = {
+  // AlignPal brand purple — matches Colors.purple / Colors.purpleLight.
+  // Purple is the dominant identity color; other accents are supporting roles.
+  violet:      '#7C5CF0',   // brand purple (primary CTA, hero gradient start)
+  violetDeep:  '#5B3CC4',   // brand purple deep (gradient end)
+  violetSoft:  '#9B8BF4',   // softer brand purple (hover, secondary)
+  coral:       '#FF6B6B',
+  coralDeep:   '#E04F4F',
+  teal:        '#2DD4BF',
+  tealDeep:    '#14A99A',
+  avocado:     '#A3D977',
+  avocadoDeep: '#7FB94F',
+  pink:        '#FF8FA3',
+  pinkDeep:    '#E96A82',
+};
+
+// Two-stop linear gradients at 155deg, used by the Kit GradientCard.
+export const KitGradients = {
+  violet:  [KitAccents.violet,  KitAccents.violetDeep],
+  coral:   [KitAccents.coral,   KitAccents.coralDeep],
+  teal:    [KitAccents.teal,    KitAccents.tealDeep],
+  avocado: [KitAccents.avocado, KitAccents.avocadoDeep],
+  pink:    [KitAccents.pink,    KitAccents.pinkDeep],
+};
+
+export const KitRadius   = { sm: 12, md: 18, lg: 24, xl: 32 };
+export const KitSpacing  = { s1: 4, s2: 8, s3: 12, s4: 16, s5: 20, s6: 24, s8: 32, s10: 40 };

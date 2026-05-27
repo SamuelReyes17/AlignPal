@@ -8,7 +8,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useMutation } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 import { useOnboarding } from '../context/OnboardingContext';
-import { selectExercises } from '../constants/exerciseLibrary';
+import { selectExercises, getPersonalizedWhy } from '../constants/exerciseLibrary';
 import { Colors, Shadows, Accents, Gradients, Radius, Spacing, Surfaces, PhasePalette, getPhaseMeta } from '../constants/brand';
 import ExerciseAnimation from '../components/ExerciseAnimation';
 import { useResponsive, fs, sp } from '../utils/responsive';
@@ -69,10 +69,11 @@ function DoneScreen({ exercises, onContinue, isOnboarding }) {
         <Text style={[done.subtitle, { fontSize: fs(15, fontScale) }]}>Outstanding. Consistency is the only variable that heals.</Text>
         <View style={done.grid}>
           {[
-            { icon: 'barbell-outline', color: Colors.purple,  value: String(exercises.length), label: 'Exercises' },
-            { icon: 'layers-outline',  color: Colors.green,   value: String(totalSets),         label: 'Sets Done' },
-            { icon: 'time-outline',    color: Colors.amber,   value: `${totalMin}m`,            label: 'Duration' },
-            { icon: 'star-outline',    color: '#F472B6',      value: '100%',                    label: 'Complete' },
+            // All four share the brand color — the number does the talking.
+            { icon: 'barbell-outline', color: Colors.purpleLight, value: String(exercises.length), label: 'Exercises' },
+            { icon: 'layers-outline',  color: Colors.purpleLight, value: String(totalSets),        label: 'Sets Done' },
+            { icon: 'time-outline',    color: Colors.purpleLight, value: `${totalMin}m`,           label: 'Duration' },
+            { icon: 'star-outline',    color: Colors.purpleLight, value: '100%',                   label: 'Complete' },
           ].map((stat, i) => (
             <View key={i} style={done.card}>
               <View style={[done.icon, { backgroundColor: stat.color + '20' }]}>
@@ -189,7 +190,10 @@ function DraggableList({ exercises, exerciseIdx, editMode, onReorder, onJump }) 
       scrollEnabled={!isDragging}
     >
       {displayOrder.map(({ exercise, idx: currentIdx }) => {
-        const exPhase      = getPhaseMeta(exercise.phase);
+        // Keep the phase's icon/label, force its color to brand purple
+        // so every exercise reads the same hue.
+        const exPhaseRaw   = getPhaseMeta(exercise.phase);
+        const exPhase      = { ...exPhaseRaw, color: Colors.purpleLight, bg: Colors.purpleDim };
         const isDone       = currentIdx < exerciseIdx;
         const isActive     = currentIdx === exerciseIdx;
         const isDraggingThis = currentIdx === draggingFrom && isDragging;
@@ -223,7 +227,7 @@ function DraggableList({ exercises, exerciseIdx, editMode, onReorder, onJump }) 
               {/* Number badge */}
               <View style={[
                 p.numBadge,
-                isDone   && { backgroundColor: Colors.green,  borderColor: Colors.green },
+                isDone   && { backgroundColor: Colors.purple,  borderColor: Colors.purple },
                 isActive && { backgroundColor: exPhase.color, borderColor: exPhase.color },
               ]}>
                 {isDone
@@ -342,7 +346,8 @@ export default function RecoverySessionScreen({ navigation }) {
 
   const ex    = exercises[exerciseIdx];
   const p2    = ex ? parseExercise(ex) : null;
-  const phase = ex ? getPhaseMeta(ex.phase) : PhasePalette.Mobility;
+  const phaseRaw = ex ? getPhaseMeta(ex.phase) : PhasePalette.Mobility;
+  const phase = { ...phaseRaw, color: Colors.purpleLight, bg: Colors.purpleDim };
 
   const currentSetIdx  = setsCompleted;
   const allSetsDone    = p2 ? setsCompleted >= p2.sets : false;
@@ -552,7 +557,7 @@ export default function RecoverySessionScreen({ navigation }) {
               >
                 <View style={[
                   s.setNum,
-                  isDone    && { backgroundColor: Colors.green,  borderColor: Colors.green },
+                  isDone    && { backgroundColor: Colors.purple,  borderColor: Colors.purple },
                   isCurrent && { backgroundColor: phase.color,   borderColor: phase.color },
                   isTodo    && { backgroundColor: Colors.bgElevated, borderColor: Colors.border },
                 ]}>
@@ -569,7 +574,7 @@ export default function RecoverySessionScreen({ navigation }) {
                     {isDone ? 'Completed' : isCurrent ? (p2.isTimed ? 'Tap Start to begin' : 'Your turn') : `Set ${i + 1}`}
                   </Text>
                 </View>
-                {isDone && <Ionicons name="checkmark-circle" size={30} color={Colors.green} />}
+                {isDone && <Ionicons name="checkmark-circle" size={30} color={Colors.purple} />}
                 {isCurrent && !p2.isTimed && (
                   <TouchableOpacity style={[s.doneCircle, { borderColor: phase.color }]} onPress={() => completeSet(i)} activeOpacity={0.7}>
                     <Ionicons name="checkmark" size={22} color={phase.color} />
@@ -587,7 +592,7 @@ export default function RecoverySessionScreen({ navigation }) {
                       </TouchableOpacity>
                     ) : (
                       <View style={s.inlineTimer}>
-                        <Text style={[s.inlineTimerTime, { color: setTimer.sec === 0 ? Colors.green : phase.color }]}>
+                        <Text style={[s.inlineTimerTime, { color: setTimer.sec === 0 ? Colors.purple : phase.color }]}>
                           {formatTime(setTimer.sec)}
                         </Text>
                         <TouchableOpacity
@@ -628,13 +633,14 @@ export default function RecoverySessionScreen({ navigation }) {
           )}
         </View>
 
-        {/* Why */}
-        {ex.why && (
-          <View style={[s.whyCard, dyn.whyCard]}>
-            <Ionicons name="bulb-outline" size={15} color={Colors.amber} style={{ marginTop: 1 }} />
-            <Text style={s.whyText}>{ex.why}</Text>
+        {/* Why this exercise — personalized to the user's profile */}
+        <View style={[s.whyCard, dyn.whyCard]}>
+          <Ionicons name="sparkles-outline" size={15} color={Colors.purple} style={{ marginTop: 1 }} />
+          <View style={{ flex: 1, gap: 4 }}>
+            <Text style={s.whyLabel}>WHY THIS, FOR YOU</Text>
+            <Text style={s.whyText}>{getPersonalizedWhy(ex, onboardingData)}</Text>
           </View>
-        )}
+        </View>
 
         <View style={{ height: 140 }} />
         </View>
@@ -652,7 +658,7 @@ export default function RecoverySessionScreen({ navigation }) {
                   <Text style={[s.nextBtnText, dyn.nextBtnText]}>Start Timer · Set {currentSetIdx + 1} of {p2.sets}</Text>
                 </TouchableOpacity>
               ) : setTimer.sec === 0 ? (
-                <TouchableOpacity style={[s.nextBtn, { backgroundColor: Colors.green }]} onPress={() => completeSet(currentSetIdx)} activeOpacity={0.85}>
+                <TouchableOpacity style={[s.nextBtn, { backgroundColor: Colors.purple }]} onPress={() => completeSet(currentSetIdx)} activeOpacity={0.85}>
                   <Ionicons name="checkmark-circle" size={20} color={Colors.white} />
                   <Text style={[s.nextBtnText, dyn.nextBtnText]}>Done · Set {currentSetIdx + 1} of {p2.sets}</Text>
                 </TouchableOpacity>
@@ -669,7 +675,7 @@ export default function RecoverySessionScreen({ navigation }) {
               </TouchableOpacity>
             )
           ) : isLastExercise ? (
-            <TouchableOpacity style={[s.nextBtn, { backgroundColor: Colors.green }]} onPress={finishSession} activeOpacity={0.85}>
+            <TouchableOpacity style={[s.nextBtn, { backgroundColor: Colors.purple }]} onPress={finishSession} activeOpacity={0.85}>
               <Ionicons name="star" size={20} color={Colors.white} />
               <Text style={[s.nextBtnText, dyn.nextBtnText]}>Complete Session</Text>
             </TouchableOpacity>
@@ -689,7 +695,7 @@ export default function RecoverySessionScreen({ navigation }) {
           <View style={[s.restCard, dyn.frame]}>
             <View style={s.restTopRow}>
               <View style={s.restBadge}>
-                <Ionicons name="leaf-outline" size={12} color={Colors.green} />
+                <Ionicons name="leaf-outline" size={12} color={Colors.purple} />
                 <Text style={s.restBadgeText}>REST TIME</Text>
               </View>
               <Text style={s.restCountdown}>{formatTime(restSec)}</Text>
@@ -709,7 +715,7 @@ export default function RecoverySessionScreen({ navigation }) {
               </TouchableOpacity>
               <TouchableOpacity style={s.skipBtn} onPress={skipRest} activeOpacity={0.85}>
                 <Text style={s.skipBtnText}>Skip Rest</Text>
-                <Ionicons name="arrow-forward" size={15} color={Colors.green} />
+                <Ionicons name="arrow-forward" size={15} color={Colors.purple} />
               </TouchableOpacity>
             </View>
           </View>
@@ -742,9 +748,9 @@ export default function RecoverySessionScreen({ navigation }) {
                   <Ionicons
                     name={editMode ? 'checkmark' : 'pencil-outline'}
                     size={13}
-                    color={editMode ? Colors.green : Colors.textSecondary}
+                    color={editMode ? Colors.purple : Colors.textSecondary}
                   />
-                  <Text style={[s.editBtnText, editMode && { color: Colors.green }]}>
+                  <Text style={[s.editBtnText, editMode && { color: Colors.purple }]}>
                     {editMode ? 'Done' : 'Reorder'}
                   </Text>
                 </TouchableOpacity>
@@ -837,8 +843,9 @@ const s = StyleSheet.create({
   howToText:    { fontSize: 13, color: Colors.textSecondary, lineHeight: 22 },
 
   // Why
-  whyCard: { flexDirection: 'row', alignItems: 'flex-start', gap: 10, marginHorizontal: 16, marginTop: 10, backgroundColor: Colors.amber + '10', borderRadius: 14, padding: 14, borderWidth: 1, borderColor: Colors.amber + '30' },
-  whyText: { flex: 1, fontSize: 13, color: Colors.amber, lineHeight: 20 },
+  whyCard:  { flexDirection: 'row', alignItems: 'flex-start', gap: 10, marginHorizontal: 16, marginTop: 10, backgroundColor: Colors.purple + '12', borderRadius: Radius.md, padding: 14, borderWidth: 1, borderColor: Colors.purple + '30' },
+  whyLabel: { fontSize: 10, fontWeight: '800', color: Colors.purple, letterSpacing: 1.4 },
+  whyText:  { fontSize: 13, color: Colors.textSecondary, lineHeight: 20, fontWeight: '500' },
 
   // Footer
   footer:      { paddingHorizontal: 16, paddingBottom: 20, paddingTop: 8 },
@@ -847,19 +854,19 @@ const s = StyleSheet.create({
 
   // Rest overlay
   restOverlay: { position: 'absolute', bottom: 0, left: 0, right: 0, paddingHorizontal: 16, paddingBottom: 20, paddingTop: 8 },
-  restCard:    { backgroundColor: Colors.bgCard, borderRadius: 24, padding: 18, borderWidth: 1, borderColor: Colors.green + '40', gap: 12, ...Shadows.card },
+  restCard:    { backgroundColor: Colors.bgCard, borderRadius: 24, padding: 18, borderWidth: 1, borderColor: Colors.purple + '40', gap: 12, ...Shadows.card },
   restTopRow:    { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  restBadge:     { flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: Colors.green + '18', borderRadius: 10, paddingHorizontal: 10, paddingVertical: 5, borderWidth: 1, borderColor: Colors.green + '40' },
-  restBadgeText: { fontSize: 10, fontWeight: '800', color: Colors.green, letterSpacing: 1 },
+  restBadge:     { flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: Colors.purple + '18', borderRadius: 10, paddingHorizontal: 10, paddingVertical: 5, borderWidth: 1, borderColor: Colors.purple + '40' },
+  restBadgeText: { fontSize: 10, fontWeight: '800', color: Colors.purple, letterSpacing: 1 },
   restCountdown: { fontSize: 36, fontWeight: '800', color: Colors.textPrimary, letterSpacing: -1.5 },
   restTrack:     { height: 6, backgroundColor: Colors.bgElevated, borderRadius: 3, overflow: 'hidden' },
-  restFill:      { height: '100%', backgroundColor: Colors.green, borderRadius: 3 },
+  restFill:      { height: '100%', backgroundColor: Colors.purple, borderRadius: 3 },
   restNextLabel: { fontSize: 13, color: Colors.textSecondary },
   restBtns:      { flexDirection: 'row', gap: 10 },
   addTimeBtn:    { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 5, paddingVertical: 12, borderRadius: 14, backgroundColor: Colors.bgInput, borderWidth: 1, borderColor: Colors.border },
   addTimeText:   { fontSize: 14, fontWeight: '700', color: Colors.textSecondary },
-  skipBtn:       { flex: 1.5, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 12, borderRadius: 14, backgroundColor: Colors.green + '18', borderWidth: 1, borderColor: Colors.green + '50' },
-  skipBtnText:   { fontSize: 14, fontWeight: '700', color: Colors.green },
+  skipBtn:       { flex: 1.5, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 12, borderRadius: 14, backgroundColor: Colors.purple + '18', borderWidth: 1, borderColor: Colors.purple + '50' },
+  skipBtnText:   { fontSize: 14, fontWeight: '700', color: Colors.purple },
 
   // Panel (Modal)
   backdrop:       { flex: 1, backgroundColor: 'rgba(0,0,0,0.55)', justifyContent: 'flex-end' },
@@ -869,7 +876,7 @@ const s = StyleSheet.create({
   panelTitle:     { fontSize: 18, fontWeight: '800', color: Colors.textPrimary, letterSpacing: -0.3 },
   panelHeaderRight: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   editBtn:        { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 11, paddingVertical: 6, borderRadius: 12, backgroundColor: Colors.bgInput, borderWidth: 1, borderColor: Colors.border },
-  editBtnActive:  { borderColor: Colors.green + '60', backgroundColor: Colors.green + '12' },
+  editBtnActive:  { borderColor: Colors.purple + '60', backgroundColor: Colors.purple + '12' },
   editBtnText:    { fontSize: 12, fontWeight: '700', color: Colors.textSecondary },
   closeBtn:       { width: 32, height: 32, borderRadius: 16, backgroundColor: Colors.bgInput, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: Colors.border },
   dragHint:       { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 20, paddingVertical: 8, backgroundColor: Colors.bgInput, borderBottomWidth: 1, borderBottomColor: Colors.borderSubtle },

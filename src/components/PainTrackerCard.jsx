@@ -14,18 +14,7 @@ import { useMutation, useQuery } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 import { useOnboarding } from '../context/OnboardingContext';
 import { Colors, Shadows } from '../constants/brand';
-
-const TODAY = new Date().toISOString().slice(0, 10); // "YYYY-MM-DD"
-
-// ─── Coach responses based on pain + exercise combo ──────────────────────────
-const getCoachResponse = (pain, didExercise) => {
-  if (didExercise && pain <= 3) return { emoji: '🎯', msg: 'Pain is low and you showed up — that\'s the combo that creates lasting recovery. Keep this going.' };
-  if (didExercise && pain <= 6) return { emoji: '💪', msg: 'You did the work even through discomfort. That consistency is exactly what breaks the pain cycle.' };
-  if (didExercise && pain > 6)  return { emoji: '🧊', msg: 'High pain today — consider backing off intensity. Rest and gentle movement is still progress.' };
-  if (!didExercise && pain <= 3) return { emoji: '✨', msg: 'Feeling better today! Don\'t skip tomorrow though — the improvement comes from staying consistent.' };
-  if (!didExercise && pain <= 6) return { emoji: '⏰', msg: 'Even 5 minutes of your exercises would help right now. Small sessions beat skipping every time.' };
-  return { emoji: '💙', msg: 'High pain days are hard. Rest is valid. When you\'re ready, your exercises will be here.' };
-};
+import { getCoachMessage } from '../constants/exerciseLibrary';
 
 // ─── Pain color scale ─────────────────────────────────────────────────────────
 const getPainColor = (level) => {
@@ -49,11 +38,17 @@ function getTodayLabel() {
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function PainTrackerCard() {
-  const { installId } = useOnboarding();
+  const { installId, onboardingData } = useOnboarding();
+  // Compute on render so the date stays correct if the app is open across midnight.
+  const today = new Date().toISOString().slice(0, 10);
   const logCheckIn = useMutation(api.checkIns.logCheckIn);
   const savedCheckIn = useQuery(
     api.checkIns.getTodayCheckIn,
-    installId ? { installId, date: TODAY } : 'skip'
+    installId ? { installId, date: today } : 'skip'
+  );
+  const recentCheckIns = useQuery(
+    api.checkIns.getRecentCheckIns,
+    installId ? { installId } : 'skip'
   );
 
   const [selectedPain, setSelectedPain] = useState(null);
@@ -61,12 +56,19 @@ export default function PainTrackerCard() {
   const [submitted, setSubmitted] = useState(false);
 
   // If there's already a saved check-in for today, show it in logged state
-  const activePain       = submitted ? selectedPain : savedCheckIn?.painLevel ?? null;
-  const activeExercise   = submitted ? didExercise  : savedCheckIn?.exercisesDone ?? null;
-  const isLoggedToday    = submitted || savedCheckIn != null;
+  const activePain     = submitted ? selectedPain : savedCheckIn?.painLevel ?? null;
+  const activeExercise = submitted ? didExercise  : savedCheckIn?.exercisesDone ?? null;
+  const isLoggedToday  = submitted || savedCheckIn != null;
 
   const canSubmit = selectedPain !== null && didExercise !== null;
-  const coachResponse = isLoggedToday ? getCoachResponse(activePain, activeExercise) : null;
+
+  // Adaptive coach message — reads today's check-in + recent trend + profile.
+  const coachInputForToday = isLoggedToday
+    ? { date: today, painLevel: activePain, exercisesDone: activeExercise }
+    : null;
+  const coachResponse = isLoggedToday
+    ? getCoachMessage(onboardingData, coachInputForToday, recentCheckIns ?? [])
+    : null;
 
   const handleSubmit = () => {
     if (!canSubmit) return;
@@ -74,7 +76,7 @@ export default function PainTrackerCard() {
     if (installId) {
       logCheckIn({
         installId,
-        date: TODAY,
+        date: today,
         painLevel: selectedPain,
         exercisesDone: didExercise,
       }).catch((e) => console.error('[PainTrackerCard] Failed to log check-in:', e));

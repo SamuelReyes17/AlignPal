@@ -4,18 +4,21 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useOnboarding } from '../../context/OnboardingContext';
 import { StepHeader } from '../../components/StepHeader';
+import StepFooter from '../../components/StepFooter';
 import { Colors, Shadows } from '../../constants/brand';
 import { useResponsive, fs, sp } from '../../utils/responsive';
 
+// Purple-only treatment — all eight share the same active color so the
+// state ('selected') reads through layout, weight, and check mark — not hue.
 const OPTIONS = [
-  { id: 'sharp',     label: 'Sharp',     desc: 'Stabbing or shooting',        icon: 'flash',                  color: '#FF6B9D' },
-  { id: 'dull',      label: 'Dull',      desc: 'Aching or constant throb',    icon: 'radio-button-on',        color: '#FBBF24' },
-  { id: 'burning',   label: 'Burning',   desc: 'Hot or stinging',             icon: 'flame',                  color: '#FB923C' },
-  { id: 'stiff',     label: 'Stiff',     desc: 'Tight or restricted',         icon: 'lock-closed',            color: '#818CF8' },
-  { id: 'radiating', label: 'Radiating', desc: 'Spreads down arms or legs',   icon: 'trending-down-outline',  color: '#7C5CF0' },
-  { id: 'numb',      label: 'Numbness',  desc: 'Tingling, pins & needles',    icon: 'hand-right-outline',     color: '#34D399' },
-  { id: 'cramping',  label: 'Cramping',  desc: 'Spasms or muscle clenching',  icon: 'body-outline',           color: '#60A5FA' },
-  { id: 'throbbing', label: 'Throbbing', desc: 'Pulsing with your heartbeat', icon: 'pulse-outline',          color: '#F472B6' },
+  { id: 'sharp',     label: 'Sharp',     desc: 'Stabbing or shooting',        icon: 'flash' },
+  { id: 'dull',      label: 'Dull',      desc: 'Aching or constant throb',    icon: 'radio-button-on' },
+  { id: 'burning',   label: 'Burning',   desc: 'Hot or stinging',             icon: 'flame' },
+  { id: 'stiff',     label: 'Stiff',     desc: 'Tight or restricted',         icon: 'lock-closed' },
+  { id: 'radiating', label: 'Radiating', desc: 'Spreads down arms or legs',   icon: 'trending-down-outline' },
+  { id: 'numb',      label: 'Numbness',  desc: 'Tingling, pins & needles',    icon: 'hand-right-outline' },
+  { id: 'cramping',  label: 'Cramping',  desc: 'Spasms or muscle clenching',  icon: 'body-outline' },
+  { id: 'throbbing', label: 'Throbbing', desc: 'Pulsing with your heartbeat', icon: 'pulse-outline' },
 ];
 
 const PROMPT_CHIPS = [
@@ -68,7 +71,7 @@ export default function PainTypeScreen({ navigation }) {
 
   const dyn = {
     // paddingBottom clears the sticky footer (Continue button) — see Spacing.tabBarClearance pattern
-    scrollContent: { paddingHorizontal: horizPad, paddingTop: 8, paddingBottom: sp(120, gapScale) },
+    scrollContent: { paddingHorizontal: horizPad, paddingTop: 24, paddingBottom: sp(120, gapScale) },
     frame:         { maxWidth: frameWidth, gap: sp(24, gapScale) },
     question:      { fontSize: fs(36, fontScale), lineHeight: fs(44, fontScale) },
     hint:          { fontSize: fs(14, fontScale), lineHeight: fs(21, fontScale) },
@@ -84,9 +87,6 @@ export default function PainTypeScreen({ navigation }) {
     inputHint:     { fontSize: fs(11, fontScale), lineHeight: fs(16, fontScale) },
     charCount:     { fontSize: fs(11, fontScale) },
     analyzingText: { fontSize: fs(12, fontScale) },
-    btnText:       { fontSize: fs(17, fontScale) },
-    footer:        { paddingHorizontal: horizPad, paddingBottom: isShort ? 20 : 36, paddingTop: 12 },
-    footerInner:   { maxWidth: frameWidth },
   };
 
   return (
@@ -121,21 +121,19 @@ export default function PainTypeScreen({ navigation }) {
                 return (
                   <TouchableOpacity
                     key={opt.id}
-                    style={[s.card, dyn.card, isOn && { borderColor: opt.color, backgroundColor: opt.color + '14' }]}
+                    style={[s.card, dyn.card, isOn && s.cardOn]}
                     onPress={() => toggle(opt.id)}
                     activeOpacity={0.78}
                   >
-                    {isOn && <View style={[s.glow, { backgroundColor: opt.color }]} />}
-
-                    <View style={[s.iconCircle, isOn && { backgroundColor: opt.color + '22', borderColor: opt.color + '55' }]}>
-                      <Ionicons name={opt.icon} size={isSmall ? 20 : 22} color={isOn ? opt.color : Colors.textMuted} />
+                    <View style={[s.iconCircle, isOn && s.iconCircleOn]}>
+                      <Ionicons name={opt.icon} size={isSmall ? 20 : 22} color={isOn ? Colors.purpleLight : Colors.textMuted} />
                     </View>
 
                     <Text style={[s.cardLabel, dyn.cardLabel, isOn && { color: Colors.textPrimary }]}>{opt.label}</Text>
-                    <Text style={[s.cardDesc, dyn.cardDesc, isOn && { color: opt.color }]}>{opt.desc}</Text>
+                    <Text style={[s.cardDesc, dyn.cardDesc, isOn && { color: Colors.purplePale }]}>{opt.desc}</Text>
 
                     {isOn && (
-                      <View style={[s.check, { backgroundColor: opt.color }]}>
+                      <View style={s.check}>
                         <Ionicons name="checkmark" size={9} color="#fff" />
                       </View>
                     )}
@@ -201,20 +199,11 @@ export default function PainTypeScreen({ navigation }) {
           </View>
         </ScrollView>
 
-      <View style={[s.footer, dyn.footer]}>
-        <View style={[s.footerInner, dyn.footerInner]}>
-          <TouchableOpacity
-            style={[s.btn, !selected.length && s.btnDisabled]}
-            onPress={handleContinue}
-            activeOpacity={0.88}
-          >
-            <Text style={[s.btnText, dyn.btnText, !selected.length && s.btnTextDisabled]}>
-              {selected.length ? `Continue  ·  ${selected.length} symptom${selected.length > 1 ? 's' : ''}` : 'Select your symptoms'}
-            </Text>
-            {!!selected.length && <Ionicons name="arrow-forward" size={16} color={Colors.white} />}
-          </TouchableOpacity>
-        </View>
-      </View>
+      <StepFooter
+        label={selected.length ? `Continue  ·  ${selected.length} symptom${selected.length > 1 ? 's' : ''}` : 'Select your symptoms'}
+        disabled={!selected.length}
+        onPress={handleContinue}
+      />
     </SafeAreaView>
   );
 }
@@ -243,39 +232,32 @@ const s = StyleSheet.create({
   card: {
     alignItems: 'center', justifyContent: 'center',
     backgroundColor: Colors.bgCard,
-    borderWidth: 1.5, borderColor: Colors.border,
-    borderRadius: 22, gap: 7,
+    borderWidth: 1, borderColor: Colors.border,
+    borderRadius: 20, gap: 6,
     position: 'relative', overflow: 'hidden',
-    ...Shadows.card,
   },
-  glow: {
-    position: 'absolute', top: -20, right: -20,
-    width: 80, height: 80, borderRadius: 40, opacity: 0.14,
+  cardOn: {
+    backgroundColor: Colors.purpleDim,
+    borderColor: Colors.purple,
   },
   iconCircle: {
-    width: 46, height: 46, borderRadius: 15,
+    width: 44, height: 44, borderRadius: 14,
     backgroundColor: Colors.bgInput,
-    borderWidth: 1.5, borderColor: Colors.border,
+    borderWidth: 1, borderColor: Colors.border,
     alignItems: 'center', justifyContent: 'center',
+  },
+  iconCircleOn: {
+    backgroundColor: 'rgba(124,92,240,0.18)',
+    borderColor: 'rgba(155,139,244,0.55)',
   },
   cardLabel: { fontWeight: '700', color: Colors.textMuted },
   cardDesc:  { color: Colors.textSecondary, textAlign: 'center', paddingHorizontal: 8 },
   check: {
     position: 'absolute', top: 10, right: 10,
     width: 18, height: 18, borderRadius: 9,
+    backgroundColor: Colors.purple,
     alignItems: 'center', justifyContent: 'center',
   },
-
-  footer:      { alignItems: 'center' },
-  footerInner: { width: '100%', alignSelf: 'center' },
-  btn: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
-    backgroundColor: Colors.purple, borderRadius: 20, paddingVertical: 19,
-    ...Shadows.purple,
-  },
-  btnDisabled:     { backgroundColor: Colors.bgCard, shadowOpacity: 0, borderWidth: 1, borderColor: Colors.border },
-  btnText:         { fontWeight: '700', color: Colors.white },
-  btnTextDisabled: { color: Colors.textMuted },
 
   // ── Description section ────────────────────────────────────────────────────
   descSection: {
@@ -312,7 +294,7 @@ const s = StyleSheet.create({
   inputFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   inputHint:    { color: Colors.textMuted, flex: 1 },
   charCount:    { color: Colors.textMuted, fontWeight: '600', marginLeft: 8 },
-  charCountWarning: { color: Colors.amber },
+  charCountWarning: { color: Colors.purple },
 
   analyzingBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 6,

@@ -1928,3 +1928,459 @@ export const getOutlook = (onboardingData = {}) => {
     text: "Long-term pain has layers — central sensitization, compensation patterns, and tissue changes all need addressing. Many users with years of pain find lasting relief. It takes longer, but the approach is the same: progressive daily loading.",
   };
 };
+
+// ─── Personalized strategy ────────────────────────────────────────────────────
+// Returns the treatment approach made VISIBLE to the user — phase, 3-4
+// personalized "approach" bullets tied to their onboarding signals, what to
+// avoid this week, and a measurable goal for week 1.
+export const getStrategy = (onboardingData = {}) => {
+  const {
+    painLocations = [], painTypes = [], painDuration, directionalPreference,
+    radiatingPain = [], redFlags = [], worstTimeTriggers = [], sittingHours,
+    painIntensity = 5,
+  } = onboardingData;
+
+  const loc = normalizeLocation(painLocations[0]);
+  const hasRedFlags  = redFlags.length > 0 && !redFlags.includes('none');
+  const hasRadiating = radiatingPain.length > 0 && !radiatingPain.includes('none');
+  const radiatesBelowKnee = radiatingPain.includes('below_knee');
+  const radiatesArmHand   = radiatingPain.includes('arm') || radiatingPain.includes('hand');
+  const radiatesHeadache  = radiatingPain.includes('headache');
+  const isAcute   = painDuration === 'just-started' || painDuration === 'acute' || painDuration === 'weeks';
+  const isChronic = painDuration === 'months' || painDuration === 'chronic' || painDuration === 'years';
+  const isFlexionInt   = directionalPreference === 'flexion';
+  const isExtensionInt = directionalPreference === 'extension';
+
+  // ── Phase ──
+  let phase, phaseDescription;
+  if (hasRedFlags || painIntensity >= 8) {
+    phase = 'Calm down';
+    phaseDescription = 'Right now, the priority is reducing irritation and giving the nerves a chance to settle. Movement should be gentle and frequent — not heavy.';
+  } else if (isAcute) {
+    phase = 'Restore movement';
+    phaseDescription = 'Your pain is fresh, which means tissue is reactive but highly responsive. We focus on regaining safe range of motion before adding load.';
+  } else if (isChronic) {
+    phase = 'Build resilience';
+    phaseDescription = 'Long-standing pain has built compensation patterns. We retrain movement, then gradually expose your body to the loads it has been avoiding.';
+  } else {
+    phase = 'Restore movement';
+    phaseDescription = 'We start by improving how you move, then progressively add load as your body tolerates it.';
+  }
+
+  // ── Approach (3-4 personalized bullets) ──
+  const approach = [];
+
+  // Direction
+  if (isFlexionInt) {
+    approach.push({ icon: 'arrow-up-circle-outline', label: 'Direction', value: 'Extension bias',
+      why: 'Bending forward (flexion) flares your pain — that pattern points to disc-related load. We use gentle extension and press-ups to "centralize" pain back toward your spine.' });
+  } else if (isExtensionInt) {
+    approach.push({ icon: 'arrow-down-circle-outline', label: 'Direction', value: 'Flexion bias',
+      why: 'Arching backward provokes you, which is a facet-joint pattern. We focus on gentle flexion and rotation to off-load the small joints between your vertebrae.' });
+  } else if (directionalPreference === 'rotation') {
+    approach.push({ icon: 'sync-outline', label: 'Direction', value: 'Anti-rotation control',
+      why: 'Twisting movements provoke you. We strengthen your obliques and deep core to brace against rotation rather than absorb it through the spine.' });
+  } else if (directionalPreference === 'sustained') {
+    approach.push({ icon: 'time-outline', label: 'Direction', value: 'Movement breaks',
+      why: 'Static positions are your trigger — sitting or standing too long is what flares pain. We focus on frequent micro-mobility breaks throughout the day.' });
+  }
+
+  // Tempo
+  if (phase === 'Calm down') {
+    approach.push({ icon: 'leaf-outline', label: 'Tempo', value: 'Slow and gentle',
+      why: 'High pain or red flags mean we err on the side of caution. Light, slow, frequent movement beats hard, fast, infrequent every time.' });
+  } else if (isChronic) {
+    approach.push({ icon: 'trending-up-outline', label: 'Tempo', value: 'Progressive loading',
+      why: 'Long-term pain needs gradual exposure to load to retrain tolerance. We build slowly — but we do build.' });
+  } else {
+    approach.push({ icon: 'walk-outline', label: 'Tempo', value: 'Daily and consistent',
+      why: 'Acute pain responds best to a small dose of movement done every day. Skipping a day costs you more than doing too little in a day.' });
+  }
+
+  // What we calm down (release/mobility focus)
+  if (radiatesBelowKnee || radiatingPain.includes('above_knee') || radiatingPain.includes('glute')) {
+    approach.push({ icon: 'pulse-outline', label: 'Calm down', value: 'Sciatic nerve',
+      why: 'Radiating pain into your leg means the sciatic nerve is irritated along its path. We start with nerve-glides — they restore neural mobility without further inflaming the nerve.' });
+  } else if (radiatesArmHand) {
+    approach.push({ icon: 'hand-left-outline', label: 'Calm down', value: 'Cervical nerve',
+      why: 'Pain into your arm or hand points to a cervical nerve root. We use median/ulnar/radial nerve sliders to gently restore neural mobility.' });
+  } else if (radiatesHeadache) {
+    approach.push({ icon: 'pulse-outline', label: 'Calm down', value: 'Suboccipital tension',
+      why: 'Headaches with neck pain typically come from the suboccipital muscles at the base of your skull. Self-applied SNAGs and gentle release are highly effective here.' });
+  } else if (worstTimeTriggers.includes('sitting') || sittingHours === '6+') {
+    approach.push({ icon: 'desktop-outline', label: 'Calm down', value: 'Hip flexors',
+      why: '6+ hours of sitting locks your hip flexors short — they then pull your lumbar spine into compression every time you stand up. Daily release is the offset.' });
+  } else if (painTypes.includes('stiff')) {
+    approach.push({ icon: 'sync-outline', label: 'Calm down', value: 'Joint mobility',
+      why: 'Stiffness signals reduced synovial fluid circulation. The treatment is literally movement — daily mobilization restores the lubricating fluid the joint depends on.' });
+  }
+
+  // What we build (activation/strength focus)
+  if (loc === 'lower_back' || loc === 'glute' || loc === 'hip') {
+    approach.push({ icon: 'shield-outline', label: 'Build', value: 'Deep core + glutes',
+      why: 'Your deep core (transversus abdominis, multifidus) and glutes are your spine\'s seatbelt. When they\'re inhibited, your lower back takes the load. Activation work makes the seatbelt do its job.' });
+  } else if (loc === 'neck' || loc === 'upper_back') {
+    approach.push({ icon: 'shield-outline', label: 'Build', value: 'Deep neck flexors + lower traps',
+      why: 'Hours of forward-head posture inhibit the deep cervical flexors and lower trapezius. Reactivating them lets the right muscles support your head — instead of the upper traps doing it all.' });
+  } else if (loc === 'shoulder') {
+    approach.push({ icon: 'shield-outline', label: 'Build', value: 'Scapular stabilizers',
+      why: 'Most shoulder pain is poor scapular control disguised as a "shoulder problem." Strengthening serratus anterior and lower trap restores the foundation the rotator cuff depends on.' });
+  } else if (loc === 'knee') {
+    approach.push({ icon: 'shield-outline', label: 'Build', value: 'Glutes + VMO',
+      why: 'Hip weakness lets your knee collapse inward, and a weak VMO lets the kneecap track laterally. Both are root causes of patellofemoral pain.' });
+  }
+
+  // Trim to top 4 if too many
+  const approachTop = approach.slice(0, 4);
+
+  // ── Avoid this week ──
+  let avoid;
+  if (radiatesBelowKnee) {
+    avoid = 'Prolonged sitting beyond 30 minutes, lifting from the floor, and any stretch that increases pain in your leg.';
+  } else if (isFlexionInt) {
+    avoid = 'Prolonged forward bending, slouched sitting, and rounded-back lifts.';
+  } else if (isExtensionInt) {
+    avoid = 'Backward-bending stretches, prolonged standing, and overhead arching.';
+  } else if (sittingHours === '6+') {
+    avoid = 'Sitting more than 30–45 minutes without a movement break. Set a timer.';
+  } else {
+    avoid = 'Any movement that sharply increases your pain or causes new symptoms (numbness, weakness).';
+  }
+
+  // ── Goal for week 1 ──
+  let goalThisWeek;
+  if (hasRadiating) {
+    goalThisWeek = 'Pain centralization — by Day 7, the radiating pain in your leg or arm should move closer to your spine. That\'s the strongest signal the nerve is calming down.';
+  } else if (isAcute) {
+    goalThisWeek = 'Pain peak drops by 30–50% within 7 days. Most users with acute pain see clear improvement in the first week.';
+  } else if (isChronic) {
+    goalThisWeek = 'Less morning stiffness, less pain after sitting, easier first 30 minutes of the day. Chronic pain shifts in patterns before it shifts in intensity.';
+  } else {
+    goalThisWeek = 'Noticeable reduction in pain peaks and improved tolerance to your daily activities by Day 7.';
+  }
+
+  return { phase, phaseDescription, approach: approachTop, avoid, goalThisWeek };
+};
+
+// ─── Recovery milestones ──────────────────────────────────────────────────────
+// What success looks like at each stage. Tailored to acute vs chronic and
+// whether the user has radiating pain (which has its own week-1 milestone).
+export const getMilestones = (onboardingData = {}) => {
+  const { painDuration, radiatingPain = [], redFlags = [], painIntensity = 5 } = onboardingData;
+  const hasRadiating = radiatingPain.length > 0 && !radiatingPain.includes('none');
+  const hasRedFlags  = redFlags.length > 0 && !redFlags.includes('none');
+  const isChronic = painDuration === 'months' || painDuration === 'chronic' || painDuration === 'years';
+
+  const milestones = [];
+
+  // Week 1
+  if (hasRadiating) {
+    milestones.push({ when: 'Week 1', label: 'Pain centralizes',
+      signal: 'Radiating pain moves closer to your spine. Less referral down the leg or arm.' });
+  } else if (hasRedFlags || painIntensity >= 7) {
+    milestones.push({ when: 'Week 1', label: 'Pain peaks drop',
+      signal: 'Worst-day pain is 30–50% lower than your baseline. Better windows between flares.' });
+  } else {
+    milestones.push({ when: 'Week 1', label: 'Pattern shift',
+      signal: 'Less morning stiffness. Easier to get out of bed. Pain after sitting fades faster.' });
+  }
+
+  // Week 2-3
+  milestones.push({ when: 'Week 2–3', label: 'Movement returns',
+    signal: 'You can do the things you\'ve been avoiding. Pain becomes occasional rather than constant. Sleep is uninterrupted.' });
+
+  // Week 4+
+  if (isChronic) {
+    milestones.push({ when: 'Week 4–8', label: 'Resilience builds',
+      signal: 'You handle longer activity blocks without flare-ups. Pain becomes a signal you can read, not a constant alarm.' });
+  } else {
+    milestones.push({ when: 'Week 4+', label: 'Full return',
+      signal: 'Pain is rare or fully resolved. You\'re back to or beyond your previous activity level — with stronger foundations.' });
+  }
+
+  return milestones;
+};
+
+// ─── Personalized "why this exercise for YOU" ─────────────────────────────────
+// Returns a single sentence explaining why a specific exercise is in this
+// user's plan, tied to their onboarding signals. Falls back to a phase-shaped
+// generic sentence when no specific rule fires, then to exercise.why.
+export const getPersonalizedWhy = (exercise = {}, onboardingData = {}) => {
+  const { painLocations = [], painTypes = [], radiatingPain = [], directionalPreference, sittingHours, painDuration } = onboardingData;
+  const loc = normalizeLocation(painLocations[0]);
+  const hasRadiating  = radiatingPain.length > 0 && !radiatingPain.includes('none');
+  const radiatesBelowKnee = radiatingPain.includes('below_knee');
+  const radiatesArmHand   = radiatingPain.includes('arm') || radiatingPain.includes('hand');
+  const sitsLong = sittingHours === '6+';
+  const isFlexionInt   = directionalPreference === 'flexion';
+  const isExtensionInt = directionalPreference === 'extension';
+  const isStiff = painTypes.includes('stiff');
+  const isAcute   = painDuration === 'just-started' || painDuration === 'acute' || painDuration === 'weeks';
+  const isChronic = painDuration === 'months' || painDuration === 'chronic' || painDuration === 'years';
+
+  const name  = (exercise.name || '').toLowerCase();
+  const phase = exercise.phase;
+
+  // ── Specific exercise rules (most-specific first) ──
+  if (name.includes('sciatic') && (name.includes('floss') || name.includes('slider'))) {
+    return radiatesBelowKnee
+      ? 'Because your pain extends below the knee, the sciatic nerve is irritated along its path. This glide gently mobilizes the nerve through that path — the safest first step before any strengthening.'
+      : 'Even when pain doesn\'t radiate, the sciatic nerve sits inside tight hip rotators and hamstrings. This glide restores the neural mobility the rest of your plan depends on.';
+  }
+  if (name.includes('press-up') || name.includes('press up') || name.includes('mckenzie')) {
+    return isFlexionInt
+      ? 'Bending forward provokes your pain — your discs are loaded the wrong direction every day. This press-up reverses that load; many people feel pain "centralize" back toward the spine within minutes.'
+      : 'Sitting and bending compress the discs. This gentle extension restores the natural lumbar curve and relieves disc pressure built up over the day.';
+  }
+  if (name.includes('cat-camel') || name.includes('cat camel')) {
+    return sitsLong
+      ? 'Cat-Camel is the lumbar spine\'s reset switch — it restores the segmental mobility lost during long sitting blocks. Use it after every extended sitting session.'
+      : 'Cat-Camel restores segmental spinal mobility lost from sustained postures. Use it as your morning movement primer.';
+  }
+  if (name.includes('bird-dog') || name.includes('bird dog')) {
+    return 'Bird-Dog trains your deep core and glutes to fire together while keeping your spine still — exactly what your back needs in real-world movement. McGill\'s research: one of the highest-EMG, lowest-load core exercises available.';
+  }
+  if (name.includes('side bridge') || name.includes('side plank')) {
+    return loc === 'lower_back'
+      ? 'The side bridge loads your quadratus lumborum and obliques — the muscles that brace your spine sideways. When these are weak, your low back takes lateral load it can\'t handle.'
+      : 'Side-bridge strength carries over to nearly every standing activity by training the lateral core to stabilize the spine.';
+  }
+  if (name.includes('curl-up') || name.includes('curl up')) {
+    return 'McGill\'s curl-up gives you abdominal strength without the spinal flexion of a sit-up — important because flexion under load is exactly what flares disc pain. Slow tempo, quality over quantity.';
+  }
+  if (name.includes('cervical retraction') || name.includes('chin tuck')) {
+    return radiatesArmHand
+      ? 'Your arm symptoms come from cervical nerve root pressure. Retraction pulls your head back over your spine, decompressing the nerve roots — often reducing arm pain within days.'
+      : 'Hours of forward-head posture stretch the deep neck flexors and compress the cervical facets. Retraction is the reset — train it as a habit, not just an exercise.';
+  }
+  if (name.includes('snag') || name.includes('mulligan')) {
+    return 'SNAG (Sustained Natural Apophyseal Glide) is one of the few manual techniques you can self-apply — Hall & Mulligan showed it directly mobilizes restricted cervical segments while you actively move.';
+  }
+  if (name.includes('eccentric heel') || name.includes('heel drop') || name.includes('alfredson')) {
+    return 'Alfredson\'s eccentric heel drops have an 82% success rate in Achilles tendinopathy — they remodel the tendon collagen through controlled loading. Daily, 3 sets of 15, for 12 weeks. Boring, but it works.';
+  }
+  if (name.includes('hip flexor') || name.includes('couch stretch')) {
+    return sitsLong
+      ? '6+ hours of sitting leaves your hip flexors locked short. They then pull your lumbar spine into extension every time you stand. This stretch is the daily offset.'
+      : 'Hip flexor tightness is the silent driver of most lumbar and anterior hip pain. Daily stretching keeps the chain free.';
+  }
+  if (name.includes('glute bridge') || name.includes('hip thrust')) {
+    return 'Glute activation is the most reliable lever for back pain reduction in the literature. When glutes fire, they extend the hip — which means your low back doesn\'t have to.';
+  }
+  if (name.includes('clamshell')) {
+    return 'Clamshells light up gluteus medius — the hip stabilizer that prevents your knee from collapsing inward and your pelvis from dropping when you stand on one leg. Weakness here drives knee, hip, and low-back pain.';
+  }
+  if (name.includes('nordic')) {
+    return 'Nordic hamstring curls reduce hamstring strain risk by 51% (Petersen et al). The eccentric loading rebuilds tissue capacity — start slow, even 3 reps a day for week 1 is enough.';
+  }
+  if (name.includes('copenhagen')) {
+    return 'Copenhagen Adduction is the most effective adductor strengthener known (Harøy 2019: 41% reduction in groin injuries). Critical for athletes; valuable for anyone with hip or groin pain.';
+  }
+  if (name.includes('pallof')) {
+    return 'Pallof Press trains your core to resist rotation rather than create it — exactly what your spine needs in everything from walking to lifting groceries.';
+  }
+  if (name.includes('tyler twist')) {
+    return 'The Tyler Twist (eccentric wrist flexion) has the strongest evidence base for tennis elbow — daily eccentric loading remodels the irritated common extensor tendon over 6–12 weeks.';
+  }
+  if (phase === 'Exposure' || name.includes('cft') || name.includes('exposure')) {
+    return isChronic
+      ? 'Long-standing pain rewires your brain to over-protect. Graded exposure (Cognitive Functional Therapy, RESTORE trial 2023) deliberately re-teaches your nervous system that the feared movement is safe.'
+      : 'Graded exposure is a gentle way to reintroduce movements you\'ve been avoiding. Start small; the goal is confidence, not load.';
+  }
+
+  // ── Phase-based fallback ──
+  if (phase === 'Mobility') {
+    return isStiff
+      ? 'Mobility work directly addresses the joint stiffness you\'re feeling — synovial fluid only circulates with movement, so this exercise is literally the treatment.'
+      : 'Daily mobility keeps the painful area moving through its full range without load — the safest way to maintain function while you build strength.';
+  }
+  if (phase === 'Activation') {
+    return 'Activation exercises wake up the muscles that are inhibited around your pain. Once they fire, your body has the right team taking the load — instead of the same overworked muscles.';
+  }
+  if (phase === 'Stability') {
+    return 'Stability work builds the slow, low-load endurance your spine and joints depend on for everyday tasks. Less flashy than strength, but this is what protects you.';
+  }
+  if (phase === 'Strength') {
+    return isAcute
+      ? 'Once acute reactivity calms, strength work restores tissue capacity — your body becomes more durable than before the pain started.'
+      : 'Strength work rebuilds load tolerance. Long-standing pain often means tissues have lost capacity; controlled loading is how we get it back.';
+  }
+  if (phase === 'Release') {
+    return 'Release work calms an overactive muscle that\'s pulling your alignment off. Pair it immediately with activation of the opposite muscle for the change to stick.';
+  }
+
+  // ── Final fallback ──
+  return exercise.why || 'This exercise is part of the targeted plan for your specific pain pattern. Each rep contributes to the cumulative recovery.';
+};
+
+// ─── Adaptive daily plan ──────────────────────────────────────────────────────
+// Returns today's exercises adjusted by recent pain trend and session activity.
+// Modes:
+//   - 'reset':     2+ days off  → 3 easy mobility/activation exercises
+//   - 'calm_down': pain elevated → mobility + release, no strength/exposure
+//   - 'build':     consistent + pain trending down → more strength/stability
+//   - 'standard':  default
+//
+// Inputs:
+//   profile        — onboardingData
+//   recentCheckIns — newest first, [{ date: 'YYYY-MM-DD', painLevel }]
+//   recentSessions — newest first, [{ date: 'YYYY-MM-DD', completed }]
+//   nowISO         — today's date as 'YYYY-MM-DD' (passed in for testability)
+const _daysBetween = (a, b) => Math.floor((new Date(a).getTime() - new Date(b).getTime()) / 86400000);
+const _yesterdayOf = (iso) => {
+  const d = new Date(iso); d.setDate(d.getDate() - 1);
+  return d.toISOString().slice(0, 10);
+};
+
+const _computeMode = (profile, recentCheckIns = [], recentSessions = [], nowISO) => {
+  const baseline = profile.painIntensity ?? 5;
+  const today = nowISO || new Date().toISOString().slice(0, 10);
+  const yesterday = _yesterdayOf(today);
+
+  const todaysCheckIn   = recentCheckIns.find(c => c.date === today);
+  const yestCheckIn     = recentCheckIns.find(c => c.date === yesterday);
+  const recent3Pain     = recentCheckIns.slice(0, 3).map(c => c.painLevel);
+  const recentHigh      = recent3Pain.filter(p => p >= baseline + 1).length;
+  const recentLow       = recent3Pain.filter(p => p <= baseline - 1).length;
+
+  const lastDoneSession = recentSessions.find(s => s.completed);
+  const daysSinceSession = lastDoneSession
+    ? _daysBetween(today, lastDoneSession.date)
+    : Infinity;
+
+  const sessionsLastWeek = recentSessions.filter(s => {
+    if (!s.completed) return false;
+    const days = _daysBetween(today, s.date);
+    return days >= 0 && days <= 7;
+  }).length;
+
+  // Reset day — user has been away 2+ days and not consistent
+  if (daysSinceSession >= 2 && sessionsLastWeek <= 1) {
+    return { key: 'reset', label: 'Reset day',
+      reason: `It's been ${daysSinceSession} days. Today is a gentle return — three easy exercises to get back in the rhythm without provoking pain.` };
+  }
+
+  // Calm-down day — pain spiked or has been elevated
+  if (
+    (todaysCheckIn?.painLevel ?? 0) >= 7
+    || (yestCheckIn?.painLevel ?? 0) >= baseline + 2
+    || recentHigh >= 2
+  ) {
+    return { key: 'calm_down', label: 'Calm-down day',
+      reason: 'Your pain has been elevated. Today focuses on mobility and release — gentle inputs to settle the nervous system before adding load.' };
+  }
+
+  // Build day — consistent + pain trending down
+  if (sessionsLastWeek >= 3 && recentHigh === 0 && recentLow >= 1) {
+    return { key: 'build', label: 'Build day',
+      reason: 'You\'ve been consistent and pain is trending down. Today adds more activation and strength — your tissue is ready for it.' };
+  }
+
+  return { key: 'standard', label: 'Daily plan',
+    reason: 'Your standard daily plan, personalized to your pain pattern.' };
+};
+
+export const selectExercisesForToday = (profile = {}, recentCheckIns = [], recentSessions = [], nowISO) => {
+  const mode = _computeMode(profile, recentCheckIns, recentSessions, nowISO);
+  const base = selectExercises(profile);
+  const libraryKey = normalizeLocation(profile.painLocations?.[0]);
+  const pool = EXERCISE_LIBRARY[libraryKey] || EXERCISE_LIBRARY.default;
+
+  if (mode.key === 'reset') {
+    // 3 easiest exercises — prefer mobility/activation already in the base
+    const easy = base.filter(ex => ex.phase === 'Mobility' || ex.phase === 'Activation').slice(0, 3);
+    const exercises = easy.length >= 3 ? easy : base.slice(0, 3);
+    return { exercises, mode: mode.key, modeLabel: mode.label, modeReason: mode.reason };
+  }
+
+  if (mode.key === 'calm_down') {
+    // Drop strength/exposure, fill from pool with mobility/release
+    let calm = base.filter(ex => ex.phase !== 'Strength' && ex.phase !== 'Exposure');
+    if (calm.length < 5) {
+      const usedNames = new Set(calm.map(e => e.name));
+      const extras = pool
+        .filter(ex => (ex.phase === 'Mobility' || ex.phase === 'Release') && !usedNames.has(ex.name))
+        .sort((a, b) => (b.priority || 3) - (a.priority || 3))
+        .slice(0, 5 - calm.length);
+      calm = [...calm, ...extras];
+    }
+    return { exercises: calm.slice(0, 5), mode: mode.key, modeLabel: mode.label, modeReason: mode.reason };
+  }
+
+  if (mode.key === 'build') {
+    // Swap out the lowest-priority 2 for build-leaning extras when available
+    const usedNames = new Set(base.map(e => e.name));
+    const buildExtras = pool
+      .filter(ex => (ex.phase === 'Strength' || ex.phase === 'Stability' || ex.phase === 'Exposure') && !usedNames.has(ex.name))
+      .sort((a, b) => (b.priority || 3) - (a.priority || 3))
+      .slice(0, 2);
+    if (buildExtras.length === 0) {
+      return { exercises: base, mode: mode.key, modeLabel: mode.label, modeReason: mode.reason };
+    }
+    const kept = base.slice(0, 5 - buildExtras.length);
+    return { exercises: [...kept, ...buildExtras], mode: mode.key, modeLabel: mode.label, modeReason: mode.reason };
+  }
+
+  // Standard
+  return { exercises: base, mode: mode.key, modeLabel: mode.label, modeReason: mode.reason };
+};
+
+// ─── Daily AI coach message ───────────────────────────────────────────────────
+// Returns { emoji, msg } for PainTrackerCard based on today's check-in (if
+// logged) and the recent pain trend. Replaces the static getCoachResponse.
+export const getCoachMessage = (profile = {}, todayCheckIn, recentCheckIns = []) => {
+  const baseline = profile.painIntensity ?? 5;
+  const today    = todayCheckIn?.painLevel;
+  const didEx    = todayCheckIn?.exercisesDone;
+
+  // Recent trend (excluding today)
+  const past = recentCheckIns.filter(c => c.date !== todayCheckIn?.date).slice(0, 5);
+  const pastAvg = past.length ? past.reduce((s, c) => s + c.painLevel, 0) / past.length : null;
+  const trendingDown = pastAvg != null && today != null && today < pastAvg - 0.5;
+  const trendingUp   = pastAvg != null && today != null && today > pastAvg + 0.5;
+
+  // Not logged today yet
+  if (today == null) {
+    if (past.length === 0) {
+      return { emoji: '👋', msg: 'Log how you feel today — even a quick rating helps us calibrate tomorrow\'s plan.' };
+    }
+    return { emoji: '📊', msg: 'How are you feeling today? Tracking daily — even on good days — is what makes the plan adapt.' };
+  }
+
+  const high     = today >= 7;
+  const moderate = today >= 4 && today < 7;
+  const low      = today < 4;
+
+  // Pain × trend × did-exercise matrix — pick the most-specific message that fires
+  if (high && trendingUp && !didEx) {
+    return { emoji: '🚨', msg: 'Pain spiked and you skipped today. Tomorrow, even 5 minutes of mobility and release helps the system settle. If pain stays this high for 3+ days or you notice numbness, see a clinician.' };
+  }
+  if (high && trendingUp && didEx) {
+    return { emoji: '🧊', msg: 'Pain is up despite the work. That can happen during recovery — your nervous system is recalibrating. Drop intensity, stick to mobility/release for the next session.' };
+  }
+  if (high && didEx) {
+    return { emoji: '💙', msg: 'High pain day and you still showed up. That\'s the consistency that breaks the cycle — but keep it gentle until pain drops back to your baseline.' };
+  }
+  if (high && !didEx) {
+    return { emoji: '🛌', msg: 'High pain days are hard. Rest is valid. When you\'re ready, mobility and release exercises will be here — they\'re safe even on the worst days.' };
+  }
+  if (moderate && trendingDown && didEx) {
+    return { emoji: '📉', msg: 'Trend is in your favor — pain is dropping AND you\'re doing the work. This is exactly the loop that creates lasting recovery. Keep going.' };
+  }
+  if (moderate && didEx) {
+    return { emoji: '💪', msg: 'You did the work even through discomfort. That consistency is exactly what breaks the pain cycle — gains usually compound after the first 2 weeks.' };
+  }
+  if (moderate && !didEx) {
+    return { emoji: '⏰', msg: 'Mid-range pain day with no session yet. Even 5 minutes of your top exercises would help — small sessions beat skipping every time.' };
+  }
+  if (low && trendingDown && didEx) {
+    return { emoji: '🎯', msg: 'Pain is low and dropping, and you\'re showing up consistently. This is the combo that creates lasting recovery. Don\'t stop now — two more weeks locks the gains in.' };
+  }
+  if (low && didEx) {
+    return { emoji: '✨', msg: 'Low pain and you did the work. Time to think about adding a touch more load — strength work on low-pain days is what makes the gains stick.' };
+  }
+  if (low && !didEx) {
+    return { emoji: '🌱', msg: 'Feeling better today! Don\'t skip tomorrow though — the improvement comes from staying consistent, especially on the good days.' };
+  }
+  return { emoji: '📊', msg: 'Good consistency. Keep tracking — the plan gets smarter with every check-in.' };
+};

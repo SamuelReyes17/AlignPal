@@ -4,15 +4,17 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useOnboarding } from '../../context/OnboardingContext';
 import { StepHeader } from '../../components/StepHeader';
+import StepFooter from '../../components/StepFooter';
 import { Colors, Shadows } from '../../constants/brand';
 import { useResponsive, fs, sp } from '../../utils/responsive';
 
+// Purple-only treatment — selection (border/fill) carries state, not hue.
 const OPTIONS = [
-  { id: '18-25', label: '18 – 25', sub: 'Young adult',       icon: 'flash-outline',           color: Colors.green },
+  { id: '18-25', label: '18 – 25', sub: 'Young adult',       icon: 'flash-outline',            color: Colors.purpleLight },
   { id: '26-35', label: '26 – 35', sub: 'Prime years',       icon: 'briefcase-outline',        color: Colors.purpleLight },
-  { id: '36-45', label: '36 – 45', sub: 'Peak experience',   icon: 'leaf-outline',             color: Colors.purple },
-  { id: '46-55', label: '46 – 55', sub: 'Active & wise',     icon: 'shield-checkmark-outline', color: Colors.amber },
-  { id: '56+',   label: '56+',     sub: 'Seasoned & strong', icon: 'heart-outline',            color: Colors.red },
+  { id: '36-45', label: '36 – 45', sub: 'Peak experience',   icon: 'leaf-outline',             color: Colors.purpleLight },
+  { id: '46-55', label: '46 – 55', sub: 'Active & wise',     icon: 'shield-checkmark-outline', color: Colors.purpleLight },
+  { id: '56+',   label: '56+',     sub: 'Seasoned & strong', icon: 'heart-outline',            color: Colors.purpleLight },
 ];
 
 export default function AgeRangeScreen({ navigation }) {
@@ -27,7 +29,7 @@ export default function AgeRangeScreen({ navigation }) {
   };
 
   const dyn = {
-    scrollContent: { paddingHorizontal: horizPad, paddingVertical: sp(20, gapScale) },
+    scrollContent: { paddingHorizontal: horizPad, paddingVertical: sp(28, gapScale) },
     frame:         { maxWidth: frameWidth, gap: sp(32, gapScale) },
     question:      { fontSize: fs(38, fontScale), lineHeight: fs(46, fontScale) },
     hint:          { fontSize: fs(14, fontScale), lineHeight: fs(21, fontScale) },
@@ -35,9 +37,6 @@ export default function AgeRangeScreen({ navigation }) {
     cardLabel:     { fontSize: fs(20, fontScale) },
     cardSub:       { fontSize: fs(12, fontScale) },
     iconCircle:    { width: isSmall ? 52 : isTablet ? 68 : 60, height: isSmall ? 52 : isTablet ? 68 : 60 },
-    btnText:       { fontSize: fs(17, fontScale) },
-    footer:        { paddingHorizontal: horizPad, paddingBottom: isShort ? 20 : 36, paddingTop: 12 },
-    footerInner:   { maxWidth: frameWidth },
   };
 
   return (
@@ -88,21 +87,11 @@ export default function AgeRangeScreen({ navigation }) {
         </View>
       </ScrollView>
 
-      <View style={[s.footer, dyn.footer]}>
-        <View style={[s.footerInner, dyn.footerInner]}>
-          <TouchableOpacity
-            style={[s.btn, !selected && s.btnDisabled]}
-            onPress={handleContinue}
-            activeOpacity={0.88}
-          >
-            <Ionicons name="sparkles" size={18} color={!selected ? Colors.textMuted : Colors.white} />
-            <Text style={[s.btnText, dyn.btnText, !selected && s.btnTextDisabled]}>
-              {selected ? 'Build My Plan' : 'Select your age range'}
-            </Text>
-            {!!selected && <Ionicons name="arrow-forward" size={16} color={Colors.white} />}
-          </TouchableOpacity>
-        </View>
-      </View>
+      <StepFooter
+        label={selected ? 'Build My Plan' : 'Select your age range'}
+        disabled={!selected}
+        onPress={handleContinue}
+      />
     </SafeAreaView>
   );
 }
@@ -145,15 +134,4 @@ const s = StyleSheet.create({
     width: 18, height: 18, borderRadius: 9,
     alignItems: 'center', justifyContent: 'center',
   },
-
-  footer:      { alignItems: 'center' },
-  footerInner: { width: '100%', alignSelf: 'center' },
-  btn: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
-    backgroundColor: Colors.purple, borderRadius: 20, paddingVertical: 20,
-    ...Shadows.purple,
-  },
-  btnDisabled:     { backgroundColor: Colors.bgCard, shadowOpacity: 0, borderWidth: 1, borderColor: Colors.border },
-  btnText:         { fontWeight: '700', color: Colors.white },
-  btnTextDisabled: { color: Colors.textMuted },
 });

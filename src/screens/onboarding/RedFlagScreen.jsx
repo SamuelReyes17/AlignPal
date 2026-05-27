@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useOnboarding } from '../../context/OnboardingContext';
 import { StepHeader } from '../../components/StepHeader';
+import StepFooter from '../../components/StepFooter';
 import { Colors, Shadows } from '../../constants/brand';
 import { useResponsive, fs, sp } from '../../utils/responsive';
 
@@ -57,16 +58,13 @@ export default function RedFlagScreen({ navigation }) {
   };
 
   const dyn = {
-    scrollContent: { paddingHorizontal: horizPad, paddingVertical: sp(24, gapScale) },
+    scrollContent: { paddingHorizontal: horizPad, paddingVertical: sp(28, gapScale) },
     frame:         { maxWidth: frameWidth, gap: sp(22, gapScale) },
     question:      { fontSize: fs(34, fontScale), lineHeight: fs(42, fontScale) },
     hint:          { fontSize: fs(14, fontScale), lineHeight: fs(21, fontScale) },
     iconBadge:     { width: isSmall ? 46 : 52, height: isSmall ? 46 : 52 },
     list:          { gap: sp(8, gapScale) },
     rowLabel:      { fontSize: fs(14, fontScale), lineHeight: fs(20, fontScale) },
-    btnText:       { fontSize: fs(17, fontScale) },
-    footer:        { paddingHorizontal: horizPad, paddingBottom: isShort ? 20 : 36, paddingTop: 12 },
-    footerInner:   { maxWidth: frameWidth },
     // Modal — capped width on tablets so it doesn't span edge-to-edge
     modalCard:     { maxWidth: Math.min(frameWidth, 440) },
     modalTitle:    { fontSize: fs(22, fontScale) },
@@ -126,20 +124,11 @@ export default function RedFlagScreen({ navigation }) {
         </View>
       </ScrollView>
 
-      <View style={[s.footer, dyn.footer]}>
-        <View style={[s.footerInner, dyn.footerInner]}>
-          <TouchableOpacity
-            style={[s.btn, !selected.length && s.btnDisabled]}
-            onPress={handleContinue}
-            activeOpacity={0.88}
-          >
-            <Text style={[s.btnText, dyn.btnText, !selected.length && s.btnTextDisabled]}>
-              {!selected.length ? 'Tick at least one' : 'Continue'}
-            </Text>
-            {!!selected.length && <Ionicons name="arrow-forward" size={16} color={Colors.white} />}
-          </TouchableOpacity>
-        </View>
-      </View>
+      <StepFooter
+        label={!selected.length ? 'Tick at least one' : 'Continue'}
+        disabled={!selected.length}
+        onPress={handleContinue}
+      />
 
       {/* Warning modal — only shown if the user ticked at least one red flag */}
       <Modal visible={warningOpen} transparent animationType="fade" onRequestClose={() => setWarningOpen(false)}>
@@ -210,26 +199,15 @@ const s = StyleSheet.create({
     borderWidth: 1.5, borderColor: Colors.border,
     borderRadius: 14, paddingVertical: 14, paddingHorizontal: 14,
   },
-  rowOnFlag:    { backgroundColor: '#FBBF2415', borderColor: '#FBBF24' },
-  rowOnClear:   { backgroundColor: '#34D39915', borderColor: Colors.green },
+  rowOnFlag:    { backgroundColor: Colors.purpleDim, borderColor: Colors.purple },
+  rowOnClear:   { backgroundColor: Colors.purpleDim, borderColor: Colors.purpleLight },
   rowLabel:     { flex: 1, fontWeight: '600', color: Colors.textMuted },
   rowLabelOn:   { color: Colors.textPrimary },
   rowLabelClear:{ color: Colors.textPrimary },
-  checkOnFlag:  { width: 22, height: 22, borderRadius: 6, backgroundColor: '#FBBF24', alignItems: 'center', justifyContent: 'center' },
-  checkOnClear: { width: 22, height: 22, borderRadius: 6, backgroundColor: Colors.green, alignItems: 'center', justifyContent: 'center' },
+  checkOnFlag:  { width: 22, height: 22, borderRadius: 6, backgroundColor: Colors.purple, alignItems: 'center', justifyContent: 'center' },
+  checkOnClear: { width: 22, height: 22, borderRadius: 6, backgroundColor: Colors.purpleLight, alignItems: 'center', justifyContent: 'center' },
   checkOff:     { width: 22, height: 22, borderRadius: 6, borderWidth: 2, borderColor: Colors.border },
   divider:      { height: 1, backgroundColor: Colors.borderSubtle, marginVertical: 6 },
-
-  footer:      { alignItems: 'center' },
-  footerInner: { width: '100%', alignSelf: 'center' },
-  btn: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
-    backgroundColor: Colors.purple, borderRadius: 20, paddingVertical: 19,
-    ...Shadows.purple,
-  },
-  btnDisabled:     { backgroundColor: Colors.bgCard, shadowOpacity: 0, borderWidth: 1, borderColor: Colors.border },
-  btnText:         { fontWeight: '700', color: Colors.white },
-  btnTextDisabled: { color: Colors.textMuted },
 
   // Modal
   modalBackdrop: { flex: 1, backgroundColor: '#000000CC', justifyContent: 'center', alignItems: 'center', paddingHorizontal: 24 },

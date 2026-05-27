@@ -1,71 +1,77 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
 import { useOnboarding } from '../../context/OnboardingContext';
 import BodyMap from '../../components/BodyMap';
 import { StepHeader } from '../../components/StepHeader';
-import { Colors, Shadows } from '../../constants/brand';
-import { useResponsive, fs, sp } from '../../utils/responsive';
+import StepFooter from '../../components/StepFooter';
+import { Colors, KitColors } from '../../constants/brand';
+import { useResponsive, fs } from '../../utils/responsive';
 
+/**
+ * PainLocationScreen — onboarding step 1 of 12.
+ *
+ * Layout:
+ *  - The content (headline + BodyMap) lives in a ScrollView, so on short
+ *    phones nothing is clipped and everything stays reachable.
+ *  - The Continue button is pinned below the scroll, so it's always visible.
+ *  - Everything is held in a phone-width column (frameWidth) that stays
+ *    centred and correctly proportioned on laptop / tablet as well as phone.
+ *  - On tall screens the column floats to the vertical centre (auto margins);
+ *    on short screens the auto margins collapse and the page scrolls.
+ *
+ * Data wiring (unchanged):
+ *  - useOnboarding() reads/writes painLocations
+ *  - BodyMap shows its own selected-area chips, so the screen no longer
+ *    renders a second chip row.
+ *  - Navigates to 'PainIntensity' on continue.
+ */
 export default function PainLocationScreen({ navigation }) {
   const { onboardingData, updateOnboardingData } = useOnboarding();
   const selected = onboardingData.painLocations || [];
   const canContinue = selected.length > 0;
-  const { isSmall, isTablet, isShort, horizPad, frameWidth, fontScale } = useResponsive();
 
-  const dyn = {
-    questionBlock: { paddingHorizontal: horizPad },
-    frame:         { maxWidth: frameWidth },
-    question:      { fontSize: fs(26, fontScale) },
-    hint:          { fontSize: fs(13, fontScale) },
-    btnText:       { fontSize: fs(17, fontScale) },
-    btnTextDisabled: { fontSize: fs(14, fontScale) },
-    selectionText: { fontSize: fs(12, fontScale) },
-    footer:        { paddingHorizontal: horizPad, paddingBottom: isShort ? 18 : 28, paddingTop: 6 },
-    footerInner:   { maxWidth: frameWidth },
-  };
+  const { horizPad, frameWidth, fontScale, isShort } = useResponsive();
 
   return (
     <SafeAreaView style={s.container} edges={['top', 'bottom']}>
       <StepHeader step={1} total={12} onBack={() => navigation.goBack()} />
 
-      <View style={[s.questionBlock, dyn.questionBlock]}>
-        <View style={[s.frame, dyn.frame]}>
-          <Text style={[s.question, dyn.question]}>Where does it hurt?</Text>
-          <Text style={[s.hint, dyn.hint]}>Tap the area — front or back · Select multiple</Text>
-        </View>
-      </View>
-
-      {/* Body map — takes the remaining flex space, centered */}
-      <View style={s.mapWrap}>
-        <BodyMap
-          selectedParts={selected}
-          onSelect={(locs) => updateOnboardingData({ painLocations: locs })}
-        />
-      </View>
-
-      {/* Footer — pinned, capped to frame width on tablets */}
-      <View style={[s.footer, dyn.footer]}>
-        <View style={[s.footerInner, dyn.footerInner]}>
-          {selected.length > 0 && (
-            <View style={s.selectionBadge}>
-              <View style={s.selectionDot} />
-              <Text style={[s.selectionText, dyn.selectionText]}>
-                {selected.length} area{selected.length !== 1 ? 's' : ''} selected
-              </Text>
-            </View>
-          )}
-          <TouchableOpacity
-            style={[s.btn, !canContinue && s.btnDisabled]}
-            onPress={() => canContinue && navigation.navigate('PainIntensity')}
-            activeOpacity={0.88}
+      <ScrollView
+        style={s.scroll}
+        contentContainerStyle={[
+          s.scrollContent,
+          { paddingHorizontal: horizPad, paddingBottom: isShort ? 20 : 32 },
+        ]}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={[s.frame, { maxWidth: frameWidth }]}>
+          <Text style={[s.eyebrow, { fontSize: fs(13, fontScale) }]}>Step 1 of 12</Text>
+          <Text
+            style={[s.headline, { fontSize: fs(28, fontScale), lineHeight: fs(34, fontScale) }]}
           >
-            <Text style={[s.btnText, dyn.btnText, !canContinue && [s.btnTextDisabled, dyn.btnTextDisabled]]}>
-              {canContinue ? 'Continue →' : 'Tap where it hurts'}
-            </Text>
-          </TouchableOpacity>
+            Where does{'\n'}it hurt?
+          </Text>
+          <Text style={[s.sub, { fontSize: fs(14, fontScale) }]}>
+            Tap the area — front or back. Select multiple if needed.
+          </Text>
+
+          <View style={s.mapWrap}>
+            <BodyMap
+              selectedParts={selected}
+              onSelect={(locs) => updateOnboardingData({ painLocations: locs })}
+            />
+          </View>
         </View>
-      </View>
+      </ScrollView>
+
+      {/* Footer pinned below the scroll — Continue is always reachable */}
+      <StepFooter
+        label={canContinue ? 'Continue' : 'Tap where it hurts'}
+        disabled={!canContinue}
+        onPress={() => navigation.navigate('PainIntensity')}
+      />
     </SafeAreaView>
   );
 }
@@ -73,34 +79,44 @@ export default function PainLocationScreen({ navigation }) {
 const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.bg },
 
-  questionBlock: { alignItems: 'center', paddingBottom: 6 },
-  frame: { width: '100%', alignSelf: 'center', alignItems: 'center' },
-  question: {
-    fontWeight: '800', color: Colors.textPrimary,
-    textAlign: 'center', letterSpacing: -0.6, marginBottom: 4,
+  scroll: { flex: 1 },
+  scrollContent: {
+    flexGrow: 1,
+    alignItems: 'center',
+    paddingTop: 28,
+    paddingBottom: 32,
   },
-  hint: { color: Colors.textSecondary, textAlign: 'center' },
 
-  mapWrap: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-
-  footer: { alignItems: 'center' },
-  footerInner: { width: '100%', alignSelf: 'center', gap: 8 },
-
-  selectionBadge: {
-    flexDirection: 'row', alignItems: 'center', gap: 7,
+  // Phone-width column. marginTop/Bottom 'auto' centre it vertically when there
+  // is spare room (laptop / tall screens) and collapse to 0 when there isn't.
+  frame: {
+    width: '100%',
     alignSelf: 'center',
-    backgroundColor: Colors.purpleGlow,
-    borderRadius: 20, paddingHorizontal: 14, paddingVertical: 6,
-    borderWidth: 1, borderColor: Colors.borderSelected,
+    marginTop: 'auto',
+    marginBottom: 'auto',
   },
-  selectionDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: Colors.purple },
-  selectionText: { color: Colors.purplePale, fontWeight: '700' },
 
-  btn: {
-    backgroundColor: Colors.purple, borderRadius: 20, paddingVertical: 18,
-    alignItems: 'center', ...Shadows.purple,
+  eyebrow: {
+    color: KitColors.text3,
+    fontWeight: '500',
+    marginTop: 4,
+    letterSpacing: 0.2,
   },
-  btnDisabled: { backgroundColor: Colors.bgCard, shadowOpacity: 0, borderWidth: 1, borderColor: Colors.border },
-  btnText:         { fontWeight: '700', color: Colors.white },
-  btnTextDisabled: { color: Colors.textMuted },
+  headline: {
+    fontWeight: '800',
+    color: KitColors.text1,
+    letterSpacing: -0.6,
+    marginTop: 16,
+  },
+  sub: {
+    color: KitColors.text2,
+    lineHeight: 22,
+    marginTop: 16,
+    marginBottom: 36,
+  },
+  mapWrap: {
+    width: '100%',
+    alignItems: 'center',
+    marginTop: 8,
+  },
 });

@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useOnboarding } from '../../context/OnboardingContext';
 import { Colors, Shadows, Gradients, Radius, Spacing, Surfaces, PhasePalette } from '../../constants/brand';
-import { selectExercises } from '../../constants/exerciseLibrary';
+import { selectExercises, getPersonalizedWhy } from '../../constants/exerciseLibrary';
 import GradientCard from '../../components/GradientCard';
 import { useResponsive, fs, sp } from '../../utils/responsive';
 
@@ -38,12 +38,13 @@ export default function Day1ProtocolScreen({ navigation }) {
     stepNumText:    { fontSize: fs(16, fontScale) },
     exName:         { fontSize: fs(16, fontScale) },
     repsText:       { fontSize: fs(13, fontScale) },
+    whyText:        { fontSize: fs(12, fontScale), lineHeight: fs(18, fontScale) },
     nudgeCard:      { marginHorizontal: horizPad },
     nudgeText:      { fontSize: fs(13, fontScale), lineHeight: fs(20, fontScale) },
     startBtnText:   { fontSize: fs(17, fontScale) },
     dashBtnText:    { fontSize: fs(14, fontScale) },
     upgradeBtnText: { fontSize: fs(14, fontScale) },
-    footer:         { paddingHorizontal: horizPad, paddingBottom: isShort ? 18 : 28 },
+    footer:         { paddingHorizontal: horizPad, paddingBottom: isShort ? 28 : 40 },
     footerInner:    { maxWidth: wideFrame },
   };
 
@@ -104,7 +105,10 @@ export default function Day1ProtocolScreen({ navigation }) {
           {/* ── Exercise cards ── */}
           <View style={[s.list, dyn.list]}>
             {exercises.map((ex, i) => {
-              const meta = PhasePalette[ex.phase] || PhasePalette.Mobility;
+              // Keep the phase icon + label from PhasePalette but force the
+              // color to brand purple so every card reads the same hue.
+              const phaseMeta = PhasePalette[ex.phase] || PhasePalette.Mobility;
+              const meta = { ...phaseMeta, color: Colors.purpleLight };
               const repsLabel = getRepsLabel(ex);
 
               return (
@@ -129,6 +133,16 @@ export default function Day1ProtocolScreen({ navigation }) {
                       <Text style={[s.repsText, dyn.repsText]}>{repsLabel}</Text>
                     </View>
                     <Ionicons name="chevron-forward" size={16} color={meta.color + '60'} />
+                  </View>
+
+                  {/* Personalized "why this for YOU" */}
+                  <View style={[s.whyRow, { borderTopColor: meta.color + '22' }]}>
+                    <View style={[s.whyIconWrap, { backgroundColor: meta.color + '14' }]}>
+                      <Ionicons name="sparkles-outline" size={11} color={meta.color} />
+                    </View>
+                    <Text style={[s.whyText, dyn.whyText]}>
+                      {getPersonalizedWhy(ex, onboardingData)}
+                    </Text>
                   </View>
                 </View>
               );
@@ -166,7 +180,7 @@ export default function Day1ProtocolScreen({ navigation }) {
             </TouchableOpacity>
 
             <TouchableOpacity style={s.upgradeBtn} onPress={() => navigation.navigate('Upgrade')} activeOpacity={0.82}>
-              <Ionicons name="star-outline" size={15} color={Colors.amber} />
+              <Ionicons name="star-outline" size={15} color={Colors.purpleLight} />
               <Text style={[s.upgradeBtnText, dyn.upgradeBtnText]}>Unlock Full Plan</Text>
             </TouchableOpacity>
           </View>
@@ -232,6 +246,10 @@ const s = StyleSheet.create({
   exName:     { fontWeight: '700', color: Colors.textPrimary, letterSpacing: -0.2 },
   repsText:   { color: Colors.textSecondary, fontWeight: '600' },
 
+  whyRow:      { flexDirection: 'row', alignItems: 'flex-start', gap: 10, marginTop: 12, paddingTop: 12, borderTopWidth: 1 },
+  whyIconWrap: { width: 22, height: 22, borderRadius: 7, alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1 },
+  whyText:     { flex: 1, color: Colors.textSecondary, fontWeight: '500' },
+
   nudgeCard: {
     flexDirection: 'row', alignItems: 'flex-start', gap: 12,
     marginTop: 14,
@@ -243,7 +261,7 @@ const s = StyleSheet.create({
   nudgeText:  { flex: 1, color: Colors.textSecondary },
 
   footer: {
-    paddingTop: 14,
+    paddingTop: 24,
     borderTopWidth: 1, borderTopColor: Colors.borderSubtle,
     backgroundColor: Colors.bg,
     alignItems: 'center',
@@ -271,8 +289,8 @@ const s = StyleSheet.create({
     flex: 1, flexDirection: 'row', alignItems: 'center',
     justifyContent: 'center', gap: 6,
     borderRadius: 16, paddingVertical: 13,
-    backgroundColor: Colors.amber + '15',
-    borderWidth: 1, borderColor: Colors.amber + '50',
+    backgroundColor: Colors.purpleDim,
+    borderWidth: 1, borderColor: 'rgba(155,139,244,0.50)',
   },
-  upgradeBtnText: { fontWeight: '700', color: Colors.amber },
+  upgradeBtnText: { fontWeight: '700', color: Colors.purpleLight },
 });

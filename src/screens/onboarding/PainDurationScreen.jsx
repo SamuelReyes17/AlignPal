@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useOnboarding } from '../../context/OnboardingContext';
 import { StepHeader } from '../../components/StepHeader';
+import StepFooter from '../../components/StepFooter';
 import { Colors, Shadows } from '../../constants/brand';
 import { useResponsive, fs, sp } from '../../utils/responsive';
 
@@ -51,7 +52,7 @@ export default function PainDurationScreen({ navigation }) {
 
   // Dynamic style overrides
   const dyn = {
-    scrollContent: { paddingHorizontal: horizPad, paddingVertical: sp(20, gapScale) },
+    scrollContent: { paddingHorizontal: horizPad, paddingVertical: sp(28, gapScale) },
     frame:         { maxWidth: frameWidth, gap: sp(28, gapScale) },
     question:      { fontSize: fs(36, fontScale), lineHeight: fs(44, fontScale) },
     hint:          { fontSize: fs(14, fontScale), lineHeight: fs(21, fontScale) },
@@ -59,9 +60,6 @@ export default function PainDurationScreen({ navigation }) {
     cardLabel:     { fontSize: fs(16, fontScale) },
     cardSub:       { fontSize: fs(12, fontScale), lineHeight: fs(17, fontScale) },
     iconCircle:    { width: isSmall ? 52 : isTablet ? 68 : 60, height: isSmall ? 52 : isTablet ? 68 : 60 },
-    btnText:       { fontSize: fs(17, fontScale) },
-    footer:        { paddingHorizontal: horizPad, paddingBottom: isShort ? 20 : 36, paddingTop: 12 },
-    footerInner:   { maxWidth: frameWidth },
   };
 
   return (
@@ -108,20 +106,11 @@ export default function PainDurationScreen({ navigation }) {
         </View>
       </ScrollView>
 
-      <View style={[s.footer, dyn.footer]}>
-        <View style={[s.footerInner, dyn.footerInner]}>
-          <TouchableOpacity
-            style={[s.btn, !selected && s.btnDisabled]}
-            onPress={handleContinue}
-            activeOpacity={0.88}
-          >
-            <Text style={[s.btnText, dyn.btnText, !selected && s.btnTextDisabled]}>
-              {selected ? 'Continue' : 'Pick a duration'}
-            </Text>
-            {!!selected && <Ionicons name="arrow-forward" size={16} color={Colors.white} />}
-          </TouchableOpacity>
-        </View>
-      </View>
+      <StepFooter
+        label={selected ? 'Continue' : 'Pick a duration'}
+        disabled={!selected}
+        onPress={handleContinue}
+      />
     </SafeAreaView>
   );
 }
@@ -157,15 +146,4 @@ const s = StyleSheet.create({
   cardSub:   { color: Colors.textSecondary },
   radioOn:   { width: 24, height: 24, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   radioOff:  { width: 24, height: 24, borderRadius: 12, borderWidth: 2, borderColor: Colors.border },
-
-  footer:      { alignItems: 'center' },
-  footerInner: { width: '100%', alignSelf: 'center' },
-  btn: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
-    backgroundColor: Colors.purple, borderRadius: 20, paddingVertical: 19,
-    ...Shadows.purple,
-  },
-  btnDisabled:     { backgroundColor: Colors.bgCard, shadowOpacity: 0, borderWidth: 1, borderColor: Colors.border },
-  btnText:         { fontWeight: '700', color: Colors.white },
-  btnTextDisabled: { color: Colors.textMuted },
 });

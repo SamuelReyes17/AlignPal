@@ -18,6 +18,7 @@ export default defineSchema({
     directionalPreference: v.optional(v.string()),   // 'flexion' | 'extension' | 'rotation' | 'sustained' | 'unclear'
     radiatingPain: v.optional(v.array(v.string())),  // ['none','glute','above_knee','below_knee','arm','hand','headache']
     redFlags: v.optional(v.array(v.string())),       // ['bowel_bladder','saddle_numb','night_pain', ...]
+    sex: v.optional(v.string()),                     // 'female' | 'male' — drives BodyMap silhouette
     onboardingComplete: v.boolean(),
     isPremium: v.boolean(),
     rcCustomerId: v.optional(v.string()),

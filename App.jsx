@@ -12,6 +12,8 @@ import { SubscriptionProvider } from './src/context/SubscriptionContext';
 import OnboardingNavigator from './src/navigation/OnboardingNavigator';
 import AppNavigator from './src/navigation/AppNavigator';
 import RecoverySessionScreen from './src/screens/RecoverySessionScreen';
+import DevNavigator from './src/navigation/DevNavigator';
+import { showScreenCatalog } from './src/constants/devConfig';
 
 const convexUrl = process.env.EXPO_PUBLIC_CONVEX_URL;
 if (!convexUrl) {
@@ -47,7 +49,11 @@ function RootNavigator() {
 
   return (
     <NavigationContainer>
-      {isOnboardingComplete ? (
+      {showScreenCatalog ? (
+        // Dev screen catalog — preview any screen without onboarding.
+        // Turn off via DEV.START in src/constants/devConfig.js.
+        <DevNavigator key="dev-catalog" />
+      ) : isOnboardingComplete ? (
         <AppStackNavigator key="main-app" />
       ) : (
         <OnboardingNavigator key="onboarding" />

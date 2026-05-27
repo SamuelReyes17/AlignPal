@@ -18,6 +18,7 @@ export const upsertProfile = mutation({
     directionalPreference: v.optional(v.string()),
     radiatingPain: v.optional(v.array(v.string())),
     redFlags: v.optional(v.array(v.string())),
+    sex: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const { installId, ...profile } = args;

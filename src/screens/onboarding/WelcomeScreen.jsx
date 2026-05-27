@@ -24,7 +24,11 @@ export default function WelcomeScreen({ navigation }) {
   }, []);
 
   const dyn = {
-    scrollContent: { paddingHorizontal: horizPad, paddingVertical: sp(24, gapScale) },
+    scrollContent: {
+      paddingHorizontal: horizPad,
+      paddingTop: sp(96, gapScale),       // breathing room above the AlignPal logo
+      paddingBottom: sp(32, gapScale),
+    },
     frame:         { maxWidth: frameWidth, gap: sp(32, gapScale) },
     logoSize:      { width: isSmall ? 84 : isTablet ? 108 : 96, height: isSmall ? 84 : isTablet ? 108 : 96 },
     wordmark:      { fontSize: fs(28, fontScale) },
@@ -36,7 +40,7 @@ export default function WelcomeScreen({ navigation }) {
     pillText:      { fontSize: fs(12, fontScale) },
     ctaText:       { fontSize: fs(17, fontScale) },
     legal:         { fontSize: fs(12, fontScale) },
-    footer:        { paddingHorizontal: horizPad, paddingBottom: isShort ? 22 : 36 },
+    footer:        { paddingHorizontal: horizPad, paddingBottom: isShort ? 28 : 40, paddingTop: 12 },
     footerInner:   { maxWidth: frameWidth },
   };
 
@@ -88,7 +92,7 @@ export default function WelcomeScreen({ navigation }) {
           <View style={s.pillsRow}>
             {['No equipment', 'No guesswork', 'No physio bills'].map((t, i) => (
               <View key={i} style={s.pill}>
-                <Ionicons name="checkmark-circle" size={13} color={Colors.green} />
+                <Ionicons name="checkmark-circle" size={13} color={Colors.purpleLight} />
                 <Text style={[s.pillText, dyn.pillText]}>{t}</Text>
               </View>
             ))}
@@ -123,7 +127,10 @@ export default function WelcomeScreen({ navigation }) {
 const s = StyleSheet.create({
   container:     { flex: 1, backgroundColor: Colors.bg },
   scroll:        { flex: 1 },
-  scrollContent: { flexGrow: 1, justifyContent: 'center' },
+  // Content sits at the top with the paddingTop above the logo, instead of
+  // floating vertically centred — that way the logo never crowds the top of
+  // the screen, regardless of viewport height.
+  scrollContent: { flexGrow: 1 },
   frame:         { width: '100%', alignSelf: 'center' },
 
   // Logo
